@@ -1,0 +1,40 @@
+body {
+  margin: 0;
+}
+
+#desktop {
+  position: relative;
+  height: 100vh;
+  background-color: teal;
+}
+
+.window {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  top: 100px;
+  left: 100px;
+  width: 300px;
+  height: 200px;
+  background: #c0c0c0;
+  border: 2px solid black;
+  box-shadow: 4px 4px black;
+}
+
+.titlebar {
+  background: navy;
+  color: white;
+  height: 24px;
+  line-height: 24px;
+  padding-left: 4px;
+  cursor: move;
+  flex-shrink: 0;
+}
+
+.content {
+  padding: 5px;
+  background: white;
+  height: 100%;
+  overflow: auto;
+  flex: 1;
+}
