@@ -3,17 +3,23 @@
   import Taskbar from "./lib/Taskbar.svelte";
   import Window from "./lib/Window.svelte";
 
+  // stores a mapping of id to window data
   let windows: any = $state({});
+  // contains the order of taskbar buttons by window id
+  let taskbar: any = $state([]);
 
   function createWindow() {
+    windowId.value++;
+
     const newWindow = {
-      title: `blblblblb`,
+      title: `${windowId.value}`,
       x: 100,
       y: 100,
       z: 1,
     };
-    windows[windowId.value++] = newWindow;
-    console.log(windows);
+    windows[windowId.value] = newWindow;
+
+    taskbar.push(windowId.value);
   }
 
   function moveWindow(id: number, x: number, y: number) {
@@ -33,10 +39,15 @@
     }
   }
 
+  function getWindows() {
+    return windows;
+  }
+
   let windowApi = {
     createWindow,
     moveWindow,
     focusWindow,
+    getWindows,
   };
 </script>
 
@@ -49,7 +60,7 @@
 
     <button onclick={createWindow}>make window</button>
   </div>
-  <Taskbar {windows} {windowApi} />
+  <Taskbar {taskbar} {windowApi} />
 </div>
 
 <style>

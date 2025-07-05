@@ -1,10 +1,10 @@
 <script lang="ts">
-  let { windows, windowApi } = $props();
+  let { taskbar, windowApi } = $props();
 </script>
 
 <div id="taskbar">
-  {#each Object.entries(windows) as [id, win] (id)}
-    {@const w = win as any}
+  {#each taskbar as id (id)}
+    {@const w = windowApi.getWindows()[id] as any}
     <button onclick={() => windowApi.focusWindow(Number(id))}>
       {w.title}
     </button>
