@@ -1,31 +1,22 @@
 <script lang="ts">
-  import { zIndex } from "./state.svelte";
-
-  let { title, x = 100, y = 100 } = $props();
-
-  let posX = $state(x);
-  let poxY = $state(y);
-  let z = $state(1);
+  let { id, title, x, y, z, windowApi } = $props();
 
   let isDragging = false;
   let offsetX = 0;
   let offsetY = 0;
 
-  function sendToTop() {
-    z = zIndex.value++;
-  }
-
   function handleMouseDown(event: MouseEvent) {
     isDragging = true;
-    offsetX = event.clientX - posX;
-    offsetY = event.clientY - poxY;
-    sendToTop();
+    offsetX = event.clientX - x;
+    offsetY = event.clientY - y;
+    windowApi.focusWindow(id);
   }
 
   function handleMouseMove(event: MouseEvent) {
     if (isDragging) {
-      posX = event.clientX - offsetX;
-      poxY = event.clientY - offsetY;
+      let posX = event.clientX - offsetX;
+      let poxY = event.clientY - offsetY;
+      windowApi.moveWindow(id, posX, poxY);
     }
   }
 
@@ -33,7 +24,7 @@
     isDragging = false;
   }
 
-  sendToTop();
+  windowApi.focusWindow(id);
 </script>
 
 <svelte:window
@@ -43,7 +34,7 @@
 />
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="window" style="left: {posX}px; top: {poxY}px; z-index: {z}">
+<div class="window" style="left: {x}px; top: {y}px; z-index: {z}">
   <div class="titlebar" onmousedown={handleMouseDown}>
     <span class="title">{title}</span>
     <div class="window-controls">
