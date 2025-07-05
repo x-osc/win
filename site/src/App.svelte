@@ -1,5 +1,6 @@
 <script lang="ts">
   import { windowId, zIndex } from "./lib/state.svelte";
+  import Taskbar from "./lib/Taskbar.svelte";
   import Window from "./lib/Window.svelte";
 
   let windows: any = $state({});
@@ -39,19 +40,30 @@
   };
 </script>
 
-<div id="desktop">
-  {#each Object.entries(windows) as [id, win] (id)}
-    {@const w = win as any}
-    <Window {id} title={w.title} x={w.x} y={w.y} z={w.z} {windowApi} />
-  {/each}
+<div id="root">
+  <div id="desktop">
+    {#each Object.entries(windows) as [id, win] (id)}
+      {@const w = win as any}
+      <Window {id} title={w.title} x={w.x} y={w.y} z={w.z} {windowApi} />
+    {/each}
 
-  <button onclick={createWindow}>make window</button>
+    <button onclick={createWindow}>make window</button>
+  </div>
+  <Taskbar {windows} {windowApi} />
 </div>
 
 <style>
-  #desktop {
-    width: 100%;
+  #root {
+    display: flex;
+    flex-direction: column;
     height: 100vh;
+  }
+
+  #desktop {
+    flex: 1;
+    position: relative;
+    width: 100%;
     background-color: teal;
+    overflow: hidden;
   }
 </style>

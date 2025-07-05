@@ -1,0 +1,39 @@
+<script lang="ts">
+  let { windows, windowApi } = $props();
+</script>
+
+<div id="taskbar">
+  {#each Object.entries(windows) as [id, win] (id)}
+    {@const w = win as any}
+    <button onclick={() => windowApi.focusWindow(Number(id))}>
+      {w.title}
+    </button>
+  {/each}
+</div>
+
+<style>
+  #taskbar {
+    box-sizing: border-box;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    background: #c0c0c0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 8px;
+  }
+
+  #taskbar button {
+    color: white;
+    background-color: #c0c0c0;
+    border: none;
+    padding: 4px 8px;
+    cursor: pointer;
+  }
+
+  #taskbar button:hover {
+    background-color: #a0a0a0;
+  }
+</style>
