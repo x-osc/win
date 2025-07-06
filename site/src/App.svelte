@@ -25,38 +25,46 @@
   }
 
   function moveWindow(id: number, x: number, y: number) {
-    if (windows[id]) {
-      windows[id].x = x;
-      windows[id].y = y;
-    } else {
+    const win = windows[id];
+    if (!win) {
       console.warn(`Window with id ${id} does not exist.`);
+      return;
     }
+
+    win.x = x;
+    win.y = y;
   }
 
   function setWindowSize(id: number, width: number, height: number) {
-    if (windows[id]) {
-      windows[id].width = width;
-      windows[id].height = height;
-    } else {
+    const win = windows[id];
+    if (!win) {
       console.warn(`Window with id ${id} does not exist.`);
+      return;
     }
+
+    win.width = width;
+    win.height = height;
   }
 
   function focusWindow(id: number) {
-    if (windows[id]) {
-      windows[id].z = zIndex.value++;
-    } else {
+    const win = windows[id];
+    if (!win) {
       console.warn(`Window with id ${id} does not exist.`);
+      return;
     }
+
+    windows[id].z = zIndex.value++;
   }
 
   function closeWindow(id: number) {
-    if (windows[id]) {
-      taskbar = taskbar.filter((taskId) => taskId !== id);
-      delete windows[id];
-    } else {
+    const win = windows[id];
+    if (!win) {
       console.warn(`Window with id ${id} does not exist.`);
+      return;
     }
+
+    taskbar = taskbar.filter((taskId) => taskId !== id);
+    delete windows[id];
   }
 
   function getWindows() {
