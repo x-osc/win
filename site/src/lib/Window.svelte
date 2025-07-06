@@ -2,7 +2,7 @@
   import { on } from "svelte/events";
   import { ResizeDirection } from "./types";
 
-  let { id, title, x, y, width, height, z, windowApi } = $props();
+  let { id, title, x, y, width, height, z, focused, windowApi } = $props();
 
   function handleTitlebarDrag(event: MouseEvent) {
     event.stopPropagation();
@@ -98,7 +98,7 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-  class="window"
+  class="window {focused ? 'focused' : ''}"
   style="left: {x}px; top: {y}px; width: {width}px; height: {height}px; z-index: {z}"
 >
   <div class="titlebar" onmousedown={handleTitlebarDrag}>
@@ -156,11 +156,15 @@
     box-shadow: 4px 4px black;
   }
 
+  .window.focused .titlebar {
+    background: #000080;
+  }
+
   .titlebar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: navy;
+    background: #404080;
     color: white;
     height: 24px;
     line-height: 24px;

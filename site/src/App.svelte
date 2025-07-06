@@ -6,7 +6,9 @@
   // stores a mapping of id to window data
   let windows: any = $state({});
   // contains the order of taskbar buttons by window id
-  let taskbar: Array<number> = $state([]);
+  let taskbar: number[] = $state([]);
+  // history of all focused windows
+  let focusHistory: number[] = $state([]);
 
   function createWindow() {
     windowId.value++;
@@ -24,6 +26,8 @@
     windows[windowId.value] = newWindow;
 
     taskbar.push(windowId.value);
+    // dont focus to begin with
+    focusHistory.unshift(windowId.value);
   }
 
   function moveWindow(id: number, x: number, y: number) {
@@ -55,7 +59,9 @@
       return;
     }
 
-    windows[id].z = zIndex.value++;
+    win.z = zIndex.value++;
+    focusHistory = focusHistory.filter((winId) => winId !== id);
+    focusHistory.push(id);
   }
 
   function closeWindow(id: number) {
@@ -66,7 +72,13 @@
     }
 
     taskbar = taskbar.filter((taskId) => taskId !== id);
+    focusHistory = focusHistory.filter((winId) => winId !== id);
     delete windows[id];
+
+    let lastFocused = focusHistory[focusHistory.length - 1];
+    if (lastFocused) {
+      focusWindow(lastFocused);
+    }
   }
 
   function getWindows() {
@@ -95,6 +107,7 @@
         width={w.width}
         height={w.height}
         z={w.z}
+        focused={Number(id) === focusHistory[focusHistory.length - 1]}
         {windowApi}
       />
     {/each}
