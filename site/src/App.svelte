@@ -15,6 +15,8 @@
       title: `${windowId.value}`,
       x: 100,
       y: 100,
+      width: 300,
+      height: 200,
       z: 1,
     };
     windows[windowId.value] = newWindow;
@@ -26,6 +28,15 @@
     if (windows[id]) {
       windows[id].x = x;
       windows[id].y = y;
+    } else {
+      console.warn(`Window with id ${id} does not exist.`);
+    }
+  }
+
+  function resizeWindow(id: number, width: number, height: number) {
+    if (windows[id]) {
+      windows[id].width = width;
+      windows[id].height = height;
     } else {
       console.warn(`Window with id ${id} does not exist.`);
     }
@@ -46,6 +57,7 @@
   let windowApi = {
     createWindow,
     moveWindow,
+    resizeWindow,
     focusWindow,
     getWindows,
   };
@@ -55,7 +67,16 @@
   <div id="desktop">
     {#each Object.entries(windows) as [id, win] (id)}
       {@const w = win as any}
-      <Window {id} title={w.title} x={w.x} y={w.y} z={w.z} {windowApi} />
+      <Window
+        {id}
+        title={w.title}
+        x={w.x}
+        y={w.y}
+        width={w.width}
+        height={w.height}
+        z={w.z}
+        {windowApi}
+      />
     {/each}
 
     <button onclick={createWindow}>make window</button>
