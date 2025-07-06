@@ -4,27 +4,27 @@
 
   let { id, title, x, y, width, height, z, windowApi } = $props();
 
-  let isDragging = false;
-  let offsetX = 0;
-  let offsetY = 0;
-
   function onTitlebarDrag(event: MouseEvent) {
-    isDragging = true;
-    offsetX = event.clientX - x;
-    offsetY = event.clientY - y;
+    event.stopPropagation();
+    event.preventDefault();
     windowApi.focusWindow(id);
-  }
 
-  function handleMouseMove(event: MouseEvent) {
-    if (isDragging) {
+    let offsetX = event.clientX - x;
+    let offsetY = event.clientY - y;
+
+    function onMouseMove(event: MouseEvent) {
       let posX = event.clientX - offsetX;
       let poxY = event.clientY - offsetY;
       windowApi.moveWindow(id, posX, poxY);
     }
-  }
 
-  function handleMouseUp() {
-    isDragging = false;
+    function onMouseUp() {
+      removeMouseMove();
+      removeMouseUp();
+    }
+
+    let removeMouseMove = on(window, "mousemove", onMouseMove);
+    let removeMouseUp = on(window, "mouseup", onMouseUp);
   }
 
   function onResize(event: MouseEvent, direction: ResizeDirection) {
@@ -91,12 +91,6 @@
 
   windowApi.focusWindow(id);
 </script>
-
-<svelte:window
-  on:mousemove={handleMouseMove}
-  on:mouseup={handleMouseUp}
-  on:mouseleave={handleMouseUp}
-/>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
