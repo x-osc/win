@@ -65,15 +65,13 @@
 
 <style>
   #root {
-    display: flex;
-    flex-direction: column;
     height: 100vh;
   }
 
   #desktop {
-    flex: 1;
     position: relative;
     width: 100%;
+    height: 100%;
     background-color: teal;
     overflow: hidden;
   }

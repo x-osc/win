@@ -13,6 +13,7 @@
 
 <style>
   #taskbar {
+    position: absolute;
     box-sizing: border-box;
     bottom: 0;
     left: 0;
@@ -23,6 +24,8 @@
     align-items: center;
     gap: 4px;
     padding: 0 8px;
+    /* TODO: jank */
+    z-index: 1000000;
   }
 
   #taskbar button {
