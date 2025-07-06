@@ -89,6 +89,10 @@
     let removeMouseUp = on(window, "mouseup", onMouseUp);
   }
 
+  function handleClose() {
+    windowApi.closeWindow(id);
+  }
+
   windowApi.focusWindow(id);
 </script>
 
@@ -102,7 +106,7 @@
     <div class="window-controls">
       <button class="minimize-button">_</button>
       <button class="maximize-button">[]</button>
-      <button class="close-button">X</button>
+      <button class="close-button" onclick={handleClose}>X</button>
     </div>
   </div>
   <div class="content">asdjflks;bkfd;lgklfj</div>

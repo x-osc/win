@@ -6,7 +6,7 @@
   // stores a mapping of id to window data
   let windows: any = $state({});
   // contains the order of taskbar buttons by window id
-  let taskbar: any = $state([]);
+  let taskbar: Array<number> = $state([]);
 
   function createWindow() {
     windowId.value++;
@@ -50,6 +50,15 @@
     }
   }
 
+  function closeWindow(id: number) {
+    if (windows[id]) {
+      taskbar = taskbar.filter((taskId) => taskId !== id);
+      delete windows[id];
+    } else {
+      console.warn(`Window with id ${id} does not exist.`);
+    }
+  }
+
   function getWindows() {
     return windows;
   }
@@ -59,6 +68,7 @@
     moveWindow,
     resizeWindow,
     focusWindow,
+    closeWindow,
     getWindows,
   };
 </script>
@@ -68,7 +78,7 @@
     {#each Object.entries(windows) as [id, win] (id)}
       {@const w = win as any}
       <Window
-        {id}
+        id={Number(id)}
         title={w.title}
         x={w.x}
         y={w.y}
