@@ -4,7 +4,7 @@
 
   let { id, title, x, y, width, height, z, windowApi } = $props();
 
-  function onTitlebarDrag(event: MouseEvent) {
+  function handleTitlebarDrag(event: MouseEvent) {
     event.stopPropagation();
     event.preventDefault();
     windowApi.focusWindow(id);
@@ -27,7 +27,7 @@
     let removeMouseUp = on(window, "mouseup", onMouseUp);
   }
 
-  function onResize(event: MouseEvent, direction: ResizeDirection) {
+  function handleResize(event: MouseEvent, direction: ResizeDirection) {
     event.stopPropagation();
     event.preventDefault();
     windowApi.focusWindow(id);
@@ -76,7 +76,7 @@
         newX = startX + (moveEvent.clientX - startMouseX);
       }
 
-      windowApi.resizeWindow(id, newWidth, newHeight);
+      windowApi.setWindowSize(id, newWidth, newHeight);
       windowApi.moveWindow(id, newX, newY);
     }
 
@@ -101,7 +101,7 @@
   class="window"
   style="left: {x}px; top: {y}px; width: {width}px; height: {height}px; z-index: {z}"
 >
-  <div class="titlebar" onmousedown={onTitlebarDrag}>
+  <div class="titlebar" onmousedown={handleTitlebarDrag}>
     <span class="title">{title}</span>
     <div class="window-controls">
       <button class="minimize-button">_</button>
@@ -113,36 +113,36 @@
 
   <div
     class="resize-handle resize-n"
-    onmousedown={(e) => onResize(e, ResizeDirection.N)}
+    onmousedown={(e) => handleResize(e, ResizeDirection.N)}
   ></div>
   <div
     class="resize-handle resize-e"
-    onmousedown={(e) => onResize(e, ResizeDirection.E)}
+    onmousedown={(e) => handleResize(e, ResizeDirection.E)}
   ></div>
   <div
     class="resize-handle resize-s"
-    onmousedown={(e) => onResize(e, ResizeDirection.S)}
+    onmousedown={(e) => handleResize(e, ResizeDirection.S)}
   ></div>
   <div
     class="resize-handle resize-w"
-    onmousedown={(e) => onResize(e, ResizeDirection.W)}
+    onmousedown={(e) => handleResize(e, ResizeDirection.W)}
   ></div>
 
   <div
     class="resize-handle resize-nw"
-    onmousedown={(e) => onResize(e, ResizeDirection.NW)}
+    onmousedown={(e) => handleResize(e, ResizeDirection.NW)}
   ></div>
   <div
     class="resize-handle resize-ne"
-    onmousedown={(e) => onResize(e, ResizeDirection.NE)}
+    onmousedown={(e) => handleResize(e, ResizeDirection.NE)}
   ></div>
   <div
     class="resize-handle resize-se"
-    onmousedown={(e) => onResize(e, ResizeDirection.SE)}
+    onmousedown={(e) => handleResize(e, ResizeDirection.SE)}
   ></div>
   <div
     class="resize-handle resize-sw"
-    onmousedown={(e) => onResize(e, ResizeDirection.SW)}
+    onmousedown={(e) => handleResize(e, ResizeDirection.SW)}
   ></div>
 </div>
 

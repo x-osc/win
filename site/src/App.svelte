@@ -33,7 +33,7 @@
     }
   }
 
-  function resizeWindow(id: number, width: number, height: number) {
+  function setWindowSize(id: number, width: number, height: number) {
     if (windows[id]) {
       windows[id].width = width;
       windows[id].height = height;
@@ -66,7 +66,7 @@
   let windowApi = {
     createWindow,
     moveWindow,
-    resizeWindow,
+    setWindowSize,
     focusWindow,
     closeWindow,
     getWindows,
