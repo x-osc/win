@@ -18,6 +18,8 @@
       width: 300,
       height: 200,
       z: 1,
+      min_height: 50,
+      min_width: 120,
     };
     windows[windowId.value] = newWindow;
 
@@ -42,8 +44,8 @@
       return;
     }
 
-    win.width = width;
-    win.height = height;
+    win.width = Math.max(width, win.min_width);
+    win.height = Math.max(height, win.min_height);
   }
 
   function focusWindow(id: number) {
