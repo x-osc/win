@@ -1,6 +1,7 @@
 <script lang="ts">
   import { on } from "svelte/events";
   import { ResizeDirection } from "./types";
+  import "./win.css";
 
   let {
     id,
@@ -128,9 +129,9 @@
   <div class="titlebar" onmousedown={handleTitlebarDrag}>
     <span class="title">{title}</span>
     <div class="window-controls">
-      <button class="minimize-button">_</button>
-      <button class="maximize-button">[]</button>
-      <button class="close-button" onclick={handleClose}>X</button>
+      <button class="minimize-button win-button">_</button>
+      <button class="maximize-button win-button">[]</button>
+      <button class="close-button win-button" onclick={handleClose}>X</button>
     </div>
   </div>
   <div class="content">asdjflks;bkfd;lgklfj</div>
@@ -193,6 +194,7 @@
     height: 24px;
     line-height: 24px;
     padding-left: 4px;
+    padding-right: 4px;
     cursor: move;
     flex-shrink: 0;
   }
