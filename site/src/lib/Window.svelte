@@ -2,7 +2,19 @@
   import { on } from "svelte/events";
   import { ResizeDirection } from "./types";
 
-  let { id, title, x, y, width, height, z, focused, windowApi } = $props();
+  let {
+    id,
+    title,
+    x,
+    y,
+    width,
+    height,
+    z,
+    minWidth,
+    minHeight,
+    focused,
+    windowApi,
+  } = $props();
 
   function handleTitlebarDrag(event: MouseEvent) {
     event.stopPropagation();
@@ -50,30 +62,42 @@
         direction === ResizeDirection.SE ||
         direction === ResizeDirection.SW
       ) {
-        newHeight = startHeight + (moveEvent.clientY - startMouseY);
+        newHeight = Math.max(
+          startHeight + (moveEvent.clientY - startMouseY),
+          minHeight
+        );
       }
       if (
         direction === ResizeDirection.E ||
         direction === ResizeDirection.SE ||
         direction === ResizeDirection.NE
       ) {
-        newWidth = startWidth + (moveEvent.clientX - startMouseX);
+        newWidth = Math.max(
+          startWidth + (moveEvent.clientX - startMouseX),
+          minWidth
+        );
       }
       if (
         direction === ResizeDirection.N ||
         direction === ResizeDirection.NE ||
         direction === ResizeDirection.NW
       ) {
-        newHeight = startHeight - (moveEvent.clientY - startMouseY);
-        newY = startY + (moveEvent.clientY - startMouseY);
+        newHeight = Math.max(
+          startHeight - (moveEvent.clientY - startMouseY),
+          minHeight
+        );
+        newY = startY + (startHeight - newHeight);
       }
       if (
         direction === ResizeDirection.W ||
         direction === ResizeDirection.NW ||
         direction === ResizeDirection.SW
       ) {
-        newWidth = startWidth - (moveEvent.clientX - startMouseX);
-        newX = startX + (moveEvent.clientX - startMouseX);
+        newWidth = Math.max(
+          startWidth - (moveEvent.clientX - startMouseX),
+          minWidth
+        );
+        newX = startX + (startWidth - newWidth);
       }
 
       windowApi.setWindowSize(id, newWidth, newHeight);

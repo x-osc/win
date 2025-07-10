@@ -41,6 +41,7 @@
     win.y = y;
   }
 
+  // window's responsibility to ensure minwidth and minheight
   function setWindowSize(id: number, width: number, height: number) {
     const win = windows[id];
     if (!win) {
@@ -48,8 +49,8 @@
       return;
     }
 
-    win.width = Math.max(width, win.min_width);
-    win.height = Math.max(height, win.min_height);
+    win.width = Math.max(width, 0);
+    win.height = Math.max(height, 0);
   }
 
   function focusWindow(id: number) {
@@ -107,6 +108,8 @@
         width={w.width}
         height={w.height}
         z={w.z}
+        minWidth={w.min_width}
+        minHeight={w.min_height}
         focused={Number(id) === focusHistory[focusHistory.length - 1]}
         {windowApi}
       />
