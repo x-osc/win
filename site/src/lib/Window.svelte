@@ -18,6 +18,10 @@
   } = $props();
 
   function handleTitlebarDrag(event: MouseEvent) {
+    if ((event.target as HTMLElement).closest(".nodrag")) {
+      return;
+    }
+
     event.stopPropagation();
     event.preventDefault();
     windowApi.focusWindow(id);
@@ -114,7 +118,11 @@
     let removeMouseUp = on(window, "mouseup", onMouseUp);
   }
 
-  function handleClose() {
+  function handleMinimize(e: MouseEvent) {}
+
+  function handleMaximize(e: MouseEvent) {}
+
+  function handleClose(e: MouseEvent) {
     windowApi.closeWindow(id);
   }
 
@@ -129,9 +137,15 @@
   <div class="titlebar" onmousedown={handleTitlebarDrag}>
     <span class="title">{title}</span>
     <div class="window-controls">
-      <button class="minimize-button win-button">_</button>
-      <button class="maximize-button win-button">[]</button>
-      <button class="close-button win-button" onclick={handleClose}>X</button>
+      <button class="minimize-button win-button nodrag" onclick={handleMinimize}
+        >_</button
+      >
+      <button class="maximize-button win-button nodrag" onclick={handleMaximize}
+        >[]</button
+      >
+      <button class="close-button win-button nodrag" onclick={handleClose}
+        >X</button
+      >
     </div>
   </div>
   <div class="content">asdjflks;bkfd;lgklfj</div>
