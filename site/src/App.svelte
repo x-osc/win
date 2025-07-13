@@ -3,8 +3,19 @@
   import Taskbar from "./lib/Taskbar.svelte";
   import Window from "./lib/Window.svelte";
 
+  type Win = {
+    title: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    z: number;
+    minWidth: number;
+    minHeight: number;
+  };
+
   // stores a mapping of id to window data
-  let windows: any = $state({});
+  let windows: Record<number, Win> = $state({});
   // contains the order of taskbar buttons by window id
   let taskbar: number[] = $state([]);
   // history of all focused windows
@@ -13,15 +24,15 @@
   function createWindow() {
     windowId.value++;
 
-    const newWindow = {
+    const newWindow: Win = {
       title: `${windowId.value}`,
       x: 100,
       y: 100,
       width: 300,
       height: 200,
       z: 1,
-      min_height: 50,
-      min_width: 120,
+      minHeight: 50,
+      minWidth: 120,
     };
     windows[windowId.value] = newWindow;
 
@@ -99,17 +110,9 @@
 <div id="root">
   <div id="desktop">
     {#each Object.entries(windows) as [id, win] (id)}
-      {@const w = win as any}
       <Window
         id={Number(id)}
-        title={w.title}
-        x={w.x}
-        y={w.y}
-        width={w.width}
-        height={w.height}
-        z={w.z}
-        minWidth={w.min_width}
-        minHeight={w.min_height}
+        windowData={win}
         focused={Number(id) === focusHistory[focusHistory.length - 1]}
         {windowApi}
       />

@@ -3,19 +3,7 @@
   import { ResizeDirection } from "./types";
   import "./win.css";
 
-  let {
-    id,
-    title,
-    x,
-    y,
-    width,
-    height,
-    z,
-    minWidth,
-    minHeight,
-    focused,
-    windowApi,
-  } = $props();
+  let { id, windowData, focused, windowApi } = $props();
 
   function handleTitlebarDrag(event: MouseEvent) {
     if ((event.target as HTMLElement).closest(".nodrag")) {
@@ -26,8 +14,8 @@
     event.preventDefault();
     windowApi.focusWindow(id);
 
-    let offsetX = event.clientX - x;
-    let offsetY = event.clientY - y;
+    let offsetX = event.clientX - windowData.x;
+    let offsetY = event.clientY - windowData.y;
 
     function onMouseMove(event: MouseEvent) {
       let posX = event.clientX - offsetX;
@@ -51,10 +39,10 @@
 
     const startMouseX = event.clientX;
     const startMouseY = event.clientY;
-    const startX = x;
-    const startY = y;
-    const startWidth = width;
-    const startHeight = height;
+    const startX = windowData.x;
+    const startY = windowData.y;
+    const startWidth = windowData.width;
+    const startHeight = windowData.height;
 
     function onMouseMove(moveEvent: MouseEvent) {
       let newWidth = startWidth;
@@ -69,7 +57,7 @@
       ) {
         newHeight = Math.max(
           startHeight + (moveEvent.clientY - startMouseY),
-          minHeight
+          windowData.minHeight
         );
       }
       if (
@@ -79,7 +67,7 @@
       ) {
         newWidth = Math.max(
           startWidth + (moveEvent.clientX - startMouseX),
-          minWidth
+          windowData.minWidth
         );
       }
       if (
@@ -89,7 +77,7 @@
       ) {
         newHeight = Math.max(
           startHeight - (moveEvent.clientY - startMouseY),
-          minHeight
+          windowData.minHeight
         );
         newY = startY + (startHeight - newHeight);
       }
@@ -100,7 +88,7 @@
       ) {
         newWidth = Math.max(
           startWidth - (moveEvent.clientX - startMouseX),
-          minWidth
+          windowData.minWidth
         );
         newX = startX + (startWidth - newWidth);
       }
@@ -132,10 +120,10 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   class="window {focused ? 'focused' : ''}"
-  style="left: {x}px; top: {y}px; width: {width}px; height: {height}px; z-index: {z}"
+  style="left: {windowData.x}px; top: {windowData.y}px; width: {windowData.width}px; height: {windowData.height}px; z-index: {windowData.z}"
 >
   <div class="titlebar" onmousedown={handleTitlebarDrag}>
-    <span class="title">{title}</span>
+    <span class="title">{windowData.title}</span>
     <div class="window-controls">
       <button class="minimize-button win-button nodrag" onclick={handleMinimize}
         >_</button
