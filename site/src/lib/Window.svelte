@@ -57,7 +57,7 @@
       ) {
         newHeight = Math.max(
           startHeight + (moveEvent.clientY - startMouseY),
-          windowData.minHeight
+          windowData.minHeight,
         );
       }
       if (
@@ -67,7 +67,7 @@
       ) {
         newWidth = Math.max(
           startWidth + (moveEvent.clientX - startMouseX),
-          windowData.minWidth
+          windowData.minWidth,
         );
       }
       if (
@@ -77,7 +77,7 @@
       ) {
         newHeight = Math.max(
           startHeight - (moveEvent.clientY - startMouseY),
-          windowData.minHeight
+          windowData.minHeight,
         );
         newY = startY + (startHeight - newHeight);
       }
@@ -88,7 +88,7 @@
       ) {
         newWidth = Math.max(
           startWidth - (moveEvent.clientX - startMouseX),
-          windowData.minWidth
+          windowData.minWidth,
         );
         newX = startX + (startWidth - newWidth);
       }

@@ -10,5 +10,4 @@ class TestApp implements App {
 export let testAppManifest: AppManifest = {
   appId: "test_app",
   app: TestApp,
-}
-
+};
