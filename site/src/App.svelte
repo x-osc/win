@@ -1,7 +1,11 @@
 <script lang="ts">
+  import { launchApp, registerApp } from "./lib/apps.svelte";
   import { windowId, zIndex } from "./lib/state.svelte";
   import Taskbar from "./lib/Taskbar.svelte";
+  import { testAppManifest } from "./lib/testApp";
   import Window from "./lib/Window.svelte";
+
+  registerApp(testAppManifest);
 
   type Win = {
     title: string;
@@ -119,6 +123,7 @@
     {/each}
 
     <button onclick={createWindow}>make window</button>
+    <button onclick={(_) => launchApp("test_app")}>make app</button>
   </div>
   <Taskbar {taskbar} {windowApi} />
 </div>

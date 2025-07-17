@@ -5,3 +5,7 @@ export const windowId = $state({
 export const zIndex = $state({
   value: 1,
 });
+
+export const instanceId = $state({
+  value: 1,
+})
