@@ -15,7 +15,7 @@ export function launchApp(id: string): number | null {
 }
 
 function launchAppFromManifest(manifest: AppManifest): number {
-  let appInstance = new manifest.app(appApi);
+  let appInstance = manifest.createApp(appApi);
   appInstance.launch();
 
   const instId = instanceId.value++;
