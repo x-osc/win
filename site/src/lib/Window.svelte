@@ -3,7 +3,7 @@
   import { ResizeDirection } from "./types";
   import "./win.css";
 
-  let { id, windowData, focused, windowApi } = $props();
+  let { id, windowData, focused, wmApi } = $props();
 
   function handleTitlebarDrag(event: MouseEvent) {
     if ((event.target as HTMLElement).closest(".nodrag")) {
@@ -12,7 +12,7 @@
 
     event.stopPropagation();
     event.preventDefault();
-    windowApi.focusWindow(id);
+    wmApi.focusWindow(id);
 
     let offsetX = event.clientX - windowData.x;
     let offsetY = event.clientY - windowData.y;
@@ -20,7 +20,7 @@
     function onMouseMove(event: MouseEvent) {
       let posX = event.clientX - offsetX;
       let poxY = event.clientY - offsetY;
-      windowApi.moveWindow(id, posX, poxY);
+      wmApi.moveWindow(id, posX, poxY);
     }
 
     function onMouseUp() {
@@ -35,7 +35,7 @@
   function handleResize(event: MouseEvent, direction: ResizeDirection) {
     event.stopPropagation();
     event.preventDefault();
-    windowApi.focusWindow(id);
+    wmApi.focusWindow(id);
 
     const startMouseX = event.clientX;
     const startMouseY = event.clientY;
@@ -57,7 +57,7 @@
       ) {
         newHeight = Math.max(
           startHeight + (moveEvent.clientY - startMouseY),
-          windowData.minHeight,
+          windowData.minHeight
         );
       }
       if (
@@ -67,7 +67,7 @@
       ) {
         newWidth = Math.max(
           startWidth + (moveEvent.clientX - startMouseX),
-          windowData.minWidth,
+          windowData.minWidth
         );
       }
       if (
@@ -77,7 +77,7 @@
       ) {
         newHeight = Math.max(
           startHeight - (moveEvent.clientY - startMouseY),
-          windowData.minHeight,
+          windowData.minHeight
         );
         newY = startY + (startHeight - newHeight);
       }
@@ -88,13 +88,13 @@
       ) {
         newWidth = Math.max(
           startWidth - (moveEvent.clientX - startMouseX),
-          windowData.minWidth,
+          windowData.minWidth
         );
         newX = startX + (startWidth - newWidth);
       }
 
-      windowApi.setWindowSize(id, newWidth, newHeight);
-      windowApi.moveWindow(id, newX, newY);
+      wmApi.setWindowSize(id, newWidth, newHeight);
+      wmApi.moveWindow(id, newX, newY);
     }
 
     function onMouseUp() {
@@ -111,10 +111,10 @@
   function handleMaximize(e: MouseEvent) {}
 
   function handleClose(e: MouseEvent) {
-    windowApi.closeWindow(id);
+    wmApi.closeWindow(id);
   }
 
-  windowApi.focusWindow(id);
+  wmApi.focusWindow(id);
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
