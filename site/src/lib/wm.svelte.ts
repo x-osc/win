@@ -1,6 +1,11 @@
 import { windowId, zIndex } from "./state.svelte";
 
 export type Win = {
+  data: WinData;
+  api: WindowApi | null;
+};
+
+export type WinData = {
   title: string;
   x: number;
   y: number;
@@ -11,6 +16,18 @@ export type Win = {
   minHeight: number;
 };
 
+export interface WindowApi {
+  getId(): number;
+  getData(): WinData;
+  move(x: number, y: number): void;
+  resize(width: number, height: number): void;
+  focus(): void;
+  close(): void;
+  getElement(): HTMLElement | null;
+  isOpen(): boolean;
+}
+
+let windowApiResolvers: Record<number, (api: WindowApi) => void> = {};
 // stores a mapping of id to window data
 let windows: Record<number, Win> = $state({});
 // contains the order of taskbar buttons by window id
@@ -20,17 +37,28 @@ let focusHistory: number[] = $state([]);
 
 export let wmApi = {
   createWindow,
+  createWindowAsync,
   moveWindow,
   setWindowSize,
   focusWindow,
   closeWindow,
   getWindows,
+  registerWindowApi,
+  getWindowApi,
 };
 
-function createWindow() {
+async function createWindowAsync(): Promise<WindowApi> {
+  let id = createWindow();
+
+  return new Promise((resolve) => {
+    windowApiResolvers[id] = resolve;
+  });
+}
+
+function createWindow(): number {
   let id = windowId.value++;
 
-  const newWindow: Win = {
+  const data: WinData = {
     title: `${id}`,
     x: 100,
     y: 100,
@@ -40,15 +68,21 @@ function createWindow() {
     minHeight: 50,
     minWidth: 120,
   };
+  const newWindow: Win = {
+    data,
+    api: null,
+  };
   windows[id] = newWindow;
 
   taskbar.push(id);
   // dont focus to begin with
   focusHistory.unshift(id);
+
+  return id;
 }
 
 function moveWindow(id: number, x: number, y: number) {
-  const win = windows[id];
+  const win = windows[id].data;
   if (!win) {
     console.warn(`Window with id ${id} does not exist.`);
     return;
@@ -60,7 +94,7 @@ function moveWindow(id: number, x: number, y: number) {
 
 // window's responsibility to ensure minwidth and minheight
 function setWindowSize(id: number, width: number, height: number) {
-  const win = windows[id];
+  const win = windows[id].data;
   if (!win) {
     console.warn(`Window with id ${id} does not exist.`);
     return;
@@ -71,7 +105,7 @@ function setWindowSize(id: number, width: number, height: number) {
 }
 
 function focusWindow(id: number) {
-  const win = windows[id];
+  const win = windows[id].data;
   if (!win) {
     console.warn(`Window with id ${id} does not exist.`);
     return;
@@ -99,14 +133,44 @@ function closeWindow(id: number) {
   }
 }
 
-function getWindows() {
+function registerWindowApi(id: number, api: WindowApi) {
+  const win = windows[id];
+  if (!win) {
+    console.warn(`Window with id ${id} does not exist.`);
+    return;
+  }
+
+  win.api = api;
+
+  if (windowApiResolvers[id]) {
+    windowApiResolvers[id](api);
+    delete windowApiResolvers[id];
+  }
+}
+
+function getWindowApi(id: number): WindowApi | null {
+  const win = windows[id];
+  if (!win) {
+    console.warn(`Window with id ${id} does not exist.`);
+    return null;
+  }
+
+  if (!win.api) {
+    console.warn(`Window API for id ${id} is not registered.`);
+    return null;
+  }
+
+  return win.api;
+}
+
+function getWindows(): Record<number, Win> {
   return windows;
 }
 
-export function getTaskbar() {
+export function getTaskbar(): number[] {
   return taskbar;
 }
 
-export function getFocusHistory() {
+export function getFocusHistory(): number[] {
   return focusHistory;
 }

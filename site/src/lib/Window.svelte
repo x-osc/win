@@ -1,9 +1,36 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { on } from "svelte/events";
   import { ResizeDirection } from "./types";
   import "./win.css";
+  import type { WinData, WindowApi } from "./wm.svelte";
 
-  let { id, windowData, focused, wmApi } = $props();
+  let {
+    id,
+    windowData,
+    focused,
+    wmApi,
+  }: { id: number; windowData: WinData; focused: boolean; wmApi: any } =
+    $props();
+
+  let windowElement: HTMLElement | null = null;
+
+  const windowApi: WindowApi = {
+    getId: () => id,
+    getData: () => windowData,
+    focus: () => wmApi.focusWindow(id),
+    move: (x: number, y: number) => wmApi.moveWindow(id, x, y),
+    resize: (width: number, height: number) =>
+      wmApi.setWindowSize(id, width, height),
+    close: () => wmApi.closeWindow(id),
+    getElement: () => windowElement,
+    isOpen: () => id in wmApi.getWindows(),
+  };
+
+  onMount(() => {
+    wmApi.registerWindowApi(id, windowApi);
+    wmApi.focusWindow(id);
+  });
 
   function handleTitlebarDrag(event: MouseEvent) {
     if ((event.target as HTMLElement).closest(".nodrag")) {
@@ -113,14 +140,13 @@
   function handleClose(e: MouseEvent) {
     wmApi.closeWindow(id);
   }
-
-  wmApi.focusWindow(id);
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   class="window {focused ? 'focused' : ''}"
   style="left: {windowData.x}px; top: {windowData.y}px; width: {windowData.width}px; height: {windowData.height}px; z-index: {windowData.z}"
+  bind:this={windowElement}
 >
   <div class="titlebar" onmousedown={handleTitlebarDrag}>
     <span class="title">{windowData.title}</span>

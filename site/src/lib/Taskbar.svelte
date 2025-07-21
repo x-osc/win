@@ -1,10 +1,10 @@
 <script lang="ts">
-  let { taskbar, wmApi } = $props();
+  let { taskbar, wmApi }: { taskbar: number[]; wmApi: any } = $props();
 </script>
 
 <div id="taskbar">
   {#each taskbar as id (id)}
-    {@const w = wmApi.getWindows()[id]}
+    {@const w = wmApi.getWindows()[id].data}
     <button onclick={() => wmApi.focusWindow(Number(id))}>
       {w.title}
     </button>

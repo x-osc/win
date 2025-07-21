@@ -13,7 +13,7 @@
     {#each Object.entries(wmApi.getWindows()) as [id, win] (id)}
       <Window
         id={Number(id)}
-        windowData={win}
+        windowData={win.data}
         focused={Number(id) === getFocusHistory()[getFocusHistory().length - 1]}
         {wmApi}
       />
