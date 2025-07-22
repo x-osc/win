@@ -1,7 +1,9 @@
+import type { AppApi } from "./api";
+
 export type AppManifest = {
   appId: string;
 
-  createApp: (appApi: any) => App;
+  createApp: (api: AppApi) => App;
 };
 
 export interface App {

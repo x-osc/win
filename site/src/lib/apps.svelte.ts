@@ -1,7 +1,6 @@
+import { getAppApi, type AppApi } from "./api";
 import type { App, AppManifest } from "./app";
 import { instanceId } from "./state.svelte";
-
-let appApi: any;
 
 let apps: Record<number, App> = $state({});
 
@@ -15,10 +14,12 @@ export function launchApp(id: string): number | null {
 }
 
 function launchAppFromManifest(manifest: AppManifest): number {
-  let appInstance = manifest.createApp(appApi);
-  appInstance.launch();
-
   const instId = instanceId.value++;
+
+  let appApi = getAppApi(instId);
+  let appInstance = manifest.createApp(appApi);
+
+  appInstance.launch();
   apps[instId] = appInstance;
 
   return instId;
