@@ -13,6 +13,7 @@
   }: { id: number; windowData: WinData; focused: boolean; wmApi: any } =
     $props();
 
+  let bodyElement: HTMLElement | null = null;
   let windowElement: HTMLElement | null = null;
 
   const windowApi: WindowApi = {
@@ -23,7 +24,8 @@
     resize: (width: number, height: number) =>
       wmApi.setWindowSize(id, width, height),
     close: () => wmApi.closeWindow(id),
-    getElement: () => windowElement,
+    getWindowElement: () => windowElement,
+    getBody: () => bodyElement,
     isOpen: () => id in wmApi.getWindows(),
   };
 
@@ -84,7 +86,7 @@
       ) {
         newHeight = Math.max(
           startHeight + (moveEvent.clientY - startMouseY),
-          windowData.minHeight
+          windowData.minHeight,
         );
       }
       if (
@@ -94,7 +96,7 @@
       ) {
         newWidth = Math.max(
           startWidth + (moveEvent.clientX - startMouseX),
-          windowData.minWidth
+          windowData.minWidth,
         );
       }
       if (
@@ -104,7 +106,7 @@
       ) {
         newHeight = Math.max(
           startHeight - (moveEvent.clientY - startMouseY),
-          windowData.minHeight
+          windowData.minHeight,
         );
         newY = startY + (startHeight - newHeight);
       }
@@ -115,7 +117,7 @@
       ) {
         newWidth = Math.max(
           startWidth - (moveEvent.clientX - startMouseX),
-          windowData.minWidth
+          windowData.minWidth,
         );
         newX = startX + (startWidth - newWidth);
       }
@@ -162,7 +164,7 @@
       >
     </div>
   </div>
-  <div class="content">asdjflks;bkfd;lgklfj</div>
+  <div class="content" bind:this={bodyElement}></div>
 
   <div
     class="resize-handle resize-n"

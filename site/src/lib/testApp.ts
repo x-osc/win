@@ -15,12 +15,24 @@ class TestApp implements App {
     this.api.window
       .createWindowAsync(winDataBuilder().withTitle("test_app").build())
       .then((winApi) => {
-        console.log("asdjfkdj");
-        setTimeout(() => winApi.move(100, 100), 0);
-        setTimeout(() => winApi.move(200, 100), 1000);
-        setTimeout(() => winApi.move(200, 200), 2000);
-        setTimeout(() => winApi.move(100, 200), 3000);
-        setTimeout(() => winApi.move(100, 100), 4000);
+        let body = winApi.getBody();
+        console.log(body);
+        if (body !== null) {
+          body.innerHTML = `
+            <h1>welcom to my ebic app</h1>
+            <p>its got woords</p>
+            <p>so amaizing ama i rite gang</p>
+            <p>
+            askdjfkgljakdjdfsjflksdfmklsdnalvkjsdlfj
+            asdkjklsdmclvkmsdklfj
+            asdlkmclkamsdlkfjselfkml;kf;ldjflskadmf
+            jlksfjlisejrelsfjlsekmfldsfms;dfskd;jflkds
+            asjlkdfjvkladsfjtepotigpodjfklsjd
+            jskldfjsdlmfsd;fjoejfolsemklafjsldkjflkasdmnf
+            ashgsdkjelwfojeslfilsefjadlksfj;sdkfsaklfjdf
+            </p>
+          `;
+        }
       });
   }
 }
