@@ -1,6 +1,7 @@
 import type { AppApi } from "./api";
 import type { App, AppManifest } from "./app";
 import { registerApp } from "./apps.svelte";
+import { winDataBuilder } from "./wm.svelte";
 
 class TestApp implements App {
   api: AppApi;
@@ -11,14 +12,16 @@ class TestApp implements App {
 
   launch(): void {
     console.log("yipe it worke");
-    this.api.window.createWindowAsync().then((winApi) => {
-      console.log("asdjfkdj");
-      setTimeout(() => winApi.move(100, 100), 0);
-      setTimeout(() => winApi.move(200, 100), 1000);
-      setTimeout(() => winApi.move(200, 200), 2000);
-      setTimeout(() => winApi.move(100, 200), 3000);
-      setTimeout(() => winApi.move(100, 100), 4000);
-    });
+    this.api.window
+      .createWindowAsync(winDataBuilder().withTitle("test_app").build())
+      .then((winApi) => {
+        console.log("asdjfkdj");
+        setTimeout(() => winApi.move(100, 100), 0);
+        setTimeout(() => winApi.move(200, 100), 1000);
+        setTimeout(() => winApi.move(200, 200), 2000);
+        setTimeout(() => winApi.move(100, 200), 3000);
+        setTimeout(() => winApi.move(100, 100), 4000);
+      });
   }
 }
 

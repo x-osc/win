@@ -3,7 +3,12 @@
   import Taskbar from "./lib/Taskbar.svelte";
   import { testAppManifest } from "./lib/testApp";
   import Window from "./lib/Window.svelte";
-  import { getFocusHistory, getTaskbar, wmApi } from "./lib/wm.svelte";
+  import {
+    getFocusHistory,
+    getTaskbar,
+    winDataBuilder,
+    wmApi,
+  } from "./lib/wm.svelte";
 
   registerApp(testAppManifest);
 </script>
@@ -19,7 +24,11 @@
       />
     {/each}
 
-    <button onclick={(_) => wmApi.createWindow()}>make window</button>
+    <button
+      onclick={(_) =>
+        wmApi.createWindow(winDataBuilder().withTitle("test_win").build())}
+      >make window</button
+    >
     <button onclick={(_) => launchApp("test_app")}>make app</button>
   </div>
   <Taskbar taskbar={getTaskbar()} {wmApi} />

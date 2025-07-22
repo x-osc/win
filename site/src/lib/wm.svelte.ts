@@ -27,6 +27,44 @@ export interface WindowApi {
   isOpen(): boolean;
 }
 
+export function winDataBuilder() {
+  const data: WinData = {
+    title: "",
+    x: 100,
+    y: 100,
+    width: 300,
+    height: 200,
+    z: 1,
+    minHeight: 50,
+    minWidth: 120,
+  };
+
+  return {
+    withTitle(title: string) {
+      data.title = title;
+      return this;
+    },
+    withPosition(x: number, y: number) {
+      data.x = x;
+      data.y = y;
+      return this;
+    },
+    withSize(width: number, height: number) {
+      data.width = width;
+      data.height = height;
+      return this;
+    },
+    withMinSize(width: number, height: number) {
+      data.minWidth = width;
+      data.minHeight = height;
+      return this;
+    },
+    build(): WinData {
+      return data;
+    },
+  };
+}
+
 let windowApiResolvers: Record<number, (api: WindowApi) => void> = {};
 // stores a mapping of id to window data
 let windows: Record<number, Win> = $state({});
@@ -47,27 +85,17 @@ export let wmApi = {
   getWindowApi,
 };
 
-async function createWindowAsync(): Promise<WindowApi> {
-  let id = createWindow();
+async function createWindowAsync(data: WinData): Promise<WindowApi> {
+  let id = createWindow(data);
 
   return new Promise((resolve) => {
     windowApiResolvers[id] = resolve;
   });
 }
 
-function createWindow(): number {
+function createWindow(data: WinData): number {
   let id = windowId.value++;
 
-  const data: WinData = {
-    title: `${id}`,
-    x: 100,
-    y: 100,
-    width: 300,
-    height: 200,
-    z: 1,
-    minHeight: 50,
-    minWidth: 120,
-  };
   const newWindow: Win = {
     data,
     api: null,

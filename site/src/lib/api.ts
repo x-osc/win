@@ -1,11 +1,11 @@
-import { wmApi, type WindowApi } from "./wm.svelte";
+import { wmApi, type WinData, type WindowApi } from "./wm.svelte";
 
 export interface AppApi {
   getId(): number;
 
   window: {
-    createWindow(): number;
-    createWindowAsync(): Promise<WindowApi>;
+    createWindow(data: WinData): number;
+    createWindowAsync(data: WinData): Promise<WindowApi>;
   };
 }
 
@@ -14,8 +14,8 @@ export function getAppApi(instId: number): AppApi {
     getId: () => instId,
 
     window: {
-      createWindow: () => wmApi.createWindow(),
-      createWindowAsync: () => wmApi.createWindowAsync(),
+      createWindow: (data: WinData) => wmApi.createWindow(data),
+      createWindowAsync: (data: WinData) => wmApi.createWindowAsync(data),
     },
   };
 
