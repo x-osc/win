@@ -1,4 +1,4 @@
-import { windowId, zIndex } from "./state.svelte";
+import { windowId, zIndex } from "../state.svelte";
 
 export type Win = {
   data: WinData;

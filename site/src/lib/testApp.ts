@@ -1,7 +1,7 @@
-import type { AppApi } from "./api";
-import type { App, AppManifest } from "./app";
-import { registerApp } from "./apps.svelte";
-import { winDataBuilder } from "./wm.svelte";
+import type { AppApi } from "./app/api";
+import type { App, AppManifest } from "./app/app";
+import { registerApp } from "./app/apps.svelte";
+import { winDataBuilder } from "./wm/wm.svelte";
 
 class TestApp implements App {
   api: AppApi;

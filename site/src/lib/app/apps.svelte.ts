@@ -1,6 +1,6 @@
 import { getAppApi, type AppApi } from "./api";
 import type { App, AppManifest } from "./app";
-import { instanceId } from "./state.svelte";
+import { instanceId } from "../state.svelte";
 
 let apps: Record<number, App> = $state({});
 

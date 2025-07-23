@@ -1,4 +1,4 @@
-import { wmApi, type WinData, type WindowApi } from "./wm.svelte";
+import { wmApi, type WinData, type WindowApi } from "../wm/wm.svelte";
 
 export interface AppApi {
   getId(): number;

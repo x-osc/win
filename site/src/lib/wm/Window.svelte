@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { on } from "svelte/events";
   import { ResizeDirection } from "./types";
-  import "./win.css";
+  import "../win.css";
   import type { WinData, WindowApi } from "./wm.svelte";
 
   let {
