@@ -14,6 +14,8 @@ export type WinData = {
   z: number;
   minWidth: number;
   minHeight: number;
+  // TODO: make non-data (runtime only) stuff part of a different type
+  owner: number | null;
 };
 
 export interface WindowApi {
@@ -38,6 +40,7 @@ export function winDataBuilder() {
     z: 1,
     minHeight: 50,
     minWidth: 120,
+    owner: null,
   };
 
   return {

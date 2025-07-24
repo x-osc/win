@@ -14,8 +14,14 @@ export function getAppApi(instId: number): AppApi {
     getId: () => instId,
 
     window: {
-      createWindow: (data: WinData) => wmApi.createWindow(data),
-      createWindowAsync: (data: WinData) => wmApi.createWindowAsync(data),
+      createWindow: (data: WinData) => {
+        data.owner = instId;
+        return wmApi.createWindow(data);
+      },
+      createWindowAsync: (data: WinData) => {
+        data.owner = instId;
+        return wmApi.createWindowAsync(data);
+      },
     },
   };
 

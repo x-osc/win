@@ -15,6 +15,7 @@ class TestApp implements App {
     this.api.window
       .createWindowAsync(winDataBuilder().withTitle("test_app").build())
       .then((winApi) => {
+        console.log(winApi.getData().owner);
         let body = winApi.getBody();
         console.log(body);
         if (body !== null) {
