@@ -1,7 +1,9 @@
 import { wmApi, type WinData, type WindowApi } from "../wm/wm.svelte";
+import { closeApp } from "./apps.svelte";
 
 export interface AppApi {
   getId(): number;
+  quit(): void;
 
   window: {
     createWindow(data: WinData): number;
@@ -12,6 +14,7 @@ export interface AppApi {
 export function getAppApi(instId: number): AppApi {
   const api: AppApi = {
     getId: () => instId,
+    quit: () => closeApp(instId),
 
     window: {
       createWindow: (data: WinData) => {

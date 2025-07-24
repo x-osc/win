@@ -1,6 +1,7 @@
 import { getAppApi, type AppApi } from "./api";
 import type { App, AppManifest } from "./app";
 import { instanceId } from "../state.svelte";
+import { wmApi } from "../wm/wm.svelte";
 
 let apps: Record<number, App> = $state({});
 
@@ -23,6 +24,16 @@ function launchAppFromManifest(manifest: AppManifest): number {
   apps[instId] = appInstance;
 
   return instId;
+}
+
+export function closeApp(instId: number) {
+  for (const [id, win] of Object.entries(wmApi.getWindows())) {
+    if (win.data.owner === instId) {
+      wmApi.closeWindow(Number(id));
+    }
+  }
+
+  delete apps[instId];
 }
 
 let appRegistry: Record<string, AppManifest> = {};

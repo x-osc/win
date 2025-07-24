@@ -34,6 +34,7 @@ class TestApp implements App {
             </p>
           `;
         }
+        setTimeout(() => this.api.quit(), 5000);
       });
   }
 }
