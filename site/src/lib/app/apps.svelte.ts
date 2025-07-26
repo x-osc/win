@@ -3,15 +3,16 @@ import type { App, AppManifest } from "./app";
 import { instanceId } from "../state.svelte";
 import { wmApi } from "../wm/wm.svelte";
 
-let apps: Record<number, App> = $state({});
+let apps: Map<number, App> = new Map();
 
 export function launchApp(id: string): number | null {
-  if (!appRegistry[id]) {
+  const app = appRegistry.get(id);
+  if (app === undefined) {
     console.error(`app ${id} does not exist`);
     console.log(appRegistry);
     return null;
   }
-  return launchAppFromManifest(appRegistry[id]);
+  return launchAppFromManifest(app);
 }
 
 function launchAppFromManifest(manifest: AppManifest): number {
@@ -21,24 +22,24 @@ function launchAppFromManifest(manifest: AppManifest): number {
   let appInstance = manifest.createApp(appApi);
 
   appInstance.launch();
-  apps[instId] = appInstance;
+  apps.set(instId, appInstance);
 
   return instId;
 }
 
 export function closeApp(instId: number) {
-  for (const [id, win] of Object.entries(wmApi.getWindows())) {
+  for (const [id, win] of wmApi.getWindows().entries()) {
     if (win.data.owner === instId) {
-      wmApi.closeWindow(Number(id));
+      wmApi.closeWindow(id);
     }
   }
 
-  delete apps[instId];
+  apps.delete(instId);
 }
 
-let appRegistry: Record<string, AppManifest> = {};
+let appRegistry: Map<string, AppManifest> = new Map();
 
 export function registerApp(app: AppManifest) {
   let id = app.appId;
-  appRegistry[id] = app;
+  appRegistry.set(id, app);
 }

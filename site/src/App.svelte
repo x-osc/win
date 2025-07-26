@@ -15,11 +15,11 @@
 
 <div id="root">
   <div id="desktop">
-    {#each Object.entries(wmApi.getWindows()) as [id, win] (id)}
+    {#each wmApi.getWindows().entries() as [id, win] (id)}
       <Window
-        id={Number(id)}
+        {id}
         windowData={win.data}
-        focused={Number(id) === getFocusHistory()[getFocusHistory().length - 1]}
+        focused={id === getFocusHistory()[getFocusHistory().length - 1]}
         {wmApi}
       />
     {/each}

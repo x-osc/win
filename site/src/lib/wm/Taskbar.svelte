@@ -4,7 +4,7 @@
 
 <div id="taskbar">
   {#each taskbar as id (id)}
-    {@const w = wmApi.getWindows()[id].data}
+    {@const w = wmApi.getWindows().get(id).data}
     <button onclick={() => wmApi.focusWindow(Number(id))}>
       {w.title}
     </button>
