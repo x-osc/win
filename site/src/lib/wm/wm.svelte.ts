@@ -91,7 +91,7 @@ let taskbar: number[] = $state([]);
 // history of all focused windows
 let focusHistory: number[] = $state([]);
 
-export let wmApi = {
+export const wmApi = {
   createWindow,
   createWindowAsync,
   setWindowTitle,
