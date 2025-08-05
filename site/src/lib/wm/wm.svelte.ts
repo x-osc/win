@@ -23,6 +23,7 @@ export type WinData = {
 export interface WindowApi {
   getId(): number;
   getData(): WinData;
+  setTitle(title: string): void;
   move(x: number, y: number): void;
   resize(width: number, height: number): void;
   focus(): void;
@@ -93,6 +94,7 @@ let focusHistory: number[] = $state([]);
 export let wmApi = {
   createWindow,
   createWindowAsync,
+  setWindowTitle,
   moveWindow,
   setWindowSize,
   focusWindow,
@@ -125,6 +127,16 @@ function createWindow(data: WinData): number {
   focusHistory.unshift(id);
 
   return id;
+}
+
+function setWindowTitle(id: number, title: string) {
+  const win = windows.get(id)?.data;
+  if (!win) {
+    console.warn(`Window with id ${id} does not exist.`);
+    return;
+  }
+
+  win.title = title;
 }
 
 function moveWindow(id: number, x: number, y: number) {

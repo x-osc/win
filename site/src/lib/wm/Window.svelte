@@ -22,6 +22,7 @@
   const windowApi: WindowApi = {
     getId: () => id,
     getData: () => windowData,
+    setTitle: (title: string) => wmApi.setWindowTitle(id, title),
     focus: () => focus(),
     move: (x: number, y: number) => wmApi.moveWindow(id, x, y),
     resize: (width: number, height: number) =>
