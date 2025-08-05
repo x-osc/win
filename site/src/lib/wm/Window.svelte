@@ -3,7 +3,8 @@
   import { on } from "svelte/events";
   import { ResizeDirection } from "./types";
   import "../win.css";
-  import type { WinData, WindowApi } from "./wm.svelte";
+  import type { WinData, WindowApi, WindowEvents } from "./wm.svelte";
+  import { CallbackManager } from "../callbacks";
 
   let {
     id,
@@ -13,13 +14,15 @@
   }: { id: number; windowData: WinData; focused: boolean; wmApi: any } =
     $props();
 
+  let callbacks = new CallbackManager<WindowEvents>();
+
   let bodyElement: HTMLElement | null = null;
   let windowElement: HTMLElement | null = null;
 
   const windowApi: WindowApi = {
     getId: () => id,
     getData: () => windowData,
-    focus: () => wmApi.focusWindow(id),
+    focus: () => focus(),
     move: (x: number, y: number) => wmApi.moveWindow(id, x, y),
     resize: (width: number, height: number) =>
       wmApi.setWindowSize(id, width, height),
@@ -27,12 +30,21 @@
     getWindowElement: () => windowElement,
     getBody: () => bodyElement,
     isOpen: () => id in wmApi.getWindows(),
+
+    on: callbacks.on.bind(callbacks),
+    once: callbacks.once.bind(callbacks),
+    off: callbacks.off.bind(callbacks),
   };
 
   onMount(() => {
     wmApi.registerWindowApi(id, windowApi);
-    wmApi.focusWindow(id);
+    focus();
   });
+
+  function focus() {
+    callbacks.emit("focus");
+    wmApi.focusWindow(id);
+  }
 
   function handleTitlebarDrag(event: MouseEvent) {
     if ((event.target as HTMLElement).closest(".nodrag")) {
@@ -41,15 +53,16 @@
 
     event.stopPropagation();
     event.preventDefault();
-    wmApi.focusWindow(id);
+    focus();
 
     let offsetX = event.clientX - windowData.x;
     let offsetY = event.clientY - windowData.y;
 
     function onMouseMove(event: MouseEvent) {
       let posX = event.clientX - offsetX;
-      let poxY = event.clientY - offsetY;
-      wmApi.moveWindow(id, posX, poxY);
+      let posY = event.clientY - offsetY;
+      callbacks.emit("move", posX, posY);
+      wmApi.moveWindow(id, posX, posY);
     }
 
     function onMouseUp() {
@@ -64,7 +77,7 @@
   function handleResize(event: MouseEvent, direction: ResizeDirection) {
     event.stopPropagation();
     event.preventDefault();
-    wmApi.focusWindow(id);
+    focus();
 
     const startMouseX = event.clientX;
     const startMouseY = event.clientY;
@@ -122,6 +135,7 @@
         newX = startX + (startWidth - newWidth);
       }
 
+      callbacks.emit("resize", newWidth, newHeight);
       wmApi.setWindowSize(id, newWidth, newHeight);
       wmApi.moveWindow(id, newX, newY);
     }
@@ -140,7 +154,7 @@
   function handleMaximize(e: MouseEvent) {}
 
   function handleClose(e: MouseEvent) {
-    wmApi.closeWindow(id);
+    callbacks.emit("close");
   }
 </script>
 

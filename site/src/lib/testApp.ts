@@ -34,7 +34,14 @@ class TestApp implements App {
             </p>
           `;
         }
-        setTimeout(() => this.api.quit(), 5000);
+        winApi.on("focus", () => {
+          console.log("fjdkjfk");
+        });
+        winApi.on("close", () => {
+          console.log("asdfjkl");
+          alert("r u sure");
+          this.api.quit();
+        });
       });
   }
 }

@@ -1,5 +1,6 @@
 import { SvelteMap } from "svelte/reactivity";
 import { windowId, zIndex } from "../state.svelte";
+import type { OffFunction, OnceFunction, OnFunction } from "../callbacks";
 
 export type Win = {
   data: WinData;
@@ -29,7 +30,18 @@ export interface WindowApi {
   getWindowElement(): HTMLElement | null;
   getBody(): HTMLElement | null;
   isOpen(): boolean;
+
+  on: OnFunction<WindowEvents>;
+  once: OnceFunction<WindowEvents>;
+  off: OffFunction<WindowEvents>;
 }
+
+export type WindowEvents = {
+  focus: [];
+  move: [x: number, y: number];
+  resize: [width: number, height: number];
+  close: [];
+};
 
 export function winDataBuilder() {
   const data: WinData = {
