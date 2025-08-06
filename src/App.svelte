@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { launchApp, registerApp } from "../lib/app/apps.svelte";
-  import Taskbar from "../lib/wm/Taskbar.svelte";
-  import { testAppManifest } from "../lib/testApp";
-  import Window from "../lib/wm/Window.svelte";
+  import { launchApp, registerApp } from "$lib/app/apps.svelte";
+  import Taskbar from "$lib/wm/Taskbar.svelte";
+  import { testAppManifest } from "$lib/testApp";
+  import Window from "$lib/wm/Window.svelte";
   import {
     getFocusHistory,
     getTaskbar,
