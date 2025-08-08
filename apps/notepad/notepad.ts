@@ -1,6 +1,6 @@
-import { AppApi } from "../../lib/app/api";
-import { App, AppManifest } from "../../lib/app/app";
-import { winDataBuilder } from "../../lib/wm/wm.svelte";
+import { AppApi } from "../../core/app/api";
+import { App, AppManifest } from "../../core/app/app";
+import { winDataBuilder } from "../../core/wm/wm.svelte";
 import { mount } from "svelte";
 import Notepad from "./Notepad.svelte";
 

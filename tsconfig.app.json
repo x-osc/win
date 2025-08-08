@@ -17,7 +17,7 @@
     "moduleDetection": "force",
     "baseUrl": ".",
     "paths": {
-      "$lib/*": ["lib/*"]
+      "$lib/*": ["./core/*"]
     }
   },
   "include": [

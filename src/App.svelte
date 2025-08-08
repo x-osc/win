@@ -9,7 +9,7 @@
     getTaskbar,
     winDataBuilder,
     wmApi,
-  } from "../lib/wm/wm.svelte";
+  } from "$lib/wm/wm.svelte";
 
   registerApp(testAppManifest);
   registerApp(notepadManifest);
