@@ -16,8 +16,8 @@
 
   let callbacks = new CallbackManager<WindowEvents>();
 
-  let bodyElement: HTMLElement | null = null;
-  let windowElement: HTMLElement | null = null;
+  let bodyElement: HTMLElement;
+  let windowElement: HTMLElement;
 
   const windowApi: WindowApi = {
     getId: () => id,

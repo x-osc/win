@@ -28,8 +28,8 @@ export interface WindowApi {
   resize(width: number, height: number): void;
   focus(): void;
   close(): void;
-  getWindowElement(): HTMLElement | null;
-  getBody(): HTMLElement | null;
+  getWindowElement(): HTMLElement;
+  getBody(): HTMLElement;
   isOpen(): boolean;
 
   on: OnFunction<WindowEvents>;

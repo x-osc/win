@@ -18,22 +18,20 @@ class TestApp implements App {
         console.log(winApi.getData().owner);
         let body = winApi.getBody();
         console.log(body);
-        if (body !== null) {
-          body.innerHTML = `
-            <h1>welcom to my ebic app</h1>
-            <p>its got woords</p>
-            <p>so amaizing ama i rite gang</p>
-            <p>
-            askdjfkgljakdjdfsjflksdfmklsdnalvkjsdlfj
-            asdkjklsdmclvkmsdklfj
-            asdlkmclkamsdlkfjselfkml;kf;ldjflskadmf
-            jlksfjlisejrelsfjlsekmfldsfms;dfskd;jflkds
-            asjlkdfjvkladsfjtepotigpodjfklsjd
-            jskldfjsdlmfsd;fjoejfolsemklafjsldkjflkasdmnf
-            ashgsdkjelwfojeslfilsefjadlksfj;sdkfsaklfjdf
-            </p>
-          `;
-        }
+        body.innerHTML = `
+          <h1>welcom to my ebic app</h1>
+          <p>its got woords</p>
+          <p>so amaizing ama i rite gang</p>
+          <p>
+          askdjfkgljakdjdfsjflksdfmklsdnalvkjsdlfj
+          asdkjklsdmclvkmsdklfj
+          asdlkmclkamsdlkfjselfkml;kf;ldjflskadmf
+          jlksfjlisejrelsfjlsekmfldsfms;dfskd;jflkds
+          asjlkdfjvkladsfjtepotigpodjfklsjd
+          jskldfjsdlmfsd;fjoejfolsemklafjsldkjflkasdmnf
+          ashgsdkjelwfojeslfilsefjadlksfj;sdkfsaklfjdf
+          </p>
+        `;
         winApi.on("focus", () => {
           console.log("fjdkjfk");
         });

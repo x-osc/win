@@ -18,11 +18,9 @@ class NotepadApp implements App {
       )
       .then((winApi) => {
         let body = winApi.getBody();
-        if (body != null) {
-          const component = mount(Notepad, {
-            target: body,
-          });
-        }
+        const component = mount(Notepad, {
+          target: body,
+        });
 
         winApi.on("close", () => {
           this.api.quit();
