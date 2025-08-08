@@ -1,0 +1,28 @@
+ - rework terminal to be like lok.computer's (prompt on bottom, logs on top)
+ - full ui css stuff
+ - depressed clippy
+ - custom cursors + support
+ - theme support
+ - preload everything
+ - rework apps to be same as terminal commands maybe idk - like logs and stuff could be
+to stdout and terminal commands need to access appapi and apps need flags so like
+ - dithering ?
+ - cool animations
+ - file stuff (idb)
+ - file explorer
+ - calculator
+ - web browser
+ - paint
+ - custom ml
+ - custom lang
+ - game engine
+ - midi/tracker/daw stuff
+ - midi player (custom format meybe? or not)
+ - viruses (maybe written in custom lang?)
+ - app launcher installer installer wizard
+ - cool noises
+ - desktop pets
+ - chat app
+ - forums n stuff
+ - raondomly joining irc lmao
+ - hunter2
