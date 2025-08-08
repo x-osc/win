@@ -3,6 +3,7 @@
   import Taskbar from "$lib/wm/Taskbar.svelte";
   import { testAppManifest } from "$lib/testApp";
   import { notepadManifest } from "../apps/notepad/notepad";
+  import { terminalManifest } from "../apps/terminal/terminal";
   import Window from "$lib/wm/Window.svelte";
   import {
     getFocusHistory,
@@ -13,6 +14,7 @@
 
   registerApp(testAppManifest);
   registerApp(notepadManifest);
+  registerApp(terminalManifest);
 </script>
 
 <div id="root">
@@ -33,6 +35,7 @@
     >
     <button onclick={(_) => launchApp("test_app")}>make app</button>
     <button onclick={(_) => launchApp("notepad")}>notepad</button>
+    <button onclick={(_) => launchApp("terminal")}>terminal</button>
   </div>
   <Taskbar taskbar={getTaskbar()} {wmApi} />
 </div>
