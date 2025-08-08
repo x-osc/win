@@ -245,7 +245,6 @@
   }
 
   .content {
-    padding: 5px;
     background: white;
     height: 100%;
     overflow: auto;
