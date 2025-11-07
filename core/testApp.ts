@@ -1,9 +1,9 @@
 import type { AppApi } from "./app/api";
-import type { App, AppManifest } from "./app/app";
+import type { Process, AppManifest } from "./app/app";
 import { registerApp } from "./app/apps.svelte";
 import { winDataBuilder } from "./wm/wm.svelte";
 
-class TestApp implements App {
+class TestApp implements Process {
   api: AppApi;
 
   constructor(api: AppApi) {

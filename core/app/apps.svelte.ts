@@ -1,10 +1,10 @@
 import { getAppApi, type AppApi } from "./api";
-import type { App, AppManifest } from "./app";
+import type { Process, AppManifest } from "./app";
 import { instanceId } from "../state.svelte";
 import { wmApi } from "../wm/wm.svelte";
 import { CmdApi, CmdManifest } from "./command";
 
-let apps: Map<number, App> = new Map();
+let processes: Map<number, Process> = new Map();
 
 export function launchApp(id: string): number | null {
   const app = appRegistry.get(id);
@@ -20,10 +20,10 @@ function launchAppFromManifest(manifest: AppManifest): number {
   const instId = instanceId.value++;
 
   let appApi = getAppApi(instId);
-  let appInstance = manifest.createApp(appApi);
+  let process = manifest.createApp(appApi);
 
-  appInstance.launch();
-  apps.set(instId, appInstance);
+  process.launch();
+  processes.set(instId, process);
 
   return instId;
 }
@@ -35,10 +35,10 @@ export function launchCmdFromManifest(
   const instId = instanceId.value++;
 
   let appApi = getAppApi(instId);
-  let appInstance = manifest.createApp(appApi, cmdApi);
+  let process = manifest.createProcess(appApi, cmdApi);
 
-  appInstance.launch();
-  apps.set(instId, appInstance);
+  process.launch();
+  processes.set(instId, process);
 
   return instId;
 }
@@ -50,7 +50,7 @@ export function closeApp(instId: number) {
     }
   }
 
-  apps.delete(instId);
+  processes.delete(instId);
 }
 
 let appRegistry: Map<string, AppManifest> = new Map();

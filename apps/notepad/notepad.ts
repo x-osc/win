@@ -1,10 +1,10 @@
 import { AppApi } from "../../core/app/api";
-import { App, AppManifest } from "../../core/app/app";
+import { Process, AppManifest } from "../../core/app/app";
 import { winDataBuilder } from "../../core/wm/wm.svelte";
 import { mount } from "svelte";
 import Notepad from "./Notepad.svelte";
 
-class NotepadApp implements App {
+class NotepadApp implements Process {
   api: AppApi;
 
   constructor(api: AppApi) {

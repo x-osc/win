@@ -1,10 +1,10 @@
 import { mount } from "svelte";
 import { AppApi } from "../../core/app/api";
-import { App, AppManifest } from "../../core/app/app";
+import { Process, AppManifest } from "../../core/app/app";
 import { winDataBuilder } from "../../core/wm/wm.svelte";
 import Terminal from "./Terminal.svelte";
 
-class TerminalApp implements App {
+class TerminalApp implements Process {
   api: AppApi;
 
   constructor(api: AppApi) {

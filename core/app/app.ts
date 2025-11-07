@@ -3,9 +3,9 @@ import type { AppApi } from "./api";
 export type AppManifest = {
   appId: string;
 
-  createApp: (api: AppApi) => App;
+  createApp: (api: AppApi) => Process;
 };
 
-export interface App {
+export interface Process {
   launch(): void;
 }
