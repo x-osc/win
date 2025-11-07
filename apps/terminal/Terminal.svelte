@@ -2,6 +2,9 @@
   import { onMount, tick } from "svelte";
   import type { AppApi } from "../../core/app/api";
   import type { WindowApi } from "../../core/wm/wm.svelte";
+  import { helpManifest } from "../../cmds/help";
+  import type { CmdApi } from "../../core/app/command";
+  import { launchCmdFromManifest } from "../../core/app/apps.svelte";
 
   let { appApi, winApi }: { appApi: AppApi; winApi: WindowApi } = $props();
 
@@ -17,10 +20,14 @@
   });
 
   function processCommand(command: string) {
+    let cmdApi: CmdApi = {
+      getArgs: () => [""],
+      writeLine: (line) => addLine(line),
+    };
+
     if (command == "help") {
-      return "asdf";
+      launchCmdFromManifest(helpManifest, cmdApi);
     }
-    return "\n";
   }
 
   function addLine(line: string) {
@@ -34,8 +41,7 @@
     if (e.key === "Enter") {
       const command = input.value.trim();
       addLine("$ " + command);
-      let result = processCommand(command);
-      addLine(result);
+      processCommand(command);
       input.value = "";
     }
   }
@@ -79,7 +85,7 @@
 
   .terminal-line {
     white-space: pre-wrap;
-    word-wrap: break-word;
+    word-break: break-all;
     margin: 0;
     padding: 0;
   }

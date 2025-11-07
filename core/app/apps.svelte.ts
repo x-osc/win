@@ -2,6 +2,7 @@ import { getAppApi, type AppApi } from "./api";
 import type { App, AppManifest } from "./app";
 import { instanceId } from "../state.svelte";
 import { wmApi } from "../wm/wm.svelte";
+import { CmdApi, CmdManifest } from "./command";
 
 let apps: Map<number, App> = new Map();
 
@@ -20,6 +21,21 @@ function launchAppFromManifest(manifest: AppManifest): number {
 
   let appApi = getAppApi(instId);
   let appInstance = manifest.createApp(appApi);
+
+  appInstance.launch();
+  apps.set(instId, appInstance);
+
+  return instId;
+}
+
+export function launchCmdFromManifest(
+  manifest: CmdManifest,
+  cmdApi: CmdApi,
+): number {
+  const instId = instanceId.value++;
+
+  let appApi = getAppApi(instId);
+  let appInstance = manifest.createApp(appApi, cmdApi);
 
   appInstance.launch();
   apps.set(instId, appInstance);
