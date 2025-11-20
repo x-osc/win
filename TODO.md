@@ -1,5 +1,7 @@
  - rework terminal to be like lok.computer's (prompt on bottom, logs on top)
  - full ui css stuff
+ - rename app to process
+ - maybe remove process altogether and just launch func?
  - depressed clippy
  - custom cursors + support
  - theme support
@@ -26,3 +28,6 @@ to stdout and terminal commands need to access appapi and apps need flags so lik
  - forums n stuff
  - raondomly joining irc lmao
  - hunter2
+ - ostan (prob comms)
+ - modern pixel ps1 artstyle
+

@@ -19,6 +19,8 @@
   let bodyElement: HTMLElement;
   let windowElement: HTMLElement;
 
+  // TODO: callbacks in svelte class feels bad is there a way
+  // to make it managed in wm?
   const windowApi: WindowApi = {
     getId: () => id,
     getData: () => windowData,
