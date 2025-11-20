@@ -1,6 +1,7 @@
 {
   "extends": "@tsconfig/svelte/tsconfig.json",
   "compilerOptions": {
+    "strict": true,
     "target": "ES2022",
     "useDefineForClassFields": true,
     "module": "ESNext",
@@ -20,10 +21,5 @@
       "$lib/*": ["./core/*"]
     }
   },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.js",
-    "src/**/*.svelte",
-    "src/lib/.svelte.ts"
-  ]
+  "include": ["./*.ts", "./*.js", "./*.svelte", "./*.svelte.ts"]
 }
