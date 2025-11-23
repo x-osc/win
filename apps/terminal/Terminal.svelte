@@ -1,9 +1,11 @@
 <script lang="ts">
   import { onMount, tick } from "svelte";
+  import { asdfManifest } from "../../cmds/asdf";
   import { helpManifest } from "../../cmds/help";
   import type { AppApi } from "../../core/app/api";
   import { launchCmdFromManifest } from "../../core/app/apps.svelte";
   import type { CmdApi } from "../../core/cmd/command";
+  import { splitArgs } from "../../core/cmd/parser";
   import type { WindowApi } from "../../core/wm/wm.svelte";
 
   let { appApi, winApi }: { appApi: AppApi; winApi: WindowApi } = $props();
@@ -19,14 +21,19 @@
     input.focus();
   });
 
-  function processCommand(command: string) {
+  function processCommand(input: string) {
+    const [cmd, ...rest] = input.split(" ");
+    const args = rest.join(" ");
+
     let cmdApi: CmdApi = {
-      getArgs: () => [""],
+      getArgs: () => splitArgs(args),
       writeLine: (line) => addLine(line),
     };
 
-    if (command == "help") {
+    if (cmd == "help") {
       launchCmdFromManifest(helpManifest, cmdApi);
+    } else if (cmd == "asdf") {
+      launchCmdFromManifest(asdfManifest, cmdApi);
     }
   }
 
