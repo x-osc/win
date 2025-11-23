@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, tick } from "svelte";
   import { asdfManifest } from "../../cmds/asdf";
+  import { echoManifest } from "../../cmds/echo";
   import { helpManifest } from "../../cmds/help";
   import type { AppApi } from "../../core/app/api";
   import { launchCmdFromManifest } from "../../core/app/apps.svelte";
@@ -36,6 +37,8 @@
       launchCmdFromManifest(helpManifest, cmdApi);
     } else if (cmd == "asdf") {
       launchCmdFromManifest(asdfManifest, cmdApi);
+    } else if (cmd == "echo") {
+      launchCmdFromManifest(echoManifest, cmdApi);
     }
   }
 
