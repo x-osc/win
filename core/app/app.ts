@@ -7,5 +7,5 @@ export type AppManifest = {
 };
 
 export interface Process {
-  launch(): void;
+  launch(): Promise<void>;
 }

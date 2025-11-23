@@ -11,7 +11,7 @@ class HelpCmd implements Process {
     this.cmdApi = cmdApi;
   }
 
-  launch() {
+  async launch() {
     this.cmdApi.writeLine("asdf");
   }
 }

@@ -1,6 +1,7 @@
 import { AppApi } from "../core/app/api";
 import { Process } from "../core/app/app";
 import { CmdApi, CmdManifest } from "../core/cmd/command";
+import { sleep } from "../core/utils";
 
 class AsdfCmd implements Process {
   api: AppApi;
@@ -11,9 +12,10 @@ class AsdfCmd implements Process {
     this.cmdApi = cmdApi;
   }
 
-  launch() {
+  async launch() {
     let args = this.cmdApi.getArgs();
-    this.cmdApi.writeLine("[" + args.join(", ") + "]");
+    await sleep(500);
+    await this.cmdApi.writeLine("[" + args.join(", ") + "]");
   }
 }
 

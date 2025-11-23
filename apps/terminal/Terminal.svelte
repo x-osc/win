@@ -30,6 +30,8 @@
       writeLine: (line) => addLine(line),
     };
 
+    // TODO: dont show prompt when cmd is running
+
     if (cmd == "help") {
       launchCmdFromManifest(helpManifest, cmdApi);
     } else if (cmd == "asdf") {

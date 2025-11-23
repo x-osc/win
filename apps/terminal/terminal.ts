@@ -1,6 +1,6 @@
 import { mount } from "svelte";
 import { AppApi } from "../../core/app/api";
-import { Process, AppManifest } from "../../core/app/app";
+import { AppManifest, Process } from "../../core/app/app";
 import { winDataBuilder } from "../../core/wm/wm.svelte";
 import Terminal from "./Terminal.svelte";
 
@@ -11,7 +11,7 @@ class TerminalApp implements Process {
     this.api = api;
   }
 
-  launch(): void {
+  async launch() {
     this.api.window
       .createWindowAsync(winDataBuilder().withTitle("terminal").build())
       .then((winApi) => {

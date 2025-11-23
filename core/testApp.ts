@@ -1,6 +1,5 @@
 import type { AppApi } from "./app/api";
-import type { Process, AppManifest } from "./app/app";
-import { registerApp } from "./app/apps.svelte";
+import type { AppManifest, Process } from "./app/app";
 import { winDataBuilder } from "./wm/wm.svelte";
 
 class TestApp implements Process {
@@ -10,7 +9,7 @@ class TestApp implements Process {
     this.api = api;
   }
 
-  launch(): void {
+  async launch() {
     console.log("yipe it worke");
     this.api.window
       .createWindowAsync(winDataBuilder().withTitle("test_app").build())

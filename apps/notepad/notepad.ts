@@ -1,7 +1,7 @@
-import { AppApi } from "../../core/app/api";
-import { Process, AppManifest } from "../../core/app/app";
-import { winDataBuilder } from "../../core/wm/wm.svelte";
 import { mount } from "svelte";
+import { AppApi } from "../../core/app/api";
+import { AppManifest, Process } from "../../core/app/app";
+import { winDataBuilder } from "../../core/wm/wm.svelte";
 import Notepad from "./Notepad.svelte";
 
 class NotepadApp implements Process {
@@ -11,10 +11,10 @@ class NotepadApp implements Process {
     this.api = api;
   }
 
-  launch(): void {
+  async launch() {
     this.api.window
       .createWindowAsync(
-        winDataBuilder().withMinSize(290, 161).withTitle("notepad").build(),
+        winDataBuilder().withMinSize(290, 161).withTitle("notepad").build()
       )
       .then((winApi) => {
         let body = winApi.getBody();

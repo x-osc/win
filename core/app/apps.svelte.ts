@@ -22,7 +22,8 @@ function launchAppFromManifest(manifest: AppManifest): number {
   let appApi = getAppApi(instId);
   let process = manifest.createApp(appApi);
 
-  process.launch();
+  // TODO: idk make sure this isnt bad lmao
+  process.launch().catch(console.error);
   processes.set(instId, process);
 
   return instId;
@@ -37,7 +38,7 @@ export function launchCmdFromManifest(
   let appApi = getAppApi(instId);
   let process = manifest.createProcess(appApi, cmdApi);
 
-  process.launch();
+  process.launch().catch(console.error);
   processes.set(instId, process);
 
   return instId;
