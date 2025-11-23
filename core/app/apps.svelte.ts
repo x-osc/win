@@ -1,8 +1,8 @@
-import { getAppApi, type AppApi } from "./api";
-import type { Process, AppManifest } from "./app";
+import { CmdApi, CmdManifest } from "../cmd/command";
 import { instanceId } from "../state.svelte";
 import { wmApi } from "../wm/wm.svelte";
-import { CmdApi, CmdManifest } from "./command";
+import { getAppApi } from "./api";
+import type { AppManifest, Process } from "./app";
 
 let processes: Map<number, Process> = new Map();
 
@@ -30,7 +30,7 @@ function launchAppFromManifest(manifest: AppManifest): number {
 
 export function launchCmdFromManifest(
   manifest: CmdManifest,
-  cmdApi: CmdApi,
+  cmdApi: CmdApi
 ): number {
   const instId = instanceId.value++;
 

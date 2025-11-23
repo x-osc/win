@@ -1,5 +1,5 @@
-import { AppApi } from "./api";
-import { Process } from "./app";
+import { AppApi } from "../app/api";
+import { Process } from "../app/app";
 
 export type CmdManifest = {
   appId: string;

@@ -1,10 +1,10 @@
 <script lang="ts">
   import { onMount, tick } from "svelte";
-  import type { AppApi } from "../../core/app/api";
-  import type { WindowApi } from "../../core/wm/wm.svelte";
   import { helpManifest } from "../../cmds/help";
-  import type { CmdApi } from "../../core/app/command";
+  import type { AppApi } from "../../core/app/api";
   import { launchCmdFromManifest } from "../../core/app/apps.svelte";
+  import type { CmdApi } from "../../core/cmd/command";
+  import type { WindowApi } from "../../core/wm/wm.svelte";
 
   let { appApi, winApi }: { appApi: AppApi; winApi: WindowApi } = $props();
 

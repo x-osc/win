@@ -1,6 +1,6 @@
 import { AppApi } from "../core/app/api";
 import { Process } from "../core/app/app";
-import { CmdApi, CmdManifest } from "../core/app/command";
+import { CmdApi, CmdManifest } from "../core/cmd/command";
 
 class HelpCmd implements Process {
   api: AppApi;
