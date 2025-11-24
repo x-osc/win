@@ -1,9 +1,7 @@
 <script lang="ts">
   import { launchApp, registerApp } from "$lib/app/apps.svelte";
-  import Taskbar from "$lib/wm/Taskbar.svelte";
   import { testAppManifest } from "$lib/testApp";
-  import { notepadManifest } from "../apps/notepad/notepad";
-  import { terminalManifest } from "../apps/terminal/terminal";
+  import Taskbar from "$lib/wm/Taskbar.svelte";
   import Window from "$lib/wm/Window.svelte";
   import {
     getFocusHistory,
@@ -11,10 +9,20 @@
     winDataBuilder,
     wmApi,
   } from "$lib/wm/wm.svelte";
+  import { notepadManifest } from "../apps/notepad/notepad";
+  import { terminalManifest } from "../apps/terminal/terminal";
+  import { asdfManifest } from "../cmds/asdf";
+  import { echoManifest } from "../cmds/echo";
+  import { helpManifest } from "../cmds/help";
+  import { registerCmd } from "./app/apps.svelte";
 
   registerApp(testAppManifest);
   registerApp(notepadManifest);
   registerApp(terminalManifest);
+
+  registerCmd(helpManifest);
+  registerCmd(asdfManifest);
+  registerCmd(echoManifest);
 </script>
 
 <div id="root">

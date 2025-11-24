@@ -16,7 +16,17 @@ export function launchApp(id: string): number | null {
   return launchAppFromManifest(app);
 }
 
-function launchAppFromManifest(manifest: AppManifest): number {
+export function launchCmd(cmd: string, cmdApi: CmdApi): number | null {
+  const command = cmdRegistry.get(cmd);
+  if (command === undefined) {
+    console.error(`command ${cmd} does not exist`);
+    console.log(cmdRegistry);
+    return null;
+  }
+  return launchCmdFromManifest(command, cmdApi);
+}
+
+export function launchAppFromManifest(manifest: AppManifest): number {
   const instId = instanceId.value++;
 
   let appApi = getAppApi(instId);
@@ -59,4 +69,11 @@ let appRegistry: Map<string, AppManifest> = new Map();
 export function registerApp(app: AppManifest) {
   let id = app.appId;
   appRegistry.set(id, app);
+}
+
+let cmdRegistry: Map<string, CmdManifest> = new Map();
+
+export function registerCmd(cmd: CmdManifest) {
+  let name = cmd.command;
+  cmdRegistry.set(name, cmd);
 }

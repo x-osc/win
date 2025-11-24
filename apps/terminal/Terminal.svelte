@@ -1,10 +1,7 @@
 <script lang="ts">
   import { onMount, tick } from "svelte";
-  import { asdfManifest } from "../../cmds/asdf";
-  import { echoManifest } from "../../cmds/echo";
-  import { helpManifest } from "../../cmds/help";
   import type { AppApi } from "../../core/app/api";
-  import { launchCmdFromManifest } from "../../core/app/apps.svelte";
+  import { launchCmd } from "../../core/app/apps.svelte";
   import type { CmdApi } from "../../core/cmd/command";
   import { splitArgs } from "../../core/cmd/parser";
   import type { WindowApi } from "../../core/wm/wm.svelte";
@@ -33,12 +30,9 @@
 
     // TODO: dont show prompt when cmd is running
 
-    if (cmd == "help") {
-      launchCmdFromManifest(helpManifest, cmdApi);
-    } else if (cmd == "asdf") {
-      launchCmdFromManifest(asdfManifest, cmdApi);
-    } else if (cmd == "echo") {
-      launchCmdFromManifest(echoManifest, cmdApi);
+    let appId = launchCmd(cmd, cmdApi);
+    if (appId === null) {
+      addLine(`Command not found: ${cmd}`);
     }
   }
 
