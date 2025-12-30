@@ -1,3 +1,4 @@
+import { fsApi } from "../fs/filesystem";
 import { wmApi, type WinData, type WindowApi } from "../wm/wm.svelte";
 import { closeApp } from "./apps.svelte";
 
@@ -9,6 +10,8 @@ export interface AppApi {
     createWindow(data: WinData): number;
     createWindowAsync(data: WinData): Promise<WindowApi>;
   };
+
+  fs: typeof fsApi;
 }
 
 export function getAppApi(instId: number): AppApi {
@@ -26,6 +29,8 @@ export function getAppApi(instId: number): AppApi {
         return wmApi.createWindowAsync(data);
       },
     },
+
+    fs: fsApi,
   };
 
   return api;

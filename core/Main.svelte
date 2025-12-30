@@ -12,11 +12,14 @@
   import { notepadManifest } from "../apps/notepad/notepad";
   import { terminalManifest } from "../apps/terminal/terminal";
   import { asdfManifest } from "../cmds/asdf";
+  import { cdManifest } from "../cmds/cd";
   import { echoManifest } from "../cmds/echo";
   import { helpManifest } from "../cmds/help";
+  import { listManifest, lsManifest } from "../cmds/list";
+  import { mkdirManifest } from "../cmds/mkdir";
+  import { pwdManifest } from "../cmds/pwd";
+  import { catManifest, readManifest } from "../cmds/read";
   import { registerCmd } from "./app/apps.svelte";
-
-  import "$lib/fs/filesystem.ts";
 
   registerApp(testAppManifest);
   registerApp(notepadManifest);
@@ -25,6 +28,13 @@
   registerCmd(helpManifest);
   registerCmd(asdfManifest);
   registerCmd(echoManifest);
+  registerCmd(pwdManifest);
+  registerCmd(mkdirManifest);
+  registerCmd(cdManifest);
+  registerCmd(listManifest);
+  registerCmd(lsManifest);
+  registerCmd(readManifest);
+  registerCmd(catManifest);
 </script>
 
 <div id="root">

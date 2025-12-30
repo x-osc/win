@@ -4,11 +4,13 @@
   import { launchCmd } from "../../core/app/apps.svelte";
   import type { CmdApi } from "../../core/cmd/command";
   import { splitArgs } from "../../core/cmd/parser";
+  import { joinPath } from "../../core/fs/filesystem";
   import type { WindowApi } from "../../core/wm/wm.svelte";
 
   let { appApi, winApi }: { appApi: AppApi; winApi: WindowApi } = $props();
 
   let lines: string[] = $state([]);
+  let workingDir: string[] = $state([]);
 
   let input: HTMLInputElement;
   let terminal: HTMLElement;
@@ -25,6 +27,13 @@
 
     let cmdApi: CmdApi = {
       getArgs: () => splitArgs(args),
+      getWorkingDir: () => workingDir,
+      setWorkingDir: async (path: string[]) => {
+        if (!(await appApi.fs.exists(path))) {
+          return;
+        }
+        workingDir = path;
+      },
       writeLine: (line) => addLine(line),
     };
 
@@ -63,7 +72,7 @@
     <div class="terminal-line">{line}</div>
   {/each}
   <div class="prompt">
-    <span>$ </span>
+    <span>{joinPath(workingDir)} $</span>
     <input
       bind:this={input}
       onkeydown={handleKeyDown}

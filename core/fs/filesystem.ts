@@ -1,5 +1,22 @@
 import { DBSchema, openDB } from "idb";
 
+export let fsApi = {
+  splitPath,
+  joinPath,
+  getEntry,
+  resolvePath,
+  exists,
+  type,
+  mkdir,
+  writeFile,
+  readFile,
+  listDir,
+  rename,
+  move,
+  remove,
+  removeRecursive,
+};
+
 export type FileContent = {
   data: Blob;
 };
@@ -102,10 +119,37 @@ export function splitPath(path: string): string[] {
 }
 
 export function joinPath(parts: string[]): string {
-  return parts.join("/");
+  return "/" + parts.join("/");
 }
 
-export async function resolvePath(path: string[]): Promise<FsEntry | null> {
+export function resolvePath(
+  relativeTo: string[],
+  path: string
+): string[] | null {
+  let relTo = [...relativeTo];
+  let parts = splitPath(path);
+
+  if (path.startsWith("/")) {
+    // absolute path
+    relTo = [];
+  }
+
+  for (const part of parts) {
+    if (part === "" || part === ".") {
+      continue;
+    } else if (part === "..") {
+      if (relTo.pop() === undefined) {
+        return null;
+      }
+    } else {
+      relTo.push(part);
+    }
+  }
+
+  return relTo;
+}
+
+export async function getEntry(path: string[]): Promise<FsEntry | null> {
   const db = await FSDB;
   const tx = db.transaction("entries", "readonly");
   const store = tx.objectStore("entries");
@@ -127,7 +171,12 @@ export async function resolvePath(path: string[]): Promise<FsEntry | null> {
 }
 
 export async function exists(path: string[]): Promise<boolean> {
-  return (await resolvePath(path)) !== null;
+  return (await getEntry(path)) !== null;
+}
+
+export async function type(path: string[]): Promise<EntryType | null> {
+  const entry = await getEntry(path);
+  return entry ? entry.type : null;
 }
 
 export async function mkdir(path: string[]): Promise<DirEntry> {
@@ -139,7 +188,7 @@ export async function mkdir(path: string[]): Promise<DirEntry> {
 
   console.log("mkdir", name, "in", path);
 
-  const parentEntry = await resolvePath(path);
+  const parentEntry = await getEntry(path);
   if (!parentEntry || parentEntry.type !== "dir") {
     throw new FsError({ type: "notfound", path });
   }
@@ -155,7 +204,7 @@ export async function mkdir(path: string[]): Promise<DirEntry> {
     modified: now,
   };
 
-  if (await resolvePath([...path, name])) {
+  if (await getEntry([...path, name])) {
     throw new FsError({ type: "alreadyexists", path: [...path, name] });
   }
 
@@ -194,7 +243,7 @@ export async function writeFile(
     throw new FsError({ type: "invalidpath", path });
   }
 
-  const parentEntry = await resolvePath(path);
+  const parentEntry = await getEntry(path);
   if (!parentEntry || parentEntry.type !== "dir") {
     throw new FsError({ type: "notfound", path });
   }
@@ -211,7 +260,7 @@ export async function writeFile(
     size: content.data.size,
   };
 
-  if (await resolvePath([...path, name])) {
+  if (await getEntry([...path, name])) {
     throw new FsError({ type: "alreadyexists", path: [...path, name] });
   }
 
@@ -235,7 +284,7 @@ export async function writeFile(
 
 export async function readFile(path: string[]): Promise<FileContent> {
   const db = await FSDB;
-  const entry = await resolvePath(path);
+  const entry = await getEntry(path);
 
   if (!entry) {
     throw new FsError({ type: "notfound", path });
@@ -263,7 +312,7 @@ export async function readFile(path: string[]): Promise<FileContent> {
 
 export async function listDir(path: string[]): Promise<FsEntry[]> {
   const db = await FSDB;
-  const entry = await resolvePath(path);
+  const entry = await getEntry(path);
   if (!entry) {
     throw new FsError({ type: "notfound", path });
   }
@@ -281,12 +330,12 @@ export async function listDir(path: string[]): Promise<FsEntry[]> {
 
 export async function rename(path: string[], newName: string) {
   const db = await FSDB;
-  const entry = await resolvePath(path);
+  const entry = await getEntry(path);
   if (!entry) {
     throw new FsError({ type: "notfound", path });
   }
 
-  if (await resolvePath([...path.slice(0, -1), newName])) {
+  if (await getEntry([...path.slice(0, -1), newName])) {
     throw new FsError({
       type: "alreadyexists",
       path: [...path.slice(0, -1), newName],
@@ -301,15 +350,15 @@ export async function rename(path: string[], newName: string) {
 
 export async function move(path: string[], newParentPath: string[]) {
   const db = await FSDB;
-  const entry = await resolvePath(path);
-  const newParentEntry = await resolvePath(newParentPath);
+  const entry = await getEntry(path);
+  const newParentEntry = await getEntry(newParentPath);
   if (!entry) {
     throw new FsError({ type: "notfound", path });
   }
   if (!newParentEntry || newParentEntry.type !== "dir") {
     throw new FsError({ type: "notfound", path: newParentPath });
   }
-  if (await resolvePath([...newParentPath, entry.name])) {
+  if (await getEntry([...newParentPath, entry.name])) {
     throw new FsError({
       type: "alreadyexists",
       path: [...newParentPath, entry.name],
@@ -324,7 +373,7 @@ export async function move(path: string[], newParentPath: string[]) {
 
 export async function remove(path: string[]) {
   const db = await FSDB;
-  const entry = await resolvePath(path);
+  const entry = await getEntry(path);
   if (!entry) {
     throw new FsError({ type: "notfound", path });
   }
@@ -349,7 +398,7 @@ export async function remove(path: string[]) {
 
 export async function removeRecursive(path: string[]) {
   const db = await FSDB;
-  const entry = await resolvePath(path);
+  const entry = await getEntry(path);
   if (!entry) {
     throw new FsError({ type: "notfound", path });
   }
@@ -375,37 +424,3 @@ export async function removeRecursive(path: string[]) {
 
   await removeEntryRec(entry);
 }
-
-await mkdirIgnoreExists(["home"]);
-await mkdirIgnoreExists(["home", "user"]);
-await mkdirIgnoreExists(["home", "user", "decktop"]);
-if (await exists(["home", "user", "desktop"])) {
-  await remove(["home", "user", "desktop"]);
-}
-await rename(["home", "user", "decktop"], "desktop");
-await mkdirIgnoreExists(["home", "user", "documents"]);
-await mkdirIgnoreExists(["home", "user", "downloads"]);
-await mkdirIgnoreExists(["home", "user", "pictures"]);
-await mkdirIgnoreExists(["home", "user", "music"]);
-await mkdirIgnoreExists(["home", "user", "videos"]);
-await mkdirIgnoreExists(["etc"]);
-await mkdirIgnoreExists(["var"]);
-await mkdirIgnoreExists(["balls"]);
-await writeFile(["home", "user", "asdf.txt"], {
-  data: new Blob(["hihihihi"], { type: "text/plain" }),
-});
-await rename(["home", "user", "asdf.txt"], "readme.txt");
-console.log(await listDir(["home", "user"]));
-console.log(await (await readFile(["home", "user", "readme.txt"])).data.text());
-console.log(await resolvePath(["home", "user", "desktop"]));
-await mkdirIgnoreExists(["balls", "test"]);
-await mkdirIgnoreExists(["balls", "test", "test2"]);
-await writeFile(["balls", "test", "file1.txt"], {
-  data: new Blob(["ja;ldlfjskdflkds"], { type: "text/plain" }),
-});
-await writeFile(["balls", "test", "test2", "file2.txt"], {
-  data: new Blob(["ertfgh"], { type: "text/plain" }),
-});
-await remove(["balls", "test", "file1.txt"]);
-await removeRecursive(["balls"]);
-console.log(await listDir([]));

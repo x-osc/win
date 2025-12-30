@@ -10,5 +10,7 @@ export type CmdManifest = {
 
 export interface CmdApi {
   getArgs(): string[];
+  getWorkingDir(): string[];
+  setWorkingDir(path: string[]): Promise<void>;
   writeLine(content: string): void;
 }
