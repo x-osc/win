@@ -72,7 +72,7 @@
     <div class="terminal-line">{line}</div>
   {/each}
   <div class="prompt">
-    <span>{joinPath(workingDir)} $</span>
+    <span>[ {joinPath(workingDir)} ] $</span>
     <input
       bind:this={input}
       onkeydown={handleKeyDown}
