@@ -16,6 +16,8 @@
   import { helpManifest } from "../cmds/help";
   import { registerCmd } from "./app/apps.svelte";
 
+  import "$lib/fs/filesystem.ts";
+
   registerApp(testAppManifest);
   registerApp(notepadManifest);
   registerApp(terminalManifest);
