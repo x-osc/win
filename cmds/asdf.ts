@@ -15,7 +15,13 @@ class AsdfCmd implements Process {
   async launch() {
     let args = this.cmdApi.getArgs();
     await sleep(500);
-    await this.cmdApi.writeLine("[" + args.join(", ") + "]");
+    this.cmdApi.writeLine("[" + args.join(", ") + "]");
+    await sleep(200);
+    this.cmdApi.writeLine("as");
+    await sleep(200);
+    this.cmdApi.appendLine("df");
+    await sleep(200);
+    this.cmdApi.writeLine("done");
   }
 }
 

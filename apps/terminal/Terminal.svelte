@@ -34,6 +34,7 @@
         }
         workingDir = path;
       },
+      appendLine: (content: string) => appendLine(content),
       writeLine: (line) => addLine(line),
     };
 
@@ -50,6 +51,14 @@
     tick().then(() => {
       terminal.scrollTop = terminal.scrollHeight;
     });
+  }
+
+  function appendLine(txt: string) {
+    if (lines.length === 0) {
+      lines.push(txt);
+    } else {
+      lines[lines.length - 1] += txt;
+    }
   }
 
   function handleKeyDown(e: KeyboardEvent) {
