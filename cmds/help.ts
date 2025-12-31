@@ -1,24 +1,15 @@
 import { AppApi } from "../core/app/api";
-import { Process } from "../core/app/app";
 import { CmdApi, CmdManifest } from "../core/cmd/command";
 
-class HelpCmd implements Process {
-  api: AppApi;
-  cmdApi: CmdApi;
-
-  constructor(api: AppApi, cmdApi: CmdApi) {
-    this.api = api;
-    this.cmdApi = cmdApi;
-  }
-
-  async launch() {
-    this.cmdApi.writeLine("asdf");
-  }
+async function launch(api: AppApi, cmdApi: CmdApi) {
+  const args = cmdApi.getArgs();
+  const output = args.join(" ");
+  cmdApi.writeLine(output);
 }
 
 export let helpManifest: CmdManifest = {
   appId: "help",
   command: "help",
 
-  createProcess: (api, cmdApi) => new HelpCmd(api, cmdApi),
+  launch,
 };

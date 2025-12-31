@@ -1,11 +1,7 @@
 import type { AppApi } from "./api";
 
-export type AppManifest = {
+export interface AppManifest {
   appId: string;
 
-  createApp: (api: AppApi) => Process;
-};
-
-export interface Process {
-  launch(): Promise<void>;
+  launch(api: AppApi): Promise<void>;
 }

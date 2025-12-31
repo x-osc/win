@@ -1,12 +1,11 @@
 import { AppApi } from "../app/api";
-import { Process } from "../app/app";
 
-export type CmdManifest = {
+export interface CmdManifest {
   appId: string;
   command: string;
 
-  createProcess: (api: AppApi, cmdApi: CmdApi) => Process;
-};
+  launch(api: AppApi, cmdApi: CmdApi): Promise<void>;
+}
 
 export interface CmdApi {
   getArgs(): string[];

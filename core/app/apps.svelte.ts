@@ -2,9 +2,13 @@ import { CmdApi, CmdManifest } from "../cmd/command";
 import { instanceId } from "../state.svelte";
 import { wmApi } from "../wm/wm.svelte";
 import { getAppApi } from "./api";
-import type { AppManifest, Process } from "./app";
+import type { AppManifest } from "./app";
 
 let processes: Map<number, Process> = new Map();
+
+export interface Process {
+  instId: number;
+}
 
 export function launchApp(id: string): number | null {
   const app = appRegistry.get(id);
@@ -30,10 +34,11 @@ export function launchAppFromManifest(manifest: AppManifest): number {
   const instId = instanceId.value++;
 
   let appApi = getAppApi(instId);
-  let process = manifest.createApp(appApi);
+  manifest.launch(appApi).catch(console.error);
 
-  // TODO: idk make sure this isnt bad lmao
-  process.launch().catch(console.error);
+  let process: Process = {
+    instId,
+  };
   processes.set(instId, process);
 
   return instId;
@@ -46,9 +51,11 @@ export function launchCmdFromManifest(
   const instId = instanceId.value++;
 
   let appApi = getAppApi(instId);
-  let process = manifest.createProcess(appApi, cmdApi);
+  manifest.launch(appApi, cmdApi).catch(console.error);
 
-  process.launch().catch(console.error);
+  let process: Process = {
+    instId,
+  };
   processes.set(instId, process);
 
   return instId;
