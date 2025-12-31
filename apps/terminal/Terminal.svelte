@@ -32,6 +32,9 @@
         if (!(await appApi.fs.exists(path))) {
           return;
         }
+        if ((await appApi.fs.type(path)) !== "dir") {
+          return;
+        }
         workingDir = path;
       },
       appendLine: (content: string) => appendLine(content),

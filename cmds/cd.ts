@@ -21,6 +21,10 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
     );
     return;
   }
+  if ((await api.fs.type(newPath)) !== "dir") {
+    cmdApi.writeLine(`cd: not a directory: ${api.fs.joinPath(newPath)}`);
+    return;
+  }
 
   cmdApi.setWorkingDir(newPath);
 }
