@@ -1,5 +1,5 @@
 import type { AppApi } from "../core/app/api";
-import { getCmds } from "../core/app/apps.svelte";
+import { getCmds } from "../core/cmd/cmdregistry";
 import type { CmdApi, CmdManifest } from "../core/cmd/command";
 
 async function launch(api: AppApi, cmdApi: CmdApi) {

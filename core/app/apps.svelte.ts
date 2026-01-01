@@ -22,26 +22,6 @@ export interface ProcessApi {
   off: OffFunction<ProcessEvents>;
 }
 
-export function launchApp(id: string): ProcessApi | null {
-  const app = appRegistry.get(id);
-  if (app === undefined) {
-    console.error(`app ${id} does not exist`);
-    console.log(appRegistry);
-    return null;
-  }
-  return launchAppFromManifest(app);
-}
-
-export function launchCmd(cmd: string, cmdApi: CmdApi): ProcessApi | null {
-  const command = cmdRegistry.get(cmd);
-  if (command === undefined) {
-    console.error(`command ${cmd} does not exist`);
-    console.log(cmdRegistry);
-    return null;
-  }
-  return launchCmdFromManifest(command, cmdApi);
-}
-
 export function launchAppFromManifest(manifest: AppManifest): ProcessApi {
   const instId = instanceId.value++;
 
@@ -104,26 +84,4 @@ export function closeApp(instId: number) {
   }
 
   processes.delete(instId);
-}
-
-let appRegistry: Map<string, AppManifest> = new Map();
-
-export function registerApp(app: AppManifest) {
-  let id = app.appId;
-  appRegistry.set(id, app);
-}
-
-export function getApps(): Map<string, AppManifest> {
-  return appRegistry;
-}
-
-let cmdRegistry: Map<string, CmdManifest> = new Map();
-
-export function registerCmd(cmd: CmdManifest) {
-  let name = cmd.command;
-  cmdRegistry.set(name, cmd);
-}
-
-export function getCmds(): Map<string, CmdManifest> {
-  return cmdRegistry;
 }

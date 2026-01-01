@@ -1,9 +1,4 @@
 <script lang="ts">
-  import { launchApp, registerApp } from "$lib/app/apps.svelte";
-  import { testAppManifest } from "$lib/testApp";
-  import Taskbar from "$lib/wm/Taskbar.svelte";
-  import Window from "$lib/wm/Window.svelte";
-  import { winDataBuilder, wmApi } from "$lib/wm/wm.svelte";
   import { notepadManifest } from "../apps/notepad/notepad";
   import { terminalManifest } from "../apps/terminal/terminal";
   import { asdfManifest } from "../cmds/asdf";
@@ -14,10 +9,14 @@
   import { listManifest, lsManifest } from "../cmds/list";
   import { mkdirManifest } from "../cmds/mkdir";
   import { mkfileManifest, touchManifest } from "../cmds/mkfile";
-
   import { pwdManifest } from "../cmds/pwd";
   import { catManifest, readManifest } from "../cmds/read";
-  import { registerCmd } from "./app/apps.svelte";
+  import { launchApp, registerApp } from "./app/appregistry";
+  import { registerCmd } from "./cmd/cmdregistry";
+  import { testAppManifest } from "./testApp";
+  import Taskbar from "./wm/Taskbar.svelte";
+  import Window from "./wm/Window.svelte";
+  import { winDataBuilder, wmApi } from "./wm/wm.svelte";
 
   registerApp(testAppManifest);
   registerApp(notepadManifest);
