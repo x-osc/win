@@ -18,6 +18,8 @@
   import { helpManifest } from "../cmds/help";
   import { listManifest, lsManifest } from "../cmds/list";
   import { mkdirManifest } from "../cmds/mkdir";
+  import { mkfileManifest, touchManifest } from "../cmds/mkfile";
+
   import { pwdManifest } from "../cmds/pwd";
   import { catManifest, readManifest } from "../cmds/read";
   import { registerCmd } from "./app/apps.svelte";
@@ -31,6 +33,8 @@
   registerCmd(echoManifest);
   registerCmd(pwdManifest);
   registerCmd(mkdirManifest);
+  registerCmd(mkfileManifest);
+  registerCmd(touchManifest);
   registerCmd(cdManifest);
   registerCmd(listManifest);
   registerCmd(lsManifest);
