@@ -1,3 +1,9 @@
+import {
+  CallbackManager,
+  OffFunction,
+  OnceFunction,
+  OnFunction,
+} from "../callbacks";
 import { CmdApi, CmdManifest } from "../cmd/command";
 import { instanceId } from "../state.svelte";
 import { wmApi } from "../wm/wm.svelte";
@@ -8,9 +14,19 @@ let processes: Map<number, Process> = new Map();
 
 export interface Process {
   instId: number;
+
+  api: ProcessApi;
 }
 
-export function launchApp(id: string): number | null {
+export interface ProcessApi {
+  getId(): number;
+
+  on: OnFunction<ProcessEvents>;
+  once: OnceFunction<ProcessEvents>;
+  off: OffFunction<ProcessEvents>;
+}
+
+export function launchApp(id: string): ProcessApi | null {
   const app = appRegistry.get(id);
   if (app === undefined) {
     console.error(`app ${id} does not exist`);
@@ -20,7 +36,7 @@ export function launchApp(id: string): number | null {
   return launchAppFromManifest(app);
 }
 
-export function launchCmd(cmd: string, cmdApi: CmdApi): number | null {
+export function launchCmd(cmd: string, cmdApi: CmdApi): ProcessApi | null {
   const command = cmdRegistry.get(cmd);
   if (command === undefined) {
     console.error(`command ${cmd} does not exist`);
@@ -30,35 +46,58 @@ export function launchCmd(cmd: string, cmdApi: CmdApi): number | null {
   return launchCmdFromManifest(command, cmdApi);
 }
 
-export function launchAppFromManifest(manifest: AppManifest): number {
+export function launchAppFromManifest(manifest: AppManifest): ProcessApi {
   const instId = instanceId.value++;
 
   let appApi = getAppApi(instId);
-  manifest.launch(appApi).catch(console.error);
+  let promise = manifest.launch(appApi).catch(console.error);
 
-  let process: Process = {
-    instId,
-  };
-  processes.set(instId, process);
+  let process = makeProcess(promise, instId);
 
-  return instId;
+  return process.api;
 }
 
 export function launchCmdFromManifest(
   manifest: CmdManifest,
   cmdApi: CmdApi
-): number {
+): ProcessApi {
   const instId = instanceId.value++;
 
   let appApi = getAppApi(instId);
-  manifest.launch(appApi, cmdApi).catch(console.error);
+  let promise = manifest.launch(appApi, cmdApi).catch(console.error);
+
+  let process = makeProcess(promise, instId);
+
+  return process.api;
+}
+
+type ProcessEvents = {
+  exit: [];
+};
+
+function makeProcess(promise: Promise<void>, instId: number): Process {
+  let callbacks = new CallbackManager<ProcessEvents>();
+  promise.then(() => {
+    callbacks.emit("exit");
+  });
+
+  let processApi: ProcessApi = {
+    getId: () => instId,
+
+    on: callbacks.on.bind(callbacks),
+    once: callbacks.once.bind(callbacks),
+    off: callbacks.off.bind(callbacks),
+  };
 
   let process: Process = {
     instId,
+
+    api: processApi,
   };
+
   processes.set(instId, process);
 
-  return instId;
+  return process;
 }
 
 export function closeApp(instId: number) {

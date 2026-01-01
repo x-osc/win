@@ -11,6 +11,7 @@
 
   let lines: string[] = $state([]);
   let workingDir: string[] = $state([]);
+  let isCmdRunning: boolean = $state(false);
 
   let input: HTMLInputElement;
   let terminal: HTMLElement;
@@ -41,12 +42,16 @@
       writeLine: (line) => addLine(line),
     };
 
-    // TODO: dont show prompt when cmd is running
-
-    let appId = launchCmd(cmd, cmdApi);
-    if (appId === null) {
+    let procApi = launchCmd(cmd, cmdApi);
+    if (procApi === null) {
       addLine(`Command not found: ${cmd}`);
+      return;
     }
+
+    isCmdRunning = true;
+    procApi.on("exit", () => {
+      isCmdRunning = false;
+    });
   }
 
   function addLine(line: string) {
@@ -83,8 +88,11 @@
   {#each lines as line}
     <div class="terminal-line">{line}</div>
   {/each}
+
   <div class="prompt">
-    <span>[ {joinPath(workingDir)} ] $</span>
+    {#if !isCmdRunning}
+      <span>[ {joinPath(workingDir)} ] $</span>
+    {/if}
     <input
       bind:this={input}
       onkeydown={handleKeyDown}
