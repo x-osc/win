@@ -1,6 +1,6 @@
-import { AppApi } from "../core/app/api";
+import type { AppApi } from "../core/app/api";
 import { COLORS } from "../core/cmd/colorcodes";
-import { CmdApi, CmdManifest } from "../core/cmd/command";
+import type { CmdApi, CmdManifest } from "../core/cmd/command";
 import { sleep } from "../core/utils";
 
 async function launch(appApi: AppApi, cmdApi: CmdApi) {

@@ -1,5 +1,5 @@
-import { AppApi } from "../core/app/api";
-import { CmdApi, CmdManifest } from "../core/cmd/command";
+import type { AppApi } from "../core/app/api";
+import type { CmdApi, CmdManifest } from "../core/cmd/command";
 
 async function launch(api: AppApi, cmdApi: CmdApi) {
   const args = cmdApi.getArgs();

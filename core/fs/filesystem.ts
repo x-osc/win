@@ -1,4 +1,4 @@
-import { DBSchema, openDB } from "idb";
+import { type DBSchema, openDB } from "idb";
 
 export let fsApi = {
   splitPath,

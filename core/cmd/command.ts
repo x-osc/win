@@ -1,4 +1,4 @@
-import { AppApi } from "../app/api";
+import type { AppApi } from "../app/api";
 
 export type TextOptions = {
   color: string;

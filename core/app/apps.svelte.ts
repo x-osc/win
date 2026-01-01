@@ -1,10 +1,6 @@
-import {
-  CallbackManager,
-  OffFunction,
-  OnceFunction,
-  OnFunction,
-} from "../callbacks";
-import { CmdApi, CmdManifest } from "../cmd/command";
+import type { OffFunction, OnceFunction, OnFunction } from "../callbacks";
+import { CallbackManager } from "../callbacks";
+import type { CmdApi, CmdManifest } from "../cmd/command";
 import { instanceId } from "../state.svelte";
 import { wmApi } from "../wm/wm.svelte";
 import { getAppApi } from "./api";

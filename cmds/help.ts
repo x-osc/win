@@ -1,6 +1,6 @@
-import { AppApi } from "../core/app/api";
+import type { AppApi } from "../core/app/api";
 import { getCmds } from "../core/app/apps.svelte";
-import { CmdApi, CmdManifest } from "../core/cmd/command";
+import type { CmdApi, CmdManifest } from "../core/cmd/command";
 
 async function launch(api: AppApi, cmdApi: CmdApi) {
   for (let [cmdName, cmdManifest] of getCmds()) {
