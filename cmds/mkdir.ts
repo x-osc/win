@@ -17,6 +17,7 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
     return;
   }
 
+  cmdApi.writeLine(`creating directory '${api.fs.joinPath(path)}'`);
   try {
     await api.fs.mkdir(path);
   } catch (err) {

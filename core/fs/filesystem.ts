@@ -74,7 +74,7 @@ export function isFsError(err: unknown): err is FsError {
   return err instanceof FsError;
 }
 
-const ROOT_ID = "_root_";
+export const ROOT_ID = "_root_";
 
 interface FSDB_Schema extends DBSchema {
   entries: {

@@ -1,5 +1,6 @@
 import { AppApi } from "../core/app/api";
 import { CmdApi, CmdManifest } from "../core/cmd/command";
+import { ROOT_ID } from "../core/fs/filesystem";
 
 async function launch(api: AppApi, cmdApi: CmdApi) {
   const args = cmdApi.getArgs();
@@ -33,6 +34,14 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
 
   const entries = await api.fs.listDir(targetDir);
   entries.sort((a, b) => a.name.localeCompare(b.name));
+
+  console.log(entries);
+  if (
+    entries.length === 0 ||
+    (entries.length === 1 && entries[0].id === ROOT_ID)
+  ) {
+    return;
+  }
 
   const files = entries.filter((entry) => entry.type === "file");
   const dirs = entries.filter((entry) => entry.type === "dir");

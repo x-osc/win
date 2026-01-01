@@ -22,6 +22,7 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
     return;
   }
 
+  cmdApi.writeLine(`creating file '${api.fs.joinPath(path, false)}'`);
   try {
     await api.fs.writeFile(path, {
       data: new Blob([content], { type: "text/plain" }),
