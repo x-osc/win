@@ -4,6 +4,7 @@ export let fsApi = {
   splitPath,
   joinPath,
   getEntry,
+  getPath,
   resolvePath,
   exists,
   type,
@@ -173,6 +174,27 @@ export async function getEntry(path: string[]): Promise<FsEntry | null> {
   }
 
   return (await store.get(currId)) ?? null;
+}
+
+export async function getPath(entry: FsEntry): Promise<string[] | null> {
+  const db = await FSDB;
+  const tx = db.transaction("entries", "readonly");
+  const store = tx.objectStore("entries");
+
+  let parts: string[] = [];
+  let current: FsEntry = entry;
+  while (current && current.id !== ROOT_ID) {
+    parts.push(current.name);
+    let newEntry = await store.get(current.parentId);
+
+    if (newEntry === undefined) {
+      return null;
+    }
+
+    current = newEntry;
+  }
+
+  return parts.reverse();
 }
 
 export async function exists(path: string[]): Promise<boolean> {
