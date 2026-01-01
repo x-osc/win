@@ -1,5 +1,6 @@
 <script lang="ts">
   import { notepadManifest } from "../apps/notepad/notepad";
+  import { paintManifest } from "../apps/paint/paint";
   import { terminalManifest } from "../apps/terminal/terminal";
   import { asdfManifest } from "../cmds/asdf";
   import { cdManifest } from "../cmds/cd";
@@ -21,6 +22,7 @@
   registerApp(testAppManifest);
   registerApp(notepadManifest);
   registerApp(terminalManifest);
+  registerApp(paintManifest);
 
   registerCmd(helpManifest);
   registerCmd(asdfManifest);
@@ -54,6 +56,7 @@
     <button onclick={(_) => launchApp("test_app")}>make app</button>
     <button onclick={(_) => launchApp("notepad")}>notepad</button>
     <button onclick={(_) => launchApp("terminal")}>terminal</button>
+    <button onclick={(_) => launchApp("paint")}>michaelsoft paint</button>
   </div>
   <Taskbar taskbar={wmApi.getTaskbar()} {wmApi} />
 </div>
