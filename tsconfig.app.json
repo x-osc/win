@@ -18,8 +18,14 @@
     "moduleDetection": "force",
     "baseUrl": ".",
     "paths": {
-      "$lib/*": ["./core/*"]
+      "$lib/*": [
+        "./core/*"
+      ]
     }
   },
-  "include": ["./*.ts", "./*.js", "./*.svelte", "./*.svelte.ts"]
+  "include": [
+    "**/*.ts",
+    "**/*.js",
+    "**/*.svelte",
+  ]
 }
