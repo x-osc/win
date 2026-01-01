@@ -13,4 +13,5 @@ export interface CmdApi {
   setWorkingDir(path: string[]): Promise<void>;
   appendLine(content: string): void;
   writeLine(content: string): void;
+  getInput(): Promise<string>;
 }

@@ -12,6 +12,9 @@
   let lines: string[] = $state([]);
   let workingDir: string[] = $state([]);
   let isCmdRunning: boolean = $state(false);
+  let isInputRunning: boolean = $state(false);
+
+  let resolveInput: (value: string) => void | null = null;
 
   let textInput: HTMLInputElement;
   let terminal: HTMLElement;
@@ -40,6 +43,15 @@
       },
       appendLine: (content: string) => appendLine(content),
       writeLine: (line) => addLine(line),
+      getInput: async () => {
+        isInputRunning = true;
+        await tick();
+        textInput.focus();
+
+        return new Promise<string>((resolve) => {
+          resolveInput = resolve;
+        });
+      },
     };
 
     let procApi = launchCmd(cmd, cmdApi);
@@ -73,10 +85,25 @@
 
   function handleKeyDown(e: KeyboardEvent) {
     if (e.key === "Enter") {
-      const command = textInput.value.trim();
-      addLine("$ " + command);
-      processCommand(command);
-      textInput.value = "";
+      if (!isCmdRunning) {
+        const command = textInput.value.trim();
+        addLine("$ " + command);
+        textInput.value = "";
+
+        processCommand(command);
+        return;
+      }
+
+      if (isInputRunning && resolveInput !== null) {
+        const input = textInput.value;
+        addLine(input);
+        textInput.value = "";
+
+        isInputRunning = false;
+        resolveInput(input);
+        resolveInput = null;
+        return;
+      }
     }
   }
 
@@ -97,7 +124,7 @@
     >
     <input
       bind:this={textInput}
-      style="display: {isCmdRunning ? 'none' : 'inline'}"
+      style="display: {!isCmdRunning || isInputRunning ? 'inline' : 'none'}"
       onkeydown={handleKeyDown}
       spellcheck="false"
       class="input"

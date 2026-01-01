@@ -13,6 +13,7 @@
   import { terminalManifest } from "../apps/terminal/terminal";
   import { asdfManifest } from "../cmds/asdf";
   import { cdManifest } from "../cmds/cd";
+  import { deleteManifest, rmManifest } from "../cmds/delete";
   import { echoManifest } from "../cmds/echo";
   import { helpManifest } from "../cmds/help";
   import { listManifest, lsManifest } from "../cmds/list";
@@ -35,6 +36,8 @@
   registerCmd(lsManifest);
   registerCmd(readManifest);
   registerCmd(catManifest);
+  registerCmd(deleteManifest);
+  registerCmd(rmManifest);
 </script>
 
 <div id="root">

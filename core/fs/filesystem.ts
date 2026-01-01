@@ -11,6 +11,7 @@ export let fsApi = {
   writeFile,
   readFile,
   listDir,
+  listDirRecursive,
   rename,
   move,
   remove,
@@ -326,6 +327,42 @@ export async function listDir(path: string[]): Promise<FsEntry[]> {
   }
 
   return db.getAllFromIndex("entries", "by-parent", entry.id);
+}
+
+export async function listDirRecursive(path: string[]): Promise<FsEntry[]> {
+  const db = await FSDB;
+  const entry = await getEntry(path);
+
+  if (!entry) {
+    throw new FsError({ type: "notfound", path });
+  }
+  if (entry.type !== "dir") {
+    throw new FsError({
+      type: "typemismatch",
+      path,
+      expected: "dir",
+      actual: entry.type,
+    });
+  }
+
+  let results: FsEntry[] = [];
+
+  async function recurseDir(dirEntry: DirEntry) {
+    const children = await db.getAllFromIndex(
+      "entries",
+      "by-parent",
+      dirEntry.id
+    );
+    for (const child of children) {
+      results.push(child);
+      if (child.type === "dir") {
+        await recurseDir(child);
+      }
+    }
+  }
+
+  await recurseDir(entry);
+  return results;
 }
 
 export async function rename(path: string[], newName: string) {

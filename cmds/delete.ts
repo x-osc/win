@@ -1,0 +1,64 @@
+import { AppApi } from "../core/app/api";
+import { CmdApi, CmdManifest } from "../core/cmd/command";
+
+async function launch(api: AppApi, cmdApi: CmdApi) {
+  const args = cmdApi.getArgs();
+  const workingDir = cmdApi.getWorkingDir();
+
+  if (args.length === 0) {
+    cmdApi.writeLine("rm: missing operand");
+    return;
+  }
+
+  const path = api.fs.resolvePath(workingDir, args[0]);
+  if (path === null) {
+    cmdApi.writeLine(`rm: no such file or directory: ${args[0]}`);
+    return;
+  }
+  if (!(await api.fs.exists(path))) {
+    cmdApi.writeLine(`rm: no such file or directory: ${api.fs.joinPath(path)}`);
+    return;
+  }
+  if ((await api.fs.type(path)) === "file") {
+    cmdApi.writeLine(`delete file ${api.fs.joinPath(path)}? (y/n): `);
+    const input = await cmdApi.getInput();
+    if (input.toLowerCase() !== "y") {
+      api.fs.remove(path);
+    }
+  } else if ((await api.fs.type(path)) === "dir") {
+    let entries = await api.fs.listDirRecursive(path);
+    let files = entries.filter((entry) => entry.type === "file");
+    let dirs = entries.filter((entry) => entry.type === "dir");
+
+    if (entries.length === 0) {
+      cmdApi.writeLine(
+        `delete empty directory ${api.fs.joinPath(path)}? (y/n): `
+      );
+    } else {
+      cmdApi.writeLine(
+        `delete ${files.length} files and ${dirs.length} directories including directory ${api.fs.joinPath(path)}? (y/n): `
+      );
+    }
+    const input = await cmdApi.getInput();
+    if (input.toLowerCase() === "y") {
+      api.fs.removeRecursive(path);
+    }
+  }
+
+  const content = await api.fs.readFile(path);
+  cmdApi.writeLine(await content.data.text());
+}
+
+export let deleteManifest: CmdManifest = {
+  appId: "delete",
+  command: "delete",
+
+  launch,
+};
+
+export let rmManifest: CmdManifest = {
+  appId: "delete",
+  command: "rm",
+
+  launch,
+};
