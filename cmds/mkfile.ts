@@ -21,6 +21,12 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
     cmdApi.writeLine(`mkfile: invalid path '${args[0]}'`);
     return;
   }
+  if (await api.fs.exists(path)) {
+    cmdApi.writeLine(
+      `mkfile: cannot create file '${api.fs.joinPath(path, false)}': File exists`
+    );
+    return;
+  }
 
   cmdApi.writeLine(`creating file '${api.fs.joinPath(path, false)}'`);
   try {
