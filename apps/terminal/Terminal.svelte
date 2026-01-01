@@ -13,13 +13,13 @@
   let workingDir: string[] = $state([]);
   let isCmdRunning: boolean = $state(false);
 
-  let input: HTMLInputElement;
+  let textInput: HTMLInputElement;
   let terminal: HTMLElement;
   let currPrompt: HTMLElement;
 
   onMount(() => {
     addLine("balls");
-    input.focus();
+    textInput.focus();
   });
 
   function processCommand(input: string) {
@@ -49,8 +49,10 @@
     }
 
     isCmdRunning = true;
-    procApi.on("exit", () => {
+    procApi.on("exit", async () => {
       isCmdRunning = false;
+      await tick();
+      textInput.focus();
     });
   }
 
@@ -71,16 +73,16 @@
 
   function handleKeyDown(e: KeyboardEvent) {
     if (e.key === "Enter") {
-      const command = input.value.trim();
+      const command = textInput.value.trim();
       addLine("$ " + command);
       processCommand(command);
-      input.value = "";
+      textInput.value = "";
     }
   }
 
   // TODO: logic like on input blur => check if win is focused => if is then focus input
   winApi.on("focus", () => {
-    input.focus();
+    textInput.focus();
   });
 </script>
 
@@ -90,11 +92,12 @@
   {/each}
 
   <div class="prompt">
-    {#if !isCmdRunning}
-      <span>[ {joinPath(workingDir)} ] $</span>
-    {/if}
+    <span style="display: {isCmdRunning ? 'none' : 'inline'}"
+      >[ {joinPath(workingDir)} ] $</span
+    >
     <input
-      bind:this={input}
+      bind:this={textInput}
+      style="display: {isCmdRunning ? 'none' : 'inline'}"
       onkeydown={handleKeyDown}
       spellcheck="false"
       class="input"
