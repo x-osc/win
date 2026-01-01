@@ -384,6 +384,10 @@ export async function listDirRecursive(path: string[]): Promise<FsEntry[]> {
       dirEntry.id
     );
     for (const child of children) {
+      if (child.id === ROOT_ID) {
+        continue;
+      }
+
       results.push(child);
       if (child.type === "dir") {
         await recurseDir(child);
@@ -478,6 +482,10 @@ export async function removeRecursive(path: string[]) {
     if (entry.type === "dir") {
       const children = await entriesStore.index("by-parent").getAll(entry.id);
       for (const child of children) {
+        if (entry.id === ROOT_ID) {
+          return;
+        }
+
         await removeEntryRec(child);
       }
       await entriesStore.delete(entry.id);
