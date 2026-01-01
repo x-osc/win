@@ -7,17 +7,19 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
   const workingDir = cmdApi.getWorkingDir();
 
   if (args.length === 0) {
-    cmdApi.writeLine("rm: missing operand");
+    cmdApi.writeLine("delete: missing operand");
     return;
   }
 
   const path = api.fs.resolvePath(workingDir, args[0]);
   if (path === null) {
-    cmdApi.writeLine(`rm: no such file or directory: ${args[0]}`);
+    cmdApi.writeLine(`delete: no such file or directory: ${args[0]}`);
     return;
   }
   if (!(await api.fs.exists(path))) {
-    cmdApi.writeLine(`rm: no such file or directory: ${api.fs.joinPath(path)}`);
+    cmdApi.writeLine(
+      `delete: no such file or directory: ${api.fs.joinPath(path)}`
+    );
     return;
   }
 
@@ -30,7 +32,7 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
       } catch (err) {
         if (err instanceof FsError) {
           cmdApi.writeLine(
-            `rm: cannot remove '${api.fs.joinPath(path, false)}': ${err.message}`
+            `delete: cannot remove '${api.fs.joinPath(path, false)}': ${err.message}`
           );
         }
       }
@@ -46,7 +48,7 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
       );
     } else {
       cmdApi.writeLine(
-        `delete ${files.length} files and ${dirs.length} directories including directory ${api.fs.joinPath(path)}? (y/n): `
+        `delete ${files.length} files and ${dirs.length + 1} directories including directory ${api.fs.joinPath(path)}? (y/n): `
       );
     }
     const input = await cmdApi.getInput();
