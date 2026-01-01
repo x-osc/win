@@ -1,5 +1,6 @@
 import { AppApi } from "../core/app/api";
 import { CmdApi, CmdManifest } from "../core/cmd/command";
+import { FsError } from "../core/fs/filesystem";
 
 async function launch(api: AppApi, cmdApi: CmdApi) {
   const args = cmdApi.getArgs();
@@ -29,9 +30,11 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
   try {
     cmdApi.setWorkingDir(newPath);
   } catch (err) {
-    cmdApi.writeLine(
-      `cd: cannot change directory to '${api.fs.joinPath(newPath)}': ${err.message}`
-    );
+    if (err instanceof FsError) {
+      cmdApi.writeLine(
+        `cd: cannot change directory to '${api.fs.joinPath(newPath)}': ${err.message}`
+      );
+    }
   }
 }
 
