@@ -3,12 +3,7 @@
   import { testAppManifest } from "$lib/testApp";
   import Taskbar from "$lib/wm/Taskbar.svelte";
   import Window from "$lib/wm/Window.svelte";
-  import {
-    getFocusHistory,
-    getTaskbar,
-    winDataBuilder,
-    wmApi,
-  } from "$lib/wm/wm.svelte";
+  import { winDataBuilder, wmApi } from "$lib/wm/wm.svelte";
   import { notepadManifest } from "../apps/notepad/notepad";
   import { terminalManifest } from "../apps/terminal/terminal";
   import { asdfManifest } from "../cmds/asdf";
@@ -50,7 +45,8 @@
       <Window
         {id}
         windowData={win.data}
-        focused={id === getFocusHistory()[getFocusHistory().length - 1]}
+        focused={id ===
+          wmApi.getFocusHistory()[wmApi.getFocusHistory().length - 1]}
         {wmApi}
       />
     {/each}
@@ -64,7 +60,7 @@
     <button onclick={(_) => launchApp("notepad")}>notepad</button>
     <button onclick={(_) => launchApp("terminal")}>terminal</button>
   </div>
-  <Taskbar taskbar={getTaskbar()} {wmApi} />
+  <Taskbar taskbar={wmApi.getTaskbar()} {wmApi} />
 </div>
 
 <style>

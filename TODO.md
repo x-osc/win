@@ -1,6 +1,7 @@
  - rework terminal to be like lok.computer's (prompt on bottom, logs on top)
  - full ui css stuff
  - rename app to process
+ - focusing with taskbar doesnt trigger focus callback 
  - maybe remove process altogether and just launch func?
  - depressed clippy
  - custom cursors + support

@@ -21,7 +21,6 @@
   let currPrompt: HTMLElement;
 
   onMount(() => {
-    addLine("balls");
     textInput.focus();
   });
 
@@ -107,10 +106,15 @@
     }
   }
 
-  // TODO: logic like on input blur => check if win is focused => if is then focus input
   winApi.on("focus", () => {
     textInput.focus();
   });
+
+  function handleBlur(_) {
+    if ((!isCmdRunning || isInputRunning) && winApi.isFocused()) {
+      textInput.focus();
+    }
+  }
 </script>
 
 <div bind:this={terminal} class="terminal">
@@ -126,6 +130,7 @@
       bind:this={textInput}
       style="display: {!isCmdRunning || isInputRunning ? 'inline' : 'none'}"
       onkeydown={handleKeyDown}
+      onblur={handleBlur}
       spellcheck="false"
       class="input"
     />

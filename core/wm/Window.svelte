@@ -1,10 +1,10 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { on } from "svelte/events";
-  import { ResizeDirection } from "./types";
-  import "../win.css";
-  import type { WinData, WindowApi, WindowEvents } from "./wm.svelte";
   import { CallbackManager } from "../callbacks";
+  import "../win.css";
+  import { ResizeDirection } from "./types";
+  import type { WinData, WindowApi, WindowEvents } from "./wm.svelte";
 
   let {
     id,
@@ -26,6 +26,8 @@
     getData: () => windowData,
     setTitle: (title: string) => wmApi.setWindowTitle(id, title),
     focus: () => focus(),
+    isFocused: () =>
+      id === wmApi.getFocusHistory()[wmApi.getFocusHistory().length - 1],
     move: (x: number, y: number) => wmApi.moveWindow(id, x, y),
     resize: (width: number, height: number) =>
       wmApi.setWindowSize(id, width, height),
@@ -102,7 +104,7 @@
       ) {
         newHeight = Math.max(
           startHeight + (moveEvent.clientY - startMouseY),
-          windowData.minHeight,
+          windowData.minHeight
         );
       }
       if (
@@ -112,7 +114,7 @@
       ) {
         newWidth = Math.max(
           startWidth + (moveEvent.clientX - startMouseX),
-          windowData.minWidth,
+          windowData.minWidth
         );
       }
       if (
@@ -122,7 +124,7 @@
       ) {
         newHeight = Math.max(
           startHeight - (moveEvent.clientY - startMouseY),
-          windowData.minHeight,
+          windowData.minHeight
         );
         newY = startY + (startHeight - newHeight);
       }
@@ -133,7 +135,7 @@
       ) {
         newWidth = Math.max(
           startWidth - (moveEvent.clientX - startMouseX),
-          windowData.minWidth,
+          windowData.minWidth
         );
         newX = startX + (startWidth - newWidth);
       }

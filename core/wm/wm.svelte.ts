@@ -1,6 +1,6 @@
 import { SvelteMap } from "svelte/reactivity";
-import { windowId, zIndex } from "../state.svelte";
 import type { OffFunction, OnceFunction, OnFunction } from "../callbacks";
+import { windowId, zIndex } from "../state.svelte";
 
 export type Win = {
   data: WinData;
@@ -27,6 +27,7 @@ export interface WindowApi {
   move(x: number, y: number): void;
   resize(width: number, height: number): void;
   focus(): void;
+  isFocused(): boolean;
   close(): void;
   getWindowElement(): HTMLElement;
   getBody(): HTMLElement;
@@ -100,6 +101,8 @@ export const wmApi = {
   focusWindow,
   closeWindow,
   getWindows,
+  getFocusHistory,
+  getTaskbar,
   registerWindowApi,
   getWindowApi,
 };
@@ -226,10 +229,10 @@ function getWindows(): Map<number, Win> {
   return windows;
 }
 
-export function getTaskbar(): number[] {
+function getTaskbar(): number[] {
   return taskbar;
 }
 
-export function getFocusHistory(): number[] {
+function getFocusHistory(): number[] {
   return focusHistory;
 }
