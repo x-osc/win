@@ -18,7 +18,7 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
   }
   if (!(await api.fs.exists(path))) {
     cmdApi.writeLine(
-      `read: no such file or directory: ${api.fs.joinPath(path)}`
+      `read: no such file or directory: ${api.fs.joinPath(path, false)}`
     );
     return;
   }

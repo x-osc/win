@@ -58,7 +58,7 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
       } catch (err) {
         if (err instanceof FsError) {
           cmdApi.writeLine(
-            `rm: cannot remove '${api.fs.joinPath(path, false)}': ${err.message}`
+            `delete: cannot remove '${api.fs.joinPath(path, false)}': ${err.message}`
           );
         }
       }
