@@ -5,20 +5,18 @@ import { winDataBuilder } from "../../core/wm/wm.svelte";
 import Notepad from "./Notepad.svelte";
 
 async function launch(api: AppApi) {
-  api.window
-    .createWindowAsync(
-      winDataBuilder().withMinSize(290, 161).withTitle("notepad").build()
-    )
-    .then((winApi) => {
-      let body = winApi.getBody();
-      const component = mount(Notepad, {
-        target: body,
-      });
+  let winApi = await api.window.createWindowAsync(
+    winDataBuilder().withMinSize(290, 161).withTitle("notepad").build()
+  );
 
-      winApi.on("close", () => {
-        api.quit();
-      });
-    });
+  let body = winApi.getBody();
+  const component = mount(Notepad, {
+    target: body,
+  });
+
+  winApi.on("close", () => {
+    api.quit();
+  });
 }
 
 export let notepadManifest: AppManifest = {
