@@ -32,8 +32,15 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
   }
 
   const entries = await api.fs.listDir(targetDir);
-  for (let entry of entries) {
-    cmdApi.writeLine(entry.name);
+  entries.sort((a, b) => a.name.localeCompare(b.name));
+
+  const files = entries.filter((entry) => entry.type === "file");
+  const dirs = entries.filter((entry) => entry.type === "dir");
+  for (let dir of dirs) {
+    cmdApi.writeLine(dir.name);
+  }
+  for (let file of files) {
+    cmdApi.writeLine(file.name);
   }
 }
 
