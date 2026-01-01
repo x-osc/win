@@ -330,7 +330,11 @@ export async function listDir(path: string[]): Promise<FsEntry[]> {
     });
   }
 
-  return db.getAllFromIndex("entries", "by-parent", entry.id);
+  let result = (
+    await db.getAllFromIndex("entries", "by-parent", entry.id)
+  ).filter((e) => e.id !== ROOT_ID);
+
+  return result;
 }
 
 export async function listDirRecursive(path: string[]): Promise<FsEntry[]> {

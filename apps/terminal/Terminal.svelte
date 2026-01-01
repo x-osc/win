@@ -123,9 +123,9 @@
   {/each}
 
   <div class="prompt">
-    <span style="display: {isCmdRunning ? 'none' : 'inline'}"
-      >[ {joinPath(workingDir)} ] $</span
-    >
+    <span style="display: {isCmdRunning ? 'none' : 'inline'}">
+      [ {joinPath(workingDir)} ] $
+    </span>
     <input
       bind:this={textInput}
       style="display: {!isCmdRunning || isInputRunning ? 'inline' : 'none'}"
@@ -158,6 +158,10 @@
     word-break: break-all;
     margin: 0;
     padding: 0;
+  }
+
+  .terminal-line:empty::after {
+    content: "\00a0"; /* nbsp */
   }
 
   .prompt {
