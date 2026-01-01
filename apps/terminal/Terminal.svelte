@@ -14,6 +14,8 @@
   let isCmdRunning: boolean = $state(false);
   let isInputRunning: boolean = $state(false);
 
+  let prompt: string = $derived(`[ ${joinPath(workingDir)} ] $`);
+
   let resolveInput: (value: string) => void | null = null;
 
   let textInput: HTMLInputElement;
@@ -86,7 +88,8 @@
     if (e.key === "Enter") {
       if (!isCmdRunning) {
         const command = textInput.value.trim();
-        addLine("$ " + command);
+        let promptNow = prompt;
+        addLine(promptNow + " " + command);
         textInput.value = "";
 
         processCommand(command);
@@ -124,7 +127,7 @@
 
   <div class="prompt">
     <span style="display: {isCmdRunning ? 'none' : 'inline'}">
-      [ {joinPath(workingDir)} ] $
+      {prompt}
     </span>
     <input
       bind:this={textInput}
