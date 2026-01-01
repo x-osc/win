@@ -26,7 +26,13 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
     return;
   }
 
-  cmdApi.setWorkingDir(newPath);
+  try {
+    cmdApi.setWorkingDir(newPath);
+  } catch (err) {
+    cmdApi.writeLine(
+      `cd: cannot change directory to '${api.fs.joinPath(newPath)}': ${err.message}`
+    );
+  }
 }
 
 export let cdManifest: CmdManifest = {

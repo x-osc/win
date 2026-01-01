@@ -1,5 +1,6 @@
 import { AppApi } from "../core/app/api";
 import { CmdApi, CmdManifest } from "../core/cmd/command";
+import { FsError } from "../core/fs/filesystem";
 
 async function launch(api: AppApi, cmdApi: CmdApi) {
   const args = cmdApi.getArgs();
@@ -19,11 +20,20 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
     cmdApi.writeLine(`rm: no such file or directory: ${api.fs.joinPath(path)}`);
     return;
   }
+
   if ((await api.fs.type(path)) === "file") {
-    cmdApi.writeLine(`delete file ${api.fs.joinPath(path)}? (y/n): `);
+    cmdApi.writeLine(`delete file ${api.fs.joinPath(path, false)}? (y/n): `);
     const input = await cmdApi.getInput();
     if (input.toLowerCase() !== "y") {
-      api.fs.remove(path);
+      try {
+        await api.fs.remove(path);
+      } catch (err) {
+        if (err instanceof FsError) {
+          cmdApi.writeLine(
+            `rm: cannot remove '${api.fs.joinPath(path, false)}': ${err.message}`
+          );
+        }
+      }
     }
   } else if ((await api.fs.type(path)) === "dir") {
     let entries = await api.fs.listDirRecursive(path);
@@ -41,10 +51,17 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
     }
     const input = await cmdApi.getInput();
     if (input.toLowerCase() === "y") {
-      api.fs.removeRecursive(path);
+      try {
+        await api.fs.removeRecursive(path);
+      } catch (err) {
+        if (err instanceof FsError) {
+          cmdApi.writeLine(
+            `rm: cannot remove '${api.fs.joinPath(path, false)}': ${err.message}`
+          );
+        }
+      }
     }
   }
-
   const content = await api.fs.readFile(path);
   cmdApi.writeLine(await content.data.text());
 }

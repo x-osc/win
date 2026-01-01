@@ -119,8 +119,12 @@ export function splitPath(path: string): string[] {
   return parts;
 }
 
-export function joinPath(parts: string[]): string {
-  return "/" + parts.join("/");
+export function joinPath(path: string[], trailingSlash = true): string {
+  let result = "/" + path.join("/");
+  if (trailingSlash && !result.endsWith("/")) {
+    result += "/";
+  }
+  return result;
 }
 
 export function resolvePath(

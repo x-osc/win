@@ -7,22 +7,29 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
   const workingDir = cmdApi.getWorkingDir();
 
   if (args.length === 0) {
-    cmdApi.writeLine("mkdir: missing operand");
+    cmdApi.writeLine("mkfile: missing operand");
     return;
+  }
+
+  let content = "";
+  if (args[1] != undefined) {
+    content = args.slice(1).join(" ");
   }
 
   const path = resolvePath(workingDir, args[0]);
   if (path === null) {
-    cmdApi.writeLine(`mkdir: invalid path '${args[0]}'`);
+    cmdApi.writeLine(`mkfile: invalid path '${args[0]}'`);
     return;
   }
 
   try {
-    await api.fs.mkdir(path);
+    await api.fs.writeFile(path, {
+      data: new Blob([content], { type: "text/plain" }),
+    });
   } catch (err) {
     if (err instanceof FsError) {
       cmdApi.writeLine(
-        `mkdir: cannot create directory '${api.fs.joinPath(path)}': ${err.message}`
+        `mkfile: cannot create file '${api.fs.joinPath(path, false)}': ${err.message}`
       );
     }
   }
