@@ -69,6 +69,7 @@
     procApi.on("exit", async () => {
       isCmdRunning = false;
       await tick();
+      scrollToBottom();
       textInput.focus();
     });
   }
@@ -78,7 +79,7 @@
 
     lines.push([[line, newOptions]]);
     tick().then(() => {
-      terminal.scrollTop = terminal.scrollHeight;
+      scrollToBottom();
     });
   }
 
@@ -92,8 +93,13 @@
     }
   }
 
+  function scrollToBottom() {
+    terminal.scrollTop = terminal.scrollHeight;
+  }
+
   function handleKeyDown(e: KeyboardEvent) {
     if (e.key === "Enter") {
+      // launch command
       if (!isCmdRunning) {
         const command = textInput.value.trim();
         let promptNow = prompt;
@@ -104,6 +110,7 @@
         return;
       }
 
+      // run input
       if (isInputRunning && resolveInput !== null) {
         const input = textInput.value;
         addLine(input);
