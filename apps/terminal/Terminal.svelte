@@ -2,14 +2,18 @@
   import { onMount, tick } from "svelte";
   import type { AppApi } from "../../core/app/api";
   import { launchCmd } from "../../core/app/apps.svelte";
-  import type { CmdApi } from "../../core/cmd/command";
+  import {
+    DEFAULTOPTIONS,
+    type CmdApi,
+    type TextOptions,
+  } from "../../core/cmd/command";
   import { splitArgs } from "../../core/cmd/parser";
   import { joinPath } from "../../core/fs/filesystem";
   import type { WindowApi } from "../../core/wm/wm.svelte";
 
   let { appApi, winApi }: { appApi: AppApi; winApi: WindowApi } = $props();
 
-  let lines: string[] = $state([]);
+  let lines: [string, TextOptions][][] = $state([]);
   let workingDir: string[] = $state([]);
   let isCmdRunning: boolean = $state(false);
   let isInputRunning: boolean = $state(false);
@@ -42,8 +46,8 @@
         }
         workingDir = path;
       },
-      appendLine: (content: string) => appendLine(content),
-      writeLine: (line) => addLine(line),
+      appendLine: (content, options = {}) => appendLine(content, options),
+      writeLine: (line, options = {}) => addLine(line, options),
       getInput: async () => {
         isInputRunning = true;
         await tick();
@@ -69,18 +73,22 @@
     });
   }
 
-  function addLine(line: string) {
-    lines.push(line);
+  function addLine(line: string, options: Partial<TextOptions> = {}) {
+    let newOptions = { ...DEFAULTOPTIONS, ...options };
+
+    lines.push([[line, newOptions]]);
     tick().then(() => {
       terminal.scrollTop = terminal.scrollHeight;
     });
   }
 
-  function appendLine(txt: string) {
+  function appendLine(txt: string, options: Partial<TextOptions> = {}) {
+    let newOptions = { ...DEFAULTOPTIONS, ...options };
+
     if (lines.length === 0) {
-      lines.push(txt);
+      lines.push([[txt, newOptions]]);
     } else {
-      lines[lines.length - 1] += txt;
+      lines[lines.length - 1].push([txt, newOptions]);
     }
   }
 
@@ -122,7 +130,21 @@
 
 <div bind:this={terminal} class="terminal">
   {#each lines as line}
-    <div class="terminal-line">{line}</div>
+    <div class="terminal-line">
+      <span class="terminal-segment">
+        {#each line as [text, options]}
+          <span
+            style="
+              color: {options.color};
+              font-weight: {options.bold ? 'bold' : 'normal'};
+              font-style: {options.italic ? 'italic' : 'normal'};
+            "
+          >
+            {text}
+          </span>
+        {/each}
+      </span>
+    </div>
   {/each}
 
   <div class="prompt">

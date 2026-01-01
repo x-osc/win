@@ -1,0 +1,18 @@
+export const COLORS = {
+  black: "#000000",
+  red: "#FF0000",
+  green: "#00FF00",
+  yellow: "#FFFF00",
+  blue: "#0000FF",
+  magenta: "#FF00FF",
+  cyan: "#00FFFF",
+  white: "#FFFFFF",
+  gray: "#808080",
+  brightRed: "#FF5555",
+  brightGreen: "#55FF55",
+  brightYellow: "#FFFF55",
+  brightBlue: "#5555FF",
+  brightMagenta: "#FF55FF",
+  brightCyan: "#55FFFF",
+  brightWhite: "#FFFFFF",
+} as const;

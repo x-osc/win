@@ -1,4 +1,5 @@
 import { AppApi } from "../core/app/api";
+import { COLORS } from "../core/cmd/colorcodes";
 import { CmdApi, CmdManifest } from "../core/cmd/command";
 
 async function launch(api: AppApi, cmdApi: CmdApi) {
@@ -42,7 +43,7 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
   const files = entries.filter((entry) => entry.type === "file");
   const dirs = entries.filter((entry) => entry.type === "dir");
   for (let dir of dirs) {
-    cmdApi.writeLine(dir.name);
+    cmdApi.writeLine(dir.name + "/", { color: COLORS.brightCyan, bold: true });
   }
   for (let file of files) {
     cmdApi.writeLine(file.name);
