@@ -1,10 +1,11 @@
 import { AppApi } from "../core/app/api";
+import { getCmds } from "../core/app/apps.svelte";
 import { CmdApi, CmdManifest } from "../core/cmd/command";
 
 async function launch(api: AppApi, cmdApi: CmdApi) {
-  const args = cmdApi.getArgs();
-  const output = args.join(" ");
-  cmdApi.writeLine(output);
+  for (let [cmdName, cmdManifest] of getCmds()) {
+    cmdApi.writeLine(`${cmdName}`);
+  }
 }
 
 export let helpManifest: CmdManifest = {

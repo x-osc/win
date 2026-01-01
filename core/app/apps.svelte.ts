@@ -117,9 +117,17 @@ export function registerApp(app: AppManifest) {
   appRegistry.set(id, app);
 }
 
+export function getApps(): Map<string, AppManifest> {
+  return appRegistry;
+}
+
 let cmdRegistry: Map<string, CmdManifest> = new Map();
 
 export function registerCmd(cmd: CmdManifest) {
   let name = cmd.command;
   cmdRegistry.set(name, cmd);
+}
+
+export function getCmds(): Map<string, CmdManifest> {
+  return cmdRegistry;
 }
