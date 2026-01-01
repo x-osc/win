@@ -34,10 +34,10 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
   const entries = await api.fs.listDir(targetDir);
   entries.sort((a, b) => a.name.localeCompare(b.name));
 
-  if (entries.length === 0) {
-    cmdApi.writeLine("");
-    return;
-  }
+  // if (entries.length === 0) {
+  //   cmdApi.writeLine("");
+  //   return;
+  // }
 
   const files = entries.filter((entry) => entry.type === "file");
   const dirs = entries.filter((entry) => entry.type === "dir");
