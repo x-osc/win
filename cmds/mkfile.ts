@@ -45,13 +45,7 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
 export let mkfileManifest: CmdManifest = {
   appId: "mkfile",
   command: "mkfile",
-
-  launch,
-};
-
-export let touchManifest: CmdManifest = {
-  appId: "mkfile",
-  command: "touch",
+  aliases: ["touch"],
 
   launch,
 };

@@ -3,14 +3,14 @@
   import { terminalManifest } from "../apps/terminal/terminal";
   import { asdfManifest } from "../cmds/asdf";
   import { cdManifest } from "../cmds/cd";
-  import { deleteManifest, rmManifest } from "../cmds/delete";
+  import { deleteManifest } from "../cmds/delete";
   import { echoManifest } from "../cmds/echo";
   import { helpManifest } from "../cmds/help";
-  import { listManifest, lsManifest } from "../cmds/list";
+  import { listManifest } from "../cmds/list";
   import { mkdirManifest } from "../cmds/mkdir";
-  import { mkfileManifest, touchManifest } from "../cmds/mkfile";
+  import { mkfileManifest } from "../cmds/mkfile";
   import { pwdManifest } from "../cmds/pwd";
-  import { catManifest, readManifest } from "../cmds/read";
+  import { readManifest } from "../cmds/read";
   import { launchApp, registerApp } from "./app/appregistry";
   import { registerCmd } from "./cmd/cmdregistry";
   import { testAppManifest } from "./testApp";
@@ -28,14 +28,10 @@
   registerCmd(pwdManifest);
   registerCmd(mkdirManifest);
   registerCmd(mkfileManifest);
-  registerCmd(touchManifest);
   registerCmd(cdManifest);
   registerCmd(listManifest);
-  registerCmd(lsManifest);
   registerCmd(readManifest);
-  registerCmd(catManifest);
   registerCmd(deleteManifest);
-  registerCmd(rmManifest);
 </script>
 
 <div id="root">

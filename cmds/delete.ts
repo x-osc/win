@@ -71,13 +71,7 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
 export let deleteManifest: CmdManifest = {
   appId: "delete",
   command: "delete",
-
-  launch,
-};
-
-export let rmManifest: CmdManifest = {
-  appId: "delete",
-  command: "rm",
+  aliases: ["rm"],
 
   launch,
 };

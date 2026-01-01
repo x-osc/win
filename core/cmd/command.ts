@@ -15,6 +15,7 @@ export const DEFAULTOPTIONS = {
 export interface CmdManifest {
   appId: string;
   command: string;
+  aliases?: string[];
 
   launch(api: AppApi, cmdApi: CmdApi): Promise<void>;
 }

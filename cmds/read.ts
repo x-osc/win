@@ -42,13 +42,7 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
 export let readManifest: CmdManifest = {
   appId: "read",
   command: "read",
-
-  launch,
-};
-
-export let catManifest: CmdManifest = {
-  appId: "read",
-  command: "cat",
+  aliases: ["cat"],
 
   launch,
 };

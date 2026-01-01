@@ -1,5 +1,5 @@
 import type { AppManifest } from "./app";
-import { launchAppFromManifest, ProcessApi } from "./apps.svelte";
+import { launchAppFromManifest, type ProcessApi } from "./apps.svelte";
 
 let appRegistry: Map<string, AppManifest> = new Map();
 

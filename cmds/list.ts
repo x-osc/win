@@ -53,14 +53,7 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
 export let listManifest: CmdManifest = {
   appId: "list",
   command: "list",
-
-  launch,
-};
-
-// TODO: make aliases not bad
-export let lsManifest: CmdManifest = {
-  appId: "list",
-  command: "ls",
+  aliases: ["ls"],
 
   launch,
 };
