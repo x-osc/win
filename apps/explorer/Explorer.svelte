@@ -140,7 +140,6 @@
     const name = editing.name;
     const mode = editing.mode;
     const type = editing.type;
-    editing = null;
 
     if (mode === "creating") {
       if (type === "file") {
@@ -160,6 +159,8 @@
         clearSelection();
         selectEntry(entry.id);
       }
+
+      editing = null;
     }
 
     quickrefresh();
@@ -211,6 +212,10 @@
 
   function handleKeyPress(e: KeyboardEvent) {
     if (!winApi.isFocused()) {
+      return;
+    }
+
+    if (editing !== null) {
       return;
     }
 
