@@ -76,6 +76,26 @@
     return newEntries;
   }
 
+  function selectEntry(id: string) {
+    if (selectedEntries.includes(id)) {
+      return;
+    }
+
+    selectedEntries.push(id);
+    mainSelectedEntry = id;
+  }
+
+  function deselectEntry(id: string) {
+    if (!selectedEntries.includes(id)) {
+      return;
+    }
+
+    selectedEntries = selectedEntries.filter((currId) => currId != id);
+    if (mainSelectedEntry === id) {
+      mainSelectedEntry = selectedEntries[selectedEntries.length - 1];
+    }
+  }
+
   function clearSelection() {
     selectedEntries.length = 0;
     mainSelectedEntry = null;
@@ -126,13 +146,19 @@
       if (type === "file") {
         let filepath = [...cwd];
         filepath.push(name);
+
         let entry = await fsApi.writeFile(filepath, { data: new Blob() });
         entries.push(entry);
+        clearSelection();
+        selectEntry(entry.id);
       } else if (type === "dir") {
         let dirpath = [...cwd];
         dirpath.push(name);
+
         let entry = await fsApi.mkdir(dirpath);
         entries.push(entry);
+        clearSelection();
+        selectEntry(entry.id);
       }
     }
 
@@ -157,16 +183,9 @@
     if (e.ctrlKey) {
       // toggle selection
       if (selectedEntries.includes(id)) {
-        console.log(selectedEntries);
-        console.log(id);
-        selectedEntries = selectedEntries.filter((currId) => currId != id);
-        console.log(selectedEntries);
-        if (mainSelectedEntry === id) {
-          mainSelectedEntry = selectedEntries[selectedEntries.length - 1];
-        }
+        deselectEntry(id);
       } else {
-        selectedEntries.push(id);
-        mainSelectedEntry = id;
+        selectEntry(id);
       }
     } else if (e.shiftKey) {
       if (mainSelectedEntry) {
