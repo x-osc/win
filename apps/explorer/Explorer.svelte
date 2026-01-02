@@ -7,6 +7,7 @@
     joinPath,
     type FsEntry,
   } from "../../core/fs/filesystem";
+  import { randint, sleep } from "../../core/utils";
   import type { WindowApi } from "../../core/wm/wm.svelte";
 
   let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
@@ -14,20 +15,31 @@
   let cwd: string[] = $state([]);
   let entries: FsEntry[] = $state([]);
   let error: string | null = $state(null);
+  let loading: boolean = $state(false);
 
   let selectedFile: string | null = null;
 
   async function refresh() {
     error = null;
+    loading = true;
+    let currEntries;
     try {
-      const currEntries = await api.fs.listDir(cwd);
-      entries = sortEntries(currEntries);
+      currEntries = await api.fs.listDir(cwd);
+      currEntries = sortEntries(currEntries);
+      entries.length = 0;
+
+      for (const entry of currEntries) {
+        entries.push(entry);
+        await sleep(randint(2, 3));
+      }
     } catch (e) {
       if (e instanceof FsError) {
         error = e.message;
       } else {
         error = "an unknown error occured";
       }
+    } finally {
+      loading = false;
     }
   }
 
