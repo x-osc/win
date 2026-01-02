@@ -120,7 +120,7 @@
   }
 
   function handleKeyDown(e: KeyboardEvent) {
-    if (!winApi.isFocused) {
+    if (!winApi.isFocused()) {
       return;
     }
 
