@@ -5,8 +5,11 @@
 
   let { appApi, winApi }: { appApi: AppApi; winApi: WindowApi } = $props();
 
-  let canvas: HTMLCanvasElement;
-  let ctx: CanvasRenderingContext2D;
+  let viewCanvas: HTMLCanvasElement;
+  let viewCtx: CanvasRenderingContext2D;
+
+  let bufferCanvas: HTMLCanvasElement;
+  let bufferCtx: CanvasRenderingContext2D;
 
   let drawing = false;
   let startX = 0;
@@ -17,19 +20,42 @@
 
   const MAX_UNDO = 100;
 
+  let zoom = 1;
+  let panX = 0;
+  let panY = 0;
+
+  let panning = false;
+  let panStartX = 0;
+  let panStartY = 0;
+
+  const MIN_ZOOM = 0.1;
+  const MAX_ZOOM = 8;
+
   let color = $state("#000000");
   let size = $state(6);
   let tool: "brush" | "eraser" = $state("brush");
+
+  function render() {
+    viewCtx.setTransform(1, 0, 0, 1, 0, 0);
+    viewCtx.clearRect(0, 0, viewCanvas.width, viewCanvas.height);
+
+    viewCtx.setTransform(zoom, 0, 0, zoom, panX, panY);
+    // TODO: no more exclamation mark
+    viewCtx.drawImage(bufferCanvas!, 0, 0);
+  }
 
   function start(e: PointerEvent) {
     drawing = true;
     saveUndoState();
 
-    canvas.setPointerCapture(e.pointerId);
+    const { x, y } = pointerToCanvasCoords(e);
+    startX = x;
+    startY = y;
 
-    const rect = canvas.getBoundingClientRect();
-    startX = e.clientX - rect.left;
-    startY = e.clientY - rect.top;
+    bufferCtx.beginPath();
+    bufferCtx.moveTo(x, y);
+
+    viewCanvas.setPointerCapture(e.pointerId);
 
     draw(e);
   }
@@ -37,57 +63,57 @@
   function draw(e: PointerEvent) {
     if (!drawing) return;
 
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const { x, y } = pointerToCanvasCoords(e);
 
-    ctx.lineWidth = size;
-    ctx.lineCap = "round";
+    bufferCtx.lineWidth = size;
+    bufferCtx.lineCap = "round";
 
     if (tool === "eraser") {
-      ctx.globalCompositeOperation = "destination-out";
-      ctx.strokeStyle = "rgba(0,0,0,1)";
+      bufferCtx.globalCompositeOperation = "destination-out";
+      bufferCtx.strokeStyle = "rgba(0,0,0,1)";
     } else {
-      ctx.globalCompositeOperation = "source-over";
-      ctx.strokeStyle = color;
+      bufferCtx.globalCompositeOperation = "source-over";
+      bufferCtx.strokeStyle = color;
     }
 
-    ctx.lineTo(x, y);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(x, y);
+    bufferCtx.lineTo(x, y);
+    bufferCtx.stroke();
+    bufferCtx.beginPath();
+    bufferCtx.moveTo(x, y);
+
+    render();
   }
 
   function end(e: PointerEvent) {
+    if (!drawing) return;
     drawing = false;
-    canvas.releasePointerCapture(e.pointerId);
+    viewCanvas.releasePointerCapture(e.pointerId);
 
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const { x, y } = pointerToCanvasCoords(e);
 
     if (x === startX && y === startY) {
       drawDot(x, y);
     }
 
-    ctx.beginPath();
+    bufferCtx.beginPath();
+    render();
   }
 
   function drawDot(x: number, y: number) {
-    ctx.save();
+    bufferCtx.save();
 
     if (tool === "eraser") {
-      ctx.globalCompositeOperation = "destination-out";
+      bufferCtx.globalCompositeOperation = "destination-out";
     } else {
-      ctx.globalCompositeOperation = "source-over";
-      ctx.fillStyle = color;
+      bufferCtx.globalCompositeOperation = "source-over";
+      bufferCtx.fillStyle = color;
     }
 
-    ctx.beginPath();
-    ctx.arc(x, y, size / 2, 0, Math.PI * 2);
-    ctx.fill();
+    bufferCtx.beginPath();
+    bufferCtx.arc(x, y, size / 2, 0, Math.PI * 2);
+    bufferCtx.fill();
 
-    ctx.restore();
+    bufferCtx.restore();
   }
 
   function saveUndoState() {
@@ -95,7 +121,9 @@
       undoStack.shift();
     }
 
-    undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    undoStack.push(
+      bufferCtx.getImageData(0, 0, viewCanvas.width, viewCanvas.height)
+    );
     redoStack.length = 0; // clear in js lmao
   }
 
@@ -104,9 +132,13 @@
       return;
     }
 
-    redoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    redoStack.push(
+      bufferCtx.getImageData(0, 0, viewCanvas.width, viewCanvas.height)
+    );
 
-    ctx.putImageData(undoStack.pop()!, 0, 0);
+    bufferCtx.putImageData(undoStack.pop()!, 0, 0);
+
+    render();
   }
 
   function redo() {
@@ -114,9 +146,80 @@
       return;
     }
 
-    undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    undoStack.push(
+      bufferCtx.getImageData(0, 0, viewCanvas.width, viewCanvas.height)
+    );
 
-    ctx.putImageData(redoStack.pop()!, 0, 0);
+    bufferCtx.putImageData(redoStack.pop()!, 0, 0);
+
+    render();
+  }
+
+  function resetView() {
+    zoom = 1;
+    panX = 0;
+    panY = 0;
+    render();
+  }
+
+  function pointerToCanvasCoords(e: PointerEvent): { x: number; y: number } {
+    const rect = viewCanvas.getBoundingClientRect();
+
+    const sx = e.clientX - rect.left;
+    const sy = e.clientY - rect.top;
+
+    return {
+      x: (sx - panX) / zoom,
+      y: (sy - panY) / zoom,
+    };
+  }
+
+  function toCanvasCoords(sx: number, sy: number): { x: number; y: number } {
+    return {
+      x: (sx - panX) / zoom,
+      y: (sy - panY) / zoom,
+    };
+  }
+
+  function handleWheel(e: WheelEvent) {
+    e.preventDefault();
+
+    const rect = viewCanvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    const oldZoom = zoom;
+    const factor = e.deltaY < 0 ? 1.1 : 0.9;
+
+    zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom * factor));
+
+    // keep cursor position stable
+    panX = mx - ((mx - panX) / oldZoom) * zoom;
+    panY = my - ((my - panY) / oldZoom) * zoom;
+
+    render();
+  }
+
+  function panStart(e: PointerEvent) {
+    e.preventDefault();
+
+    panning = true;
+    panStartX = e.clientX - panX;
+    panStartY = e.clientY - panY;
+    viewCanvas.setPointerCapture(e.pointerId);
+  }
+
+  function panMove(e: PointerEvent) {
+    if (!panning) return;
+    panX = e.clientX - panStartX;
+    panY = e.clientY - panStartY;
+    render();
+  }
+
+  function panEnd(e: PointerEvent) {
+    panning = false;
+    viewCanvas.releasePointerCapture(e.pointerId);
+    render();
   }
 
   function handleKeyDown(e: KeyboardEvent) {
@@ -132,8 +235,14 @@
   }
 
   onMount(() => {
-    ctx = canvas.getContext("2d")!;
-    ctx.lineJoin = "round";
+    viewCtx = viewCanvas.getContext("2d")!;
+
+    bufferCanvas = document.createElement("canvas");
+    bufferCanvas.width = viewCanvas.width;
+    bufferCanvas.height = viewCanvas.height;
+    bufferCtx = bufferCanvas.getContext("2d")!;
+
+    render();
   });
 </script>
 
@@ -147,18 +256,41 @@
   <button onclick={undo}>Undo</button>
   <button onclick={redo}>Redo</button>
   <input type="range" min="1" max="50" bind:value={size} />
+  <button onclick={resetView}>Reset View</button>
 </div>
 
 <svelte:window onkeydown={handleKeyDown} />
 
 <canvas
-  bind:this={canvas}
-  width={300}
-  height={300}
-  onpointerdown={start}
-  onpointermove={draw}
-  onpointerup={end}
-  onpointerleave={end}
+  bind:this={viewCanvas}
+  width={1000}
+  height={1000}
+  onwheel={handleWheel}
+  onpointerdown={(e) => {
+    if (e.button === 0) {
+      start(e);
+    } else if (e.button === 1) {
+      panStart(e);
+    }
+  }}
+  onpointermove={(e) => {
+    draw(e);
+    panMove(e);
+  }}
+  onpointerup={(e) => {
+    if (e.button === 0) {
+      end(e);
+    } else if (e.button === 1) {
+      panEnd(e);
+    }
+  }}
+  onpointerleave={(e) => {
+    if (e.button === 0) {
+      end(e);
+    } else if (e.button === 1) {
+      panEnd(e);
+    }
+  }}
 ></canvas>
 
 <style>
