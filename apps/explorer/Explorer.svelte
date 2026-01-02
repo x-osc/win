@@ -1,10 +1,12 @@
 <script lang="ts">
+  import { tick } from "svelte";
   import type { AppApi } from "../../core/app/api";
   import {
     fsApi,
     FsError,
     getPath,
     joinPath,
+    type EntryType,
     type FsEntry,
   } from "../../core/fs/filesystem";
   import { randint, sleep } from "../../core/utils";
@@ -12,10 +14,18 @@
 
   let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 
+  type CreatingData = {
+    mode: "creating";
+    type: EntryType;
+    name: string;
+  };
+
   let cwd: string[] = $state([]);
   let entries: FsEntry[] = $state([]);
   let error: string | null = $state(null);
   let loading: boolean = $state(false);
+  let editing: CreatingData | null = $state(null);
+  let editingInput: HTMLInputElement | null = $state(null);
 
   let selectedFile: string | null = null;
 
@@ -84,32 +94,55 @@
     await refresh();
   }
 
-  async function newFolder() {
-    const name = prompt("folder name: ");
-    if (!name) {
+  async function createFolder() {
+    editing = { mode: "creating", type: "dir", name: "" };
+    await tick();
+    editingInput?.focus();
+  }
+
+  async function createFile() {
+    editing = { mode: "creating", type: "file", name: "" };
+    await tick();
+    editingInput?.focus();
+  }
+
+  async function commitEdits() {
+    if (editing === null) {
       return;
     }
 
-    let dirpath = [...cwd];
-    dirpath.push(name);
-    let entry = await api.fs.mkdir(dirpath);
+    const name = editing.name;
+    const mode = editing.mode;
+    const type = editing.type;
+    editing = null;
 
-    entries.push(entry);
+    if (mode === "creating") {
+      if (type === "file") {
+        let filepath = [...cwd];
+        filepath.push(name);
+        let entry = await fsApi.writeFile(filepath, { data: new Blob() });
+        entries.push(entry);
+      } else if (type === "dir") {
+        let dirpath = [...cwd];
+        dirpath.push(name);
+        let entry = await fsApi.mkdir(dirpath);
+        entries.push(entry);
+      }
+    }
+
     quickrefresh();
   }
 
-  async function newFile() {
-    const name = prompt("file name: ");
-    if (!name) {
-      return;
+  function cancelEdits() {
+    editing = null;
+  }
+
+  function handleEditingKeyDown(e: KeyboardEvent) {
+    if (e.key === "Enter") {
+      commitEdits();
+    } else if (e.key === "Escape") {
+      cancelEdits();
     }
-
-    let filepath = [...cwd];
-    filepath.push(name);
-    let entry = await fsApi.writeFile(filepath, { data: new Blob() });
-
-    entries.push(entry);
-    quickrefresh();
   }
 
   refresh();
@@ -118,8 +151,8 @@
 <div class="explorer">
   <div class="toolbar">
     <button onclick={goUp}>^</button>
-    <button onclick={newFolder}>New Folder</button>
-    <button onclick={newFile}>New File</button>
+    <button onclick={createFolder}>New Folder</button>
+    <button onclick={createFile}>New File</button>
   </div>
 
   <div class="pathbar">{api.fs.joinPath(cwd)}</div>
@@ -140,6 +173,20 @@
           <span class="name"> {entry.name}</span>
         </div>
       {/each}
+
+      {#if editing?.mode === "creating"}
+        <div class="entry {editing.type === 'dir' ? 'direntry' : 'fileentry'}">
+          <span class="icon">
+            {editing.type === "dir" ? "(dir)" : "(file)"}
+          </span>
+          <input
+            bind:this={editingInput}
+            bind:value={editing.name}
+            onkeydown={handleEditingKeyDown}
+            onblur={cancelEdits}
+          />
+        </div>
+      {/if}
     </div>
   {/if}
 </div>
