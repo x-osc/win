@@ -1,8 +1,8 @@
-import { getApps } from "$lib/app/appregistry";
-import { COLORS } from "$lib/cmd/colorcodes";
-import { randint, sleep } from "$lib/utils";
 import type { AppApi } from "../core/app/api";
+import { getApps } from "../core/app/appregistry";
+import { COLORS } from "../core/cmd/colorcodes";
 import type { CmdApi, CmdManifest } from "../core/cmd/command";
+import { randint, sleep } from "../core/utils";
 
 async function launch(api: AppApi, cmdApi: CmdApi) {
   for (let [appName, appManifest] of getApps()) {

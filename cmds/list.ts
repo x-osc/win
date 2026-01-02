@@ -1,7 +1,7 @@
-import { randint, sleep } from "$lib/utils";
 import type { AppApi } from "../core/app/api";
 import { COLORS } from "../core/cmd/colorcodes";
 import type { CmdApi, CmdManifest } from "../core/cmd/command";
+import { randint, sleep } from "../core/utils";
 
 async function launch(api: AppApi, cmdApi: CmdApi) {
   const args = cmdApi.getArgs();
