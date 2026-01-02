@@ -27,7 +27,8 @@
   let editing: CreatingData | null = $state(null);
   let editingInput: HTMLInputElement | null = $state(null);
 
-  let selectedFile: string | null = null;
+  let mainSelectedEntry: string | null = $state(null);
+  let selectedEntries: string[] = $state([]);
 
   async function refresh() {
     error = null;
@@ -75,11 +76,16 @@
     return newEntries;
   }
 
+  function clearSelection() {
+    selectedEntries.length = 0;
+    mainSelectedEntry = null;
+  }
+
   async function openEntry(entry: FsEntry) {
     if (entry.type === "dir") {
       // TODO: error here
       cwd = (await getPath(entry)) ?? cwd;
-      selectedFile = null;
+      clearSelection();
       await refresh();
     } else {
       console.log(`XDG_OPEN ${joinPath((await getPath(entry)) ?? [])}`);
@@ -145,6 +151,45 @@
     }
   }
 
+  function handleEntryClicked(e: MouseEvent, entry: FsEntry) {
+    const id = entry.id;
+
+    if (e.ctrlKey) {
+      // toggle selection
+      if (selectedEntries.includes(id)) {
+        console.log(selectedEntries);
+        console.log(id);
+        selectedEntries = selectedEntries.filter((currId) => currId != id);
+        console.log(selectedEntries);
+        if (mainSelectedEntry === id) {
+          mainSelectedEntry = selectedEntries[selectedEntries.length - 1];
+        }
+      } else {
+        selectedEntries.push(id);
+        mainSelectedEntry = id;
+      }
+    } else if (e.shiftKey) {
+      if (mainSelectedEntry) {
+        const mainIndex = entries.findIndex((e) => e.id === mainSelectedEntry);
+        const currentIndex = entries.findIndex((e) => e.id === id);
+
+        const start = Math.min(mainIndex, currentIndex);
+        const end = Math.max(mainIndex, currentIndex);
+
+        for (let i = start; i <= end; i++) {
+          selectedEntries.push(entries[i].id);
+        }
+
+        // dont change main selected
+      }
+    } else {
+      // regular click
+      selectedEntries.length = 0;
+      selectedEntries.push(id);
+      mainSelectedEntry = id;
+    }
+  }
+
   refresh();
 </script>
 
@@ -163,9 +208,19 @@
     <div class="list">
       {#each entries as entry}
         <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
         <div
-          class="entry {entry.type === 'dir' ? 'direntry' : 'fileentry'}"
-          ondblclick={() => {
+          class={[
+            "entry",
+            entry.type === "dir" ? "direntry" : "fileentry",
+            { selected: selectedEntries.includes(entry.id) },
+            { "main-selected": mainSelectedEntry === entry.id },
+          ]}
+          onclick={(e: MouseEvent) => {
+            handleEntryClicked(e, entry);
+          }}
+          ondblclick={(e: MouseEvent) => {
+            if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return;
             openEntry(entry);
           }}
         >
@@ -175,7 +230,9 @@
       {/each}
 
       {#if editing?.mode === "creating"}
-        <div class="entry {editing.type === 'dir' ? 'direntry' : 'fileentry'}">
+        <div
+          class={["entry", editing.type === "dir" ? "direntry" : "fileentry"]}
+        >
           <span class="icon">
             {editing.type === "dir" ? "(dir)" : "(file)"}
           </span>
@@ -199,11 +256,22 @@
   .entry {
     cursor: pointer;
     padding: 0.25rem 0.5rem;
+    outline: 1px solid #eef4ff;
+    outline-offset: -1px;
     user-select: none;
   }
 
   .entry:hover {
-    background: #d4d4d4;
+    background: #e9e9e9;
+  }
+
+  .entry.selected {
+    background: #cecece;
+  }
+
+  .entry.main-selected {
+    outline: 2px solid #bdbdbd;
+    outline-offset: -2px;
   }
 
   .direntry {
