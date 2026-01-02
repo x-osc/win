@@ -1,4 +1,4 @@
-import { type ProcessApi, launchCmdFromManifest } from "../app/apps.svelte";
+import { type ProcessApi, launchCmdFromManifest } from "../app/processes";
 import type { CmdApi, CmdManifest } from "./command";
 
 let cmdRegistry: Map<string, CmdManifest> = new Map();

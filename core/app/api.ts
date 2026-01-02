@@ -1,6 +1,6 @@
 import { fsApi } from "../fs/filesystem";
 import { wmApi, type WinData, type WindowApi } from "../wm/wm.svelte";
-import { closeApp } from "./apps.svelte";
+import { closeApp } from "./processes";
 
 export interface AppApi {
   getId(): number;

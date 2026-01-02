@@ -10,6 +10,7 @@ let processes: Map<number, Process> = new Map();
 
 export interface Process {
   instId: number;
+  appId: string;
 
   api: ProcessApi;
 }
@@ -22,13 +23,17 @@ export interface ProcessApi {
   off: OffFunction<ProcessEvents>;
 }
 
+export function getProcesses(): Map<number, Process> {
+  return processes;
+}
+
 export function launchAppFromManifest(manifest: AppManifest): ProcessApi {
   const instId = instanceId.value++;
 
   let appApi = getAppApi(instId);
   let promise = manifest.launch(appApi).catch(console.error);
 
-  let process = makeProcess(promise, instId);
+  let process = makeProcess(promise, instId, manifest.appId);
 
   return process.api;
 }
@@ -42,7 +47,7 @@ export function launchCmdFromManifest(
   let appApi = getAppApi(instId);
   let promise = manifest.launch(appApi, cmdApi).catch(console.error);
 
-  let process = makeProcess(promise, instId);
+  let process = makeProcess(promise, instId, manifest.appId);
 
   return process.api;
 }
@@ -51,7 +56,11 @@ type ProcessEvents = {
   exit: [];
 };
 
-function makeProcess(promise: Promise<void>, instId: number): Process {
+function makeProcess(
+  promise: Promise<void>,
+  instId: number,
+  appId: string
+): Process {
   let callbacks = new CallbackManager<ProcessEvents>();
   promise.then(() => {
     callbacks.emit("exit");
@@ -67,6 +76,7 @@ function makeProcess(promise: Promise<void>, instId: number): Process {
 
   let process: Process = {
     instId,
+    appId,
 
     api: processApi,
   };

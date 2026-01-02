@@ -13,6 +13,7 @@
   import { listAppsManifest } from "../cmds/list_apps";
   import { mkdirManifest } from "../cmds/mkdir";
   import { mkfileManifest } from "../cmds/mkfile";
+  import { psManifest } from "../cmds/ps";
   import { pwdManifest } from "../cmds/pwd";
   import { readManifest } from "../cmds/read";
   import { launchApp, registerApp } from "./app/appregistry";
@@ -40,6 +41,7 @@
   registerCmd(deleteManifest);
   registerCmd(listAppsManifest);
   registerCmd(launchManifest);
+  registerCmd(psManifest);
 </script>
 
 <div id="root">
