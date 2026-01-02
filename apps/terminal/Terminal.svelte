@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, tick } from "svelte";
   import type { AppApi } from "../../core/app/api";
+  import { closeApp } from "../../core/app/processes";
   import { launchCmd } from "../../core/cmd/cmdregistry";
   import {
     DEFAULTOPTIONS,
@@ -67,6 +68,7 @@
 
     isCmdRunning = true;
     procApi.on("exit", async () => {
+      closeApp(procApi.getId());
       isCmdRunning = false;
       await tick();
       scrollToBottom();
