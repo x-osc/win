@@ -7,7 +7,9 @@
   import { deleteManifest } from "../cmds/delete";
   import { echoManifest } from "../cmds/echo";
   import { helpManifest } from "../cmds/help";
+  import { launchManifest } from "../cmds/launch";
   import { listManifest } from "../cmds/list";
+  import { listAppsManifest } from "../cmds/list_apps";
   import { mkdirManifest } from "../cmds/mkdir";
   import { mkfileManifest } from "../cmds/mkfile";
   import { pwdManifest } from "../cmds/pwd";
@@ -34,6 +36,8 @@
   registerCmd(listManifest);
   registerCmd(readManifest);
   registerCmd(deleteManifest);
+  registerCmd(listAppsManifest);
+  registerCmd(launchManifest);
 </script>
 
 <div id="root">

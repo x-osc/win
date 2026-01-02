@@ -4,7 +4,7 @@ import { getAliasesFromCmd, getCmds } from "../core/cmd/cmdregistry";
 import type { CmdApi, CmdManifest } from "../core/cmd/command";
 
 async function launch(api: AppApi, cmdApi: CmdApi) {
-  for (let cmdName of getCmds()) {
+  for (let [cmdName, cmdManifest] of getCmds()) {
     cmdApi.writeLine(`${cmdName}`, { color: COLORS.brightCyan, bold: true });
 
     let aliases = getAliasesFromCmd(cmdName);

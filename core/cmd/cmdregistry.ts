@@ -34,8 +34,8 @@ export function registerCmd(cmd: CmdManifest) {
   }
 }
 
-export function getCmds(): string[] {
-  return Array.from(cmdRegistry.keys());
+export function getCmds(): Map<string, CmdManifest> {
+  return cmdRegistry;
 }
 
 let aliasRegistry: Map<string, string> = new Map(); // alias -> cmd
