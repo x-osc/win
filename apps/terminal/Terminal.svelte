@@ -20,7 +20,7 @@
 
   let prompt: string = $derived(`[ ${joinPath(workingDir)} ] $`);
 
-  let resolveInput: (value: string) => void | null = null;
+  let resolveInput: ((value: string) => void) | null = null;
 
   let textInput: HTMLInputElement;
   let terminal: HTMLElement;
@@ -128,7 +128,7 @@
     textInput.focus();
   });
 
-  function handleBlur(_) {
+  function handleBlur(e: FocusEvent) {
     if ((!isCmdRunning || isInputRunning) && winApi.isFocused()) {
       textInput.focus();
     }

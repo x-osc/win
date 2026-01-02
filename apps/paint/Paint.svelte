@@ -1,5 +1,9 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import type { AppApi } from "../../core/app/api";
+  import type { WindowApi } from "../../core/wm/wm.svelte";
+
+  let { appApi, winApi }: { appApi: AppApi; winApi: WindowApi } = $props();
 
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
@@ -8,12 +12,19 @@
   let startX = 0;
   let startY = 0;
 
-  let color = "#000000";
-  let size = 6;
-  let tool: "brush" | "eraser" = "brush";
+  let undoStack: ImageData[] = [];
+  let redoStack: ImageData[] = [];
+
+  const MAX_UNDO = 100;
+
+  let color = $state("#000000");
+  let size = $state(6);
+  let tool: "brush" | "eraser" = $state("brush");
 
   function start(e: PointerEvent) {
     drawing = true;
+    saveUndoState();
+
     canvas.setPointerCapture(e.pointerId);
 
     const rect = canvas.getBoundingClientRect();
@@ -79,6 +90,47 @@
     ctx.restore();
   }
 
+  function saveUndoState() {
+    while (undoStack.length >= MAX_UNDO) {
+      undoStack.shift();
+    }
+
+    undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    redoStack.length = 0; // clear in js lmao
+  }
+
+  function undo() {
+    if (undoStack.length === 0) {
+      return;
+    }
+
+    redoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+
+    ctx.putImageData(undoStack.pop()!, 0, 0);
+  }
+
+  function redo() {
+    if (redoStack.length === 0) {
+      return;
+    }
+
+    undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+
+    ctx.putImageData(redoStack.pop()!, 0, 0);
+  }
+
+  function handleKeyDown(e: KeyboardEvent) {
+    if (!winApi.isFocused) {
+      return;
+    }
+
+    if (e.ctrlKey && e.key === "z") {
+      undo();
+    } else if (e.ctrlKey && e.key === "Z") {
+      redo();
+    }
+  }
+
   onMount(() => {
     ctx = canvas.getContext("2d")!;
     ctx.lineJoin = "round";
@@ -91,18 +143,22 @@
     <option value="eraser">Eraser</option>
   </select>
 
-  <input type="color" bind:value={color} />
+  <input type="color" bind:value={color} style="min-width: 65px" />
+  <button onclick={undo}>Undo</button>
+  <button onclick={redo}>Redo</button>
   <input type="range" min="1" max="50" bind:value={size} />
 </div>
+
+<svelte:window onkeydown={handleKeyDown} />
 
 <canvas
   bind:this={canvas}
   width={300}
   height={300}
-  on:pointerdown={start}
-  on:pointermove={draw}
-  on:pointerup={end}
-  on:pointerleave={end}
+  onpointerdown={start}
+  onpointermove={draw}
+  onpointerup={end}
+  onpointerleave={end}
 ></canvas>
 
 <style>

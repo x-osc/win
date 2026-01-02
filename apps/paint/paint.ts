@@ -14,9 +14,15 @@ async function launch(api: AppApi) {
   );
 
   let body = winApi.getBody();
-  const component = mount(Paint, {
-    target: body,
-  });
+  if (body !== null) {
+    const component = mount(Paint, {
+      target: body,
+      props: {
+        appApi: api,
+        winApi,
+      },
+    });
+  }
 
   winApi.on("close", () => {
     api.quit();
