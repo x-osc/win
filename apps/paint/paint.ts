@@ -6,7 +6,11 @@ import Paint from "./Paint.svelte";
 
 async function launch(api: AppApi) {
   let winApi = await api.window.createWindowAsync(
-    winDataBuilder().withMinSize(290, 161).withTitle("michaelsoft pain").build()
+    winDataBuilder()
+      .withMinSize(290, 161)
+      .withSize(344, 414)
+      .withTitle("michaelsoft pain")
+      .build()
   );
 
   let body = winApi.getBody();
