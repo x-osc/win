@@ -209,8 +209,27 @@
     }
   }
 
+  function handleKeyPress(e: KeyboardEvent) {
+    if (!winApi.isFocused()) {
+      return;
+    }
+
+    if (e.key === "Enter") {
+      let selectedEntry = entries.find(
+        (entry) => entry.id === mainSelectedEntry
+      );
+      if (selectedEntry === undefined) {
+        return;
+      }
+
+      openEntry(selectedEntry);
+    }
+  }
+
   refresh();
 </script>
+
+<svelte:window onkeypress={handleKeyPress} />
 
 <div class="explorer">
   <div class="toolbar">
