@@ -1,4 +1,9 @@
 <script lang="ts">
+  import { launchApp, registerApp } from "@core/app/appregistry";
+  import { registerCmd } from "@core/cmd/cmdregistry";
+  import Taskbar from "@core/wm/Taskbar.svelte";
+  import Window from "@core/wm/Window.svelte";
+  import { winDataBuilder, wmApi } from "@core/wm/wm.svelte";
   import { explorerManifest } from "../apps/explorer/explorer";
   import { notepadManifest } from "../apps/notepad/notepad";
   import { paintManifest } from "../apps/paint/paint";
@@ -18,12 +23,7 @@
   import { pwdManifest } from "../cmds/pwd";
   import { readManifest } from "../cmds/read";
   import { sleepManifest } from "../cmds/sleep";
-  import { launchApp, registerApp } from "./app/appregistry";
-  import { registerCmd } from "./cmd/cmdregistry";
   import { testAppManifest } from "./testApp";
-  import Taskbar from "./wm/Taskbar.svelte";
-  import Window from "./wm/Window.svelte";
-  import { winDataBuilder, wmApi } from "./wm/wm.svelte";
 
   registerApp(testAppManifest);
   registerApp(notepadManifest);

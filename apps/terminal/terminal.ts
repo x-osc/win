@@ -1,7 +1,7 @@
+import type { AppApi } from "@core/app/api";
+import type { AppManifest } from "@core/app/app";
+import { winDataBuilder } from "@core/wm/wm.svelte";
 import { mount } from "svelte";
-import type { AppApi } from "../../core/app/api";
-import type { AppManifest } from "../../core/app/app";
-import { winDataBuilder } from "../../core/wm/wm.svelte";
 import Terminal from "./Terminal.svelte";
 
 async function launch(api: AppApi) {

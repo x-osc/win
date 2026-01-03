@@ -17,11 +17,11 @@
     "isolatedModules": true,
     "moduleDetection": "force",
     "baseUrl": ".",
-    // "paths": {
-    //   "$lib/*": [
-    //     "./core/*"
-    //   ]
-    // }
+    "paths": {
+      "@core/*": [
+        "./core/*"
+      ]
+    }
   },
   "include": [
     "**/*.ts",

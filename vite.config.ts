@@ -8,7 +8,7 @@ export default defineConfig(({ command }) => ({
   plugins: [svelte()],
   resolve: {
     alias: {
-      $lib: path.resolve(__dirname, "./core"),
+      "@core": path.resolve(__dirname, "./core"),
     },
   },
 }));

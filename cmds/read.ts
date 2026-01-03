@@ -1,6 +1,6 @@
-import type { AppApi } from "../core/app/api";
-import type { CmdApi, CmdManifest } from "../core/cmd/command";
-import { FsError } from "../core/fs/filesystem";
+import type { AppApi } from "@core/app/api";
+import type { CmdApi, CmdManifest } from "@core/cmd/command";
+import { FsError } from "@core/fs/filesystem";
 
 async function launch(api: AppApi, cmdApi: CmdApi) {
   const args = cmdApi.getArgs();

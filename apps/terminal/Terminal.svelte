@@ -1,15 +1,15 @@
 <script lang="ts">
-  import { onMount, tick } from "svelte";
-  import type { AppApi } from "../../core/app/api";
-  import { closeApp } from "../../core/app/processes";
+  import type { AppApi } from "@core/app/api";
+  import { closeApp } from "@core/app/processes";
   import {
     DEFAULTOPTIONS,
     type CmdApi,
     type TextOptions,
-  } from "../../core/cmd/command";
-  import { splitArgs } from "../../core/cmd/parser";
-  import { joinPath } from "../../core/fs/filesystem";
-  import type { WindowApi } from "../../core/wm/wm.svelte";
+  } from "@core/cmd/command";
+  import { splitArgs } from "@core/cmd/parser";
+  import { joinPath } from "@core/fs/filesystem";
+  import type { WindowApi } from "@core/wm/wm.svelte";
+  import { onMount, tick } from "svelte";
 
   let { appApi, winApi }: { appApi: AppApi; winApi: WindowApi } = $props();
 

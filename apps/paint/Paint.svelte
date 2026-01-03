@@ -1,7 +1,7 @@
 <script lang="ts">
+  import type { AppApi } from "@core/app/api";
+  import type { WindowApi } from "@core/wm/wm.svelte";
   import { onMount } from "svelte";
-  import type { AppApi } from "../../core/app/api";
-  import type { WindowApi } from "../../core/wm/wm.svelte";
 
   let { appApi, winApi }: { appApi: AppApi; winApi: WindowApi } = $props();
 

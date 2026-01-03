@@ -1,7 +1,7 @@
-import { launchCmd } from "../cmd/cmdregistry";
-import type { CmdApi } from "../cmd/command";
-import { fsApi } from "../fs/filesystem";
-import { wmApi, type WinData, type WindowApi } from "../wm/wm.svelte";
+import { launchCmd } from "@core/cmd/cmdregistry";
+import type { CmdApi } from "@core/cmd/command";
+import { fsApi } from "@core/fs/filesystem";
+import { wmApi, type WinData, type WindowApi } from "@core/wm/wm.svelte";
 import { launchApp } from "./appregistry";
 import { closeApp, type ProcessApi } from "./processes";
 

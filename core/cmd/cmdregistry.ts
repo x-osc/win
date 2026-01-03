@@ -2,7 +2,7 @@ import {
   type ExtraProcessOptions,
   type ProcessApi,
   launchCmdFromManifest,
-} from "../app/processes";
+} from "@core/app/processes";
 import type { CmdApi, CmdManifest } from "./command";
 
 let cmdRegistry: Map<string, CmdManifest> = new Map();

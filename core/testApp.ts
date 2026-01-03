@@ -1,6 +1,6 @@
-import type { AppApi } from "./app/api";
-import type { AppManifest } from "./app/app";
-import { winDataBuilder } from "./wm/wm.svelte";
+import type { AppApi } from "@core/app/api";
+import type { AppManifest } from "@core/app/app";
+import { winDataBuilder } from "@core/wm/wm.svelte";
 
 async function launch(api: AppApi) {
   console.log("yipe it worke");

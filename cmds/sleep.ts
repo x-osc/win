@@ -1,6 +1,6 @@
-import type { AppApi } from "../core/app/api";
-import type { CmdApi, CmdManifest } from "../core/cmd/command";
-import { sleep } from "../core/utils";
+import type { AppApi } from "@core/app/api";
+import type { CmdApi, CmdManifest } from "@core/cmd/command";
+import { sleep } from "@core/utils";
 
 async function launch(appApi: AppApi, cmdApi: CmdApi) {
   let args = cmdApi.getArgs();

@@ -1,8 +1,8 @@
 <script lang="ts">
+  import { CallbackManager } from "@core/callbacks";
+  import "@core/win.css";
   import { onMount } from "svelte";
   import { on } from "svelte/events";
-  import { CallbackManager } from "../callbacks";
-  import "../win.css";
   import { ResizeDirection } from "./types";
   import type { WinData, WindowApi, WindowEvents } from "./wm.svelte";
 

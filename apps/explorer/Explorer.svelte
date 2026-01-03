@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { tick } from "svelte";
-  import type { AppApi } from "../../core/app/api";
+  import type { AppApi } from "@core/app/api";
   import {
     fsApi,
     FsError,
@@ -8,9 +7,10 @@
     joinPath,
     type EntryType,
     type FsEntry,
-  } from "../../core/fs/filesystem";
-  import { randint, sleep } from "../../core/utils";
-  import type { WindowApi } from "../../core/wm/wm.svelte";
+  } from "@core/fs/filesystem";
+  import { randint, sleep } from "@core/utils";
+  import type { WindowApi } from "@core/wm/wm.svelte";
+  import { tick } from "svelte";
 
   let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 

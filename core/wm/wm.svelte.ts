@@ -1,6 +1,6 @@
+import type { OffFunction, OnceFunction, OnFunction } from "@core/callbacks";
+import { windowId, zIndex } from "@core/state.svelte";
 import { SvelteMap } from "svelte/reactivity";
-import type { OffFunction, OnceFunction, OnFunction } from "../callbacks";
-import { windowId, zIndex } from "../state.svelte";
 
 export type Win = {
   data: WinData;

@@ -1,8 +1,8 @@
-import type { AppApi } from "../core/app/api";
-import { getProcesses } from "../core/app/processes";
-import { COLORS } from "../core/cmd/colorcodes";
-import type { CmdApi, CmdManifest } from "../core/cmd/command";
-import { randint, sleep } from "../core/utils";
+import type { AppApi } from "@core/app/api";
+import { getProcesses } from "@core/app/processes";
+import { COLORS } from "@core/cmd/colorcodes";
+import type { CmdApi, CmdManifest } from "@core/cmd/command";
+import { randint, sleep } from "@core/utils";
 
 async function launch(api: AppApi, cmdApi: CmdApi) {
   for (let [id, [process, processApi]] of getProcesses()) {
