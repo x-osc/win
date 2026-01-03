@@ -16,6 +16,11 @@ export interface Process {
   callbacks: CallbackManager<ProcessEvents>;
 }
 
+type ProcessEvents = {
+  setupFinished(): void;
+  exit(): void;
+};
+
 export interface ExtraProcessOptions {
   owner?: number;
 }
@@ -40,7 +45,7 @@ export function getProcessApi(id: number): ProcessApi | null {
 
 export function launchAppFromManifest(
   manifest: AppManifest,
-  extraOptions: ExtraProcessOptions = {}
+  extraOptions: ExtraProcessOptions = {},
 ): ProcessApi {
   const instId = instanceId.value++;
 
@@ -55,7 +60,7 @@ export function launchAppFromManifest(
 export function launchCmdFromManifest(
   manifest: CmdManifest,
   cmdApi: CmdApi,
-  extraOptions: ExtraProcessOptions = {}
+  extraOptions: ExtraProcessOptions = {},
 ): ProcessApi {
   const instId = instanceId.value++;
 
@@ -67,16 +72,11 @@ export function launchCmdFromManifest(
   return api;
 }
 
-type ProcessEvents = {
-  setupFinished: [];
-  exit: [];
-};
-
 function makeProcess(
   promise: Promise<void>,
   instId: number,
   appId: string,
-  extraOptions: ExtraProcessOptions = {}
+  extraOptions: ExtraProcessOptions = {},
 ): ProcessApi {
   let callbacks = new CallbackManager<ProcessEvents>();
   promise.then(() => {

@@ -1,19 +1,33 @@
 // TODO: rename
-export type OnFunction<TEventMap extends Record<string, any[]>> =
-  CallbackManager<TEventMap>["on"];
-export type OnceFunction<TEventMap extends Record<string, any[]>> =
-  CallbackManager<TEventMap>["once"];
-export type OffFunction<TEventMap extends Record<string, any[]>> =
-  CallbackManager<TEventMap>["off"];
+export type OnFunction<
+  TEventMap extends Record<string, (...args: any[]) => void>,
+> = CallbackManager<TEventMap>["on"];
+export type OnceFunction<
+  TEventMap extends Record<string, (...args: any[]) => void>,
+> = CallbackManager<TEventMap>["once"];
+export type OffFunction<
+  TEventMap extends Record<string, (...args: any[]) => void>,
+> = CallbackManager<TEventMap>["off"];
 
+// extract parameter values as array from method signatures
+type EventMap<T> = {
+  [K in keyof T]: T[K] extends (...args: infer P) => void ? P : never;
+};
+
+// you must use type and not interface for the generic param
+// typescript jank
+// https://github.com/microsoft/TypeScript/issues/15300
 export class CallbackManager<
-  TEventMap extends Record<string, any[]> = Record<string, any[]>,
+  TEventMap extends Record<string, (...args: any[]) => void> = Record<
+    string,
+    (...args: any[]) => void
+  >,
 > {
   private callbacks = new Map<string, Array<(...args: any[]) => void>>();
 
   on<K extends keyof TEventMap>(
     event: K,
-    callback: (...args: TEventMap[K]) => void,
+    callback: (...args: EventMap<TEventMap>[K]) => void,
   ): () => void;
 
   on(event: string, callback: (...args: any[]) => void): () => void {
@@ -28,7 +42,7 @@ export class CallbackManager<
 
   once<K extends keyof TEventMap>(
     event: K,
-    callback: (...args: TEventMap[K]) => void,
+    callback: (...args: EventMap<TEventMap>[K]) => void,
   ): () => void;
 
   once(event: string, callback: (...args: any[]) => void): () => void {
@@ -42,7 +56,7 @@ export class CallbackManager<
 
   off<K extends keyof TEventMap>(
     event: K,
-    callback?: (...args: TEventMap[K]) => void,
+    callback?: (...args: EventMap<TEventMap>[K]) => void,
   ): void;
 
   off(event: string, callback?: (...args: any[]) => void): void {
@@ -69,7 +83,10 @@ export class CallbackManager<
     }
   }
 
-  emit<K extends keyof TEventMap>(event: K, ...args: TEventMap[K]): void;
+  emit<K extends keyof TEventMap>(
+    event: K,
+    ...args: EventMap<TEventMap>[K]
+  ): void;
 
   emit(event: string, ...args: any[]): void {
     if (!this.callbacks.has(event)) {

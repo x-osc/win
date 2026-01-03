@@ -39,10 +39,10 @@ export interface WindowApi {
 }
 
 export type WindowEvents = {
-  focus: [];
-  move: [x: number, y: number];
-  resize: [width: number, height: number];
-  close: [];
+  focus(): void;
+  move(x: number, y: number): void;
+  resize(width: number, height: number): void;
+  close(): void;
 };
 
 export function winDataBuilder() {
