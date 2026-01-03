@@ -13,9 +13,11 @@
   import { listAppsManifest } from "../cmds/list_apps";
   import { mkdirManifest } from "../cmds/mkdir";
   import { mkfileManifest } from "../cmds/mkfile";
+  import { mkwindowManifest } from "../cmds/mkwindow";
   import { psManifest } from "../cmds/ps";
   import { pwdManifest } from "../cmds/pwd";
   import { readManifest } from "../cmds/read";
+  import { sleepManifest } from "../cmds/sleep";
   import { launchApp, registerApp } from "./app/appregistry";
   import { registerCmd } from "./cmd/cmdregistry";
   import { testAppManifest } from "./testApp";
@@ -42,6 +44,8 @@
   registerCmd(listAppsManifest);
   registerCmd(launchManifest);
   registerCmd(psManifest);
+  registerCmd(sleepManifest);
+  registerCmd(mkwindowManifest);
 </script>
 
 <div id="root">
