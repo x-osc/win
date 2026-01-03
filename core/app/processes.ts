@@ -12,6 +12,8 @@ export interface Process {
   instId: number;
   owner: number | null;
   appId: string;
+
+  callbacks: CallbackManager<ProcessEvents>;
 }
 
 export interface ExtraProcessOptions {
@@ -66,6 +68,7 @@ export function launchCmdFromManifest(
 }
 
 type ProcessEvents = {
+  setupFinished: [];
   exit: [];
 };
 
@@ -77,13 +80,14 @@ function makeProcess(
 ): ProcessApi {
   let callbacks = new CallbackManager<ProcessEvents>();
   promise.then(() => {
-    callbacks.emit("exit");
+    callbacks.emit("setupFinished");
   });
 
   let process = {
     instId,
     appId,
     owner: extraOptions.owner ?? null,
+    callbacks,
   };
 
   let processApi: ProcessApi = {
@@ -103,6 +107,10 @@ function makeProcess(
 }
 
 export function closeApp(instId: number) {
+  if (!processes.has(instId)) {
+    return;
+  }
+
   for (const [id, win] of wmApi.getWindows().entries()) {
     if (win.data.owner === instId) {
       wmApi.closeWindow(id);
@@ -114,6 +122,9 @@ export function closeApp(instId: number) {
       closeApp(id);
     }
   }
+
+  let [process, processApi] = processes.get(instId)!;
+  process.callbacks.emit("exit");
 
   processes.delete(instId);
 }

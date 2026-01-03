@@ -66,7 +66,7 @@
     }
 
     isCmdRunning = true;
-    procApi.on("exit", async () => {
+    procApi.on("setupFinished", async () => {
       // TODO: put this somewhere better
       closeApp(procApi.getId());
 
