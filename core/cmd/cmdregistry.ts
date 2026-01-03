@@ -1,9 +1,17 @@
-import { type ProcessApi, launchCmdFromManifest } from "../app/processes";
+import {
+  type ExtraProcessOptions,
+  type ProcessApi,
+  launchCmdFromManifest,
+} from "../app/processes";
 import type { CmdApi, CmdManifest } from "./command";
 
 let cmdRegistry: Map<string, CmdManifest> = new Map();
 
-export function launchCmd(cmd: string, cmdApi: CmdApi): ProcessApi | null {
+export function launchCmd(
+  cmd: string,
+  cmdApi: CmdApi,
+  extraOptions: ExtraProcessOptions = {}
+): ProcessApi | null {
   let tryAlias = getCmdFromAlias(cmd);
   if (tryAlias !== undefined) {
     cmd = tryAlias;
@@ -16,7 +24,7 @@ export function launchCmd(cmd: string, cmdApi: CmdApi): ProcessApi | null {
     console.log(aliasRegistry);
     return null;
   }
-  return launchCmdFromManifest(command, cmdApi);
+  return launchCmdFromManifest(command, cmdApi, extraOptions);
 }
 
 export function registerCmd(cmd: CmdManifest) {

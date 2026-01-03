@@ -1,10 +1,16 @@
+import { launchCmd } from "../cmd/cmdregistry";
+import type { CmdApi } from "../cmd/command";
 import { fsApi } from "../fs/filesystem";
 import { wmApi, type WinData, type WindowApi } from "../wm/wm.svelte";
-import { closeApp } from "./processes";
+import { launchApp } from "./appregistry";
+import { closeApp, type ProcessApi } from "./processes";
 
 export interface AppApi {
   getId(): number;
   quit(): void;
+
+  launchApp(id: string): ProcessApi | null;
+  launchCmd(id: string, cmdApi: CmdApi): ProcessApi | null;
 
   window: {
     createWindow(data: WinData): number;
@@ -18,6 +24,9 @@ export function getAppApi(instId: number): AppApi {
   const api: AppApi = {
     getId: () => instId,
     quit: () => closeApp(instId),
+
+    launchApp: (id) => launchApp(id, { owner: instId }),
+    launchCmd: (id, cmdApi) => launchCmd(id, cmdApi, { owner: instId }),
 
     window: {
       createWindow: (data: WinData) => {

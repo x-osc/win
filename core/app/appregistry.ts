@@ -1,16 +1,23 @@
 import type { AppManifest } from "./app";
-import { launchAppFromManifest, type ProcessApi } from "./processes";
+import {
+  launchAppFromManifest,
+  type ExtraProcessOptions,
+  type ProcessApi,
+} from "./processes";
 
 let appRegistry: Map<string, AppManifest> = new Map();
 
-export function launchApp(id: string): ProcessApi | null {
+export function launchApp(
+  id: string,
+  extraOptions: ExtraProcessOptions = {}
+): ProcessApi | null {
   const app = appRegistry.get(id);
   if (app === undefined) {
     console.error(`app ${id} does not exist`);
     console.log(appRegistry);
     return null;
   }
-  return launchAppFromManifest(app);
+  return launchAppFromManifest(app, extraOptions);
 }
 
 export function registerApp(app: AppManifest) {
