@@ -10,15 +10,21 @@
   } from "@core/fs/filesystem";
   import { randint, sleep } from "@core/utils";
   import type { WindowApi } from "@core/wm/wm.svelte";
-  import { tick } from "svelte";
+  import { onMount, tick } from "svelte";
 
-  let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
+  let {
+    api,
+    winApi,
+    args,
+  }: { api: AppApi; winApi: WindowApi; args?: Record<string, any> } = $props();
 
   type CreatingData = {
     mode: "creating";
     type: EntryType;
     name: string;
   };
+
+  let isDialog: boolean = args?.isDialog ?? false;
 
   let cwd: string[] = $state([]);
   let entries: FsEntry[] = $state([]);
@@ -29,6 +35,14 @@
 
   let mainSelectedEntry: string | null = $state(null);
   let selectedEntries: string[] = $state([]);
+
+  onMount(async () => {
+    if (args?.workingDir && (await api.fs.exists(args.workingDir))) {
+      cwd = args.workingDir;
+    }
+
+    refresh();
+  });
 
   async function refresh() {
     error = null;
@@ -221,7 +235,7 @@
 
     if (e.key === "Enter") {
       let selectedEntry = entries.find(
-        (entry) => entry.id === mainSelectedEntry
+        (entry) => entry.id === mainSelectedEntry,
       );
       if (selectedEntry === undefined) {
         return;
@@ -230,8 +244,6 @@
       openEntry(selectedEntry);
     }
   }
-
-  refresh();
 </script>
 
 <svelte:window onkeypress={handleKeyPress} />

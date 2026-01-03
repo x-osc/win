@@ -9,7 +9,8 @@ let appRegistry: Map<string, AppManifest> = new Map();
 
 export function launchApp(
   id: string,
-  extraOptions: ExtraProcessOptions = {}
+  args?: Record<string, any>,
+  extraOptions: ExtraProcessOptions = {},
 ): ProcessApi | null {
   const app = appRegistry.get(id);
   if (app === undefined) {
@@ -17,7 +18,7 @@ export function launchApp(
     console.log(appRegistry);
     return null;
   }
-  return launchAppFromManifest(app, extraOptions);
+  return launchAppFromManifest(app, args, extraOptions);
 }
 
 export function registerApp(app: AppManifest) {

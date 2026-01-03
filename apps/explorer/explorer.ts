@@ -4,9 +4,9 @@ import { winDataBuilder } from "@core/wm/wm.svelte";
 import { mount } from "svelte";
 import Explorer from "./Explorer.svelte";
 
-async function launch(api: AppApi) {
+async function launch(api: AppApi, args?: Record<string, any>) {
   let winApi = await api.window.createWindowAsync(
-    winDataBuilder().withMinSize(290, 161).withTitle("file explorer").build()
+    winDataBuilder().withMinSize(290, 161).withTitle("file explorerer").build(),
   );
 
   let body = winApi.getBody();
@@ -15,6 +15,7 @@ async function launch(api: AppApi) {
     props: {
       api,
       winApi,
+      args,
     },
   });
 
@@ -25,5 +26,6 @@ async function launch(api: AppApi) {
 
 export let explorerManifest: AppManifest = {
   appId: "explorer",
+
   launch,
 };

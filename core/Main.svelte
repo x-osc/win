@@ -12,6 +12,7 @@
   import { cdManifest } from "../cmds/cd";
   import { deleteManifest } from "../cmds/delete";
   import { echoManifest } from "../cmds/echo";
+  import { explorerCmdManifest } from "../cmds/explorer";
   import { helpManifest } from "../cmds/help";
   import { launchManifest } from "../cmds/launch";
   import { listManifest } from "../cmds/list";
@@ -46,6 +47,7 @@
   registerCmd(psManifest);
   registerCmd(sleepManifest);
   registerCmd(mkwindowManifest);
+  registerCmd(explorerCmdManifest);
 </script>
 
 <div id="root">

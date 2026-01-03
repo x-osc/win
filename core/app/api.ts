@@ -9,7 +9,7 @@ export interface AppApi {
   getId(): number;
   quit(): void;
 
-  launchApp(id: string): ProcessApi | null;
+  launchApp(id: string, args?: Record<string, any>): ProcessApi | null;
   launchCmd(id: string, cmdApi: CmdApi): ProcessApi | null;
 
   window: {

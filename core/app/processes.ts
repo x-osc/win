@@ -45,12 +45,13 @@ export function getProcessApi(id: number): ProcessApi | null {
 
 export function launchAppFromManifest(
   manifest: AppManifest,
+  args?: Record<string, any>,
   extraOptions: ExtraProcessOptions = {},
 ): ProcessApi {
   const instId = instanceId.value++;
 
   let appApi = getAppApi(instId);
-  let promise = manifest.launch(appApi).catch(console.error);
+  let promise = manifest.launch(appApi, args).catch(console.error);
 
   let api = makeProcess(promise, instId, manifest.appId, extraOptions);
 
