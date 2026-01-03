@@ -1,6 +1,6 @@
 import type { AppApi } from "@core/app/api";
 import type { CmdApi, CmdManifest } from "@core/cmd/command";
-import { resolvePath } from "@core/fs/filesystem";
+import { joinPath, resolvePath } from "@core/fs/filesystem";
 import { randint, sleep } from "@core/utils";
 
 async function launch(api: AppApi, cmdApi: CmdApi) {
@@ -14,6 +14,10 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
       cmdApi.writeLine(`explorer: invalid path: ${args[0]}`);
       return;
     }
+    if (!(await api.fs.exists(newCwd))) {
+      cmdApi.writeLine(`explorer: invalid path: ${joinPath(newCwd)}`);
+      return;
+    }
 
     workingDir = newCwd;
   }
@@ -24,11 +28,17 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
 
   await sleep(randint(125, 250));
 
-  api.launchApp("explorer", { workingDir });
+  let processApi = api.launchApp("explorer", { workingDir });
+
+  await new Promise<void>((resolve) => {
+    processApi?.on("exit", () => {
+      resolve();
+    });
+  });
 }
 
 export let explorerCmdManifest: CmdManifest = {
-  appId: "explorer",
+  appId: "explorer_cmd",
   command: "explorer",
 
   launch,

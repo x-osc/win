@@ -1,5 +1,5 @@
 import type { AppApi } from "@core/app/api";
-import { getApps, launchApp } from "@core/app/appregistry";
+import { getApps } from "@core/app/appregistry";
 import type { CmdApi, CmdManifest } from "@core/cmd/command";
 import { randint, sleep } from "@core/utils";
 
@@ -28,7 +28,13 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
 
   await sleep(randint(125, 350));
 
-  launchApp(appId);
+  let processApi = api.launchApp(appId);
+
+  await new Promise<void>((resolve) => {
+    processApi?.on("exit", () => {
+      resolve();
+    });
+  });
 }
 
 export let launchManifest: CmdManifest = {

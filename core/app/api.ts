@@ -25,7 +25,7 @@ export function getAppApi(instId: number): AppApi {
     getId: () => instId,
     quit: () => closeApp(instId),
 
-    launchApp: (id) => launchApp(id, { owner: instId }),
+    launchApp: (id, args) => launchApp(id, args, { owner: instId }),
     launchCmd: (id, cmdApi) => launchCmd(id, cmdApi, { owner: instId }),
 
     window: {
