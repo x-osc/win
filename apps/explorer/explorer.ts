@@ -33,7 +33,7 @@ type ExplorerResult = {
   selectedFile: boolean | null;
 };
 
-export let explorerManifest: AppManifest<ExplorerArgs, ExplorerResult> = {
+export let explorerManifest: AppManifest = {
   appId: "explorer",
 
   launch,

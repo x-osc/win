@@ -1,10 +1,7 @@
 import type { AppApi } from "./api";
 
-export interface AppManifest<
-  TArgs extends Record<string, any> = {},
-  TResult extends Record<string, any> = {},
-> {
+export interface AppManifest {
   appId: string;
 
-  launch(api: AppApi, args?: TArgs): Promise<void>;
+  launch(api: AppApi, args?: Record<string, any>): Promise<void>;
 }
