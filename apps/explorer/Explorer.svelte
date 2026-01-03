@@ -11,12 +11,13 @@
   import { randint, sleep } from "@core/utils";
   import type { WindowApi } from "@core/wm/wm.svelte";
   import { onMount, tick } from "svelte";
+  import type { ExplorerArgs } from "./explorer";
 
   let {
     api,
     winApi,
     args,
-  }: { api: AppApi; winApi: WindowApi; args?: Record<string, any> } = $props();
+  }: { api: AppApi; winApi: WindowApi; args?: ExplorerArgs } = $props();
 
   type CreatingData = {
     mode: "creating";
