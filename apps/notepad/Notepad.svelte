@@ -1,7 +1,16 @@
-<script lang="ts"></script>
+<script lang="ts">
+  import type { AppApi } from "@core/app/api";
+  import type { WindowApi } from "@core/wm/wm.svelte";
+
+  let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
+
+  async function handleOpen() {
+    api.launchApp("explorer", { isDialog: true });
+  }
+</script>
 
 <div class="container">
-  <header>menu bar or smth idk</header>
+  <div class="toolbar"><button onclick={handleOpen}>open</button></div>
   <textarea></textarea>
 </div>
 
@@ -12,13 +21,10 @@
     height: 100%;
   }
 
-  header {
-    background-color: #696969;
-    color: #ffffff;
-    padding: 0.3rem 1rem;
-    text-align: center;
-    font-size: 1.25rem;
-    font-weight: bold;
+  .toolbar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
   }
 
   textarea {

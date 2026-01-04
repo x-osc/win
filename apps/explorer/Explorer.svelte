@@ -302,11 +302,39 @@
       {/if}
     </div>
   {/if}
+
+  {#if isDialog}
+    <div class="dialogbar">
+      <button>cancel</button>
+      <button>open</button>
+    </div>
+  {/if}
 </div>
 
 <style>
+  .explorer {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .toolbar {
+    flex: 0 0 auto;
+  }
+
+  .pathbar {
+    flex: 0 0 auto;
+  }
+
   .list {
+    flex: 1 1 auto;
+    overflow-y: auto;
     margin-top: 0.5rem;
+  }
+
+  .dialogbar {
+    flex: 0 0 auto;
+    margin-top: auto;
   }
 
   .entry {
