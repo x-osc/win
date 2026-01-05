@@ -7,6 +7,8 @@
 
   let currentFile: string[] | null = $state(null);
   let textarea: HTMLTextAreaElement;
+  let currentFileContent = "";
+  let isSaved = $state(true);
 
   async function openFile(path: string[]) {
     let content;
@@ -20,7 +22,10 @@
     }
 
     currentFile = path;
-    textarea.value = await content.data.text();
+    let text = await content.data.text();
+    currentFileContent = text;
+    textarea.value = text;
+    updateSaved();
   }
 
   async function handleOpen() {
@@ -50,6 +55,13 @@
       }
       return;
     }
+
+    currentFileContent = textarea.value;
+    updateSaved();
+  }
+
+  function updateSaved() {
+    isSaved = textarea?.value === currentFileContent;
   }
 </script>
 
@@ -58,8 +70,10 @@
     <button onclick={handleOpen}>open</button>
     <button onclick={handleSave}>save</button>
   </div>
-  <div class="pathbar">{currentFile ?? "untitled-1"}</div>
-  <textarea bind:this={textarea}></textarea>
+  <div class="pathbar">
+    {currentFile ?? "untitled-1"}{isSaved ? "" : "*"}
+  </div>
+  <textarea oninput={updateSaved} bind:this={textarea}></textarea>
 </div>
 
 <style>
