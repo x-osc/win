@@ -185,6 +185,10 @@ export async function getEntryFromId(id: string): Promise<FsEntry | null> {
 }
 
 export async function getPath(entry: FsEntry): Promise<string[] | null> {
+  if (entry == null) {
+    return null;
+  }
+
   const db = await FSDB;
   const tx = db.transaction("entries", "readonly");
   const store = tx.objectStore("entries");

@@ -3,6 +3,7 @@
   import {
     fsApi,
     FsError,
+    getPath,
     joinPath,
     type EntryType,
     type FsEntry,
@@ -95,8 +96,9 @@
     return newEntries;
   }
 
-  function expGetEntry(id: string): FsEntry | null {
-    return entries.find((entry) => entry.id === id) ?? null;
+  function expGetEntry(id: string): FsEntry {
+    // hopefull should be fine?? maybe
+    return (entries.find((entry) => entry.id === id) ?? null)!;
   }
 
   function selectEntry(id: string) {
@@ -161,6 +163,85 @@
     editing = { mode: "creating", type: "file", name: "" };
     await tick();
     editingInput?.focus();
+  }
+
+  async function deleteFiles() {
+    if (selectedEntries.length === 0) {
+      return;
+    }
+
+    if (
+      selectedEntries.length === 1 &&
+      expGetEntry(selectedEntries[0]).type === "file"
+    ) {
+      let entry = expGetEntry(selectedEntries[0]);
+
+      let procApi = api.launchApp("dialog", {
+        message: `delete file '${joinPath((await api.fs.getPath(entry)) ?? [entry.name])}'?`,
+      });
+
+      procApi?.on("exit", async (result) => {
+        if (result?.code === 1) {
+          clearSelection();
+
+          let path = await getPath(entry);
+
+          if (path === null) return;
+          if (!(await api.fs.exists(path))) return;
+
+          try {
+            await api.fs.remove(path);
+            entries = entries.filter((e) => e.id !== entry.id);
+          } catch (err) {
+            if (err instanceof FsError) {
+              error = "an unexpected error occured: " + err.message;
+            }
+          }
+        }
+      });
+
+      return;
+    }
+
+    let entriesToRemove: [string, string[]][] = [];
+    let count = 0;
+
+    for (const entryid of selectedEntries) {
+      let entry = expGetEntry(entryid);
+      let path = await api.fs.getPath(entry);
+      if (path === null) continue;
+      if (!(await api.fs.exists(path))) continue;
+
+      entriesToRemove.push([entryid, path]);
+      if (entry.type === "dir") {
+        let files = await api.fs.listDirRecursive(path);
+        count += files.length;
+        count += 1;
+      } else {
+        count += 1;
+      }
+    }
+
+    let procApi = api.launchApp("dialog", {
+      message: `delete ${count} entries?`,
+    });
+
+    procApi?.on("exit", async (result) => {
+      if (result?.code === 1) {
+        clearSelection();
+
+        try {
+          for (const [id, path] of entriesToRemove) {
+            await api.fs.removeRecursive(path);
+            entries = entries.filter((e) => e.id !== id);
+          }
+        } catch (err) {
+          if (err instanceof FsError) {
+            error = "an unexpected error occured: " + err.message;
+          }
+        }
+      }
+    });
   }
 
   async function commitEdits() {
@@ -228,7 +309,7 @@
         const end = Math.max(mainIndex, currentIndex);
 
         for (let i = start; i <= end; i++) {
-          selectedEntries.push(entries[i].id);
+          selectEntry(entries[i].id);
         }
 
         // dont change main selected
@@ -303,6 +384,7 @@
     <button onclick={goUp}>^</button>
     <button onclick={createFolder}>New Folder</button>
     <button onclick={createFile}>New File</button>
+    <button onclick={deleteFiles}>Delete</button>
   </div>
 
   <div class="pathbar">{api.fs.joinPath(cwd)}</div>
