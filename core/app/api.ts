@@ -2,14 +2,15 @@ import { launchCmd } from "@core/cmd/cmdregistry";
 import type { CmdApi } from "@core/cmd/command";
 import { fsApi } from "@core/fs/filesystem";
 import { wmApi, type WinData, type WindowApi } from "@core/wm/wm.svelte";
+import type { AppArgs, AppResult } from "./app";
 import { launchApp } from "./appregistry";
 import { closeApp, type ProcessApi } from "./processes";
 
 export interface AppApi {
   getId(): number;
-  quit(result?: Record<string, any>): void;
+  quit(result?: AppResult): void;
 
-  launchApp(id: string, args?: Record<string, any>): ProcessApi | null;
+  launchApp(id: string, args?: AppArgs): ProcessApi | null;
   launchCmd(id: string, cmdApi: CmdApi): ProcessApi | null;
 
   window: {

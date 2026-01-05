@@ -1,4 +1,4 @@
-import type { AppManifest } from "./app";
+import type { AppArgs, AppManifest } from "./app";
 import {
   launchAppFromManifest,
   type ExtraProcessOptions,
@@ -9,7 +9,7 @@ let appRegistry: Map<string, AppManifest> = new Map();
 
 export function launchApp(
   id: string,
-  args?: Record<string, any>,
+  args?: AppArgs,
   extraOptions: ExtraProcessOptions = {},
 ): ProcessApi | null {
   const app = appRegistry.get(id);

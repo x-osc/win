@@ -4,7 +4,7 @@ import type { CmdApi, CmdManifest } from "@core/cmd/command";
 import { instanceId } from "@core/state.svelte";
 import { wmApi } from "@core/wm/wm.svelte";
 import { getAppApi } from "./api";
-import type { AppManifest } from "./app";
+import type { AppArgs, AppManifest, AppResult } from "./app";
 
 let processes: Map<number, [Process, ProcessApi]> = new Map();
 
@@ -18,7 +18,7 @@ export interface Process {
 
 type ProcessEvents = {
   setupFinished(): void;
-  exit(result?: Record<string, any>): void;
+  exit(result?: AppResult): void;
 };
 
 export interface ExtraProcessOptions {
@@ -45,7 +45,7 @@ export function getProcessApi(id: number): ProcessApi | null {
 
 export function launchAppFromManifest(
   manifest: AppManifest,
-  args?: Record<string, any>,
+  args?: AppArgs,
   extraOptions: ExtraProcessOptions = {},
 ): ProcessApi {
   const instId = instanceId.value++;
@@ -107,7 +107,7 @@ function makeProcess(
   return processApi;
 }
 
-export function closeApp(instId: number, result?: Record<string, any>) {
+export function closeApp(instId: number, result?: AppResult) {
   if (!processes.has(instId)) {
     return;
   }
