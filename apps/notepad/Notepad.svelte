@@ -1,19 +1,42 @@
 <script lang="ts">
   import type { AppApi } from "@core/app/api";
+  import { FsError } from "@core/fs/filesystem";
   import type { WindowApi } from "@core/wm/wm.svelte";
 
   let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 
+  let textarea: HTMLTextAreaElement;
+
+  async function openFile(path: string[]) {
+    let content;
+    try {
+      content = await api.fs.readFile(path);
+    } catch (err) {
+      if (err instanceof FsError) {
+        textarea.value = `an unexpected error occured: ${err.message}`;
+      }
+      return;
+    }
+
+    textarea.value = await content.data.text();
+  }
+
   async function handleOpen() {
     let procApi = api.launchApp("explorer", { dialogType: "fileonly" });
 
-    procApi?.on("exit", (result) => console.log(result));
+    procApi?.on("exit", (result) => {
+      if (result?.selectedEntry == null) {
+        return;
+      }
+
+      openFile(result.selectedEntry);
+    });
   }
 </script>
 
 <div class="container">
   <div class="toolbar"><button onclick={handleOpen}>open</button></div>
-  <textarea></textarea>
+  <textarea bind:this={textarea}></textarea>
 </div>
 
 <style>

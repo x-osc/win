@@ -264,7 +264,7 @@
   }
 
   function handleDialogCancel() {
-    api.quit({ selectedFile: null });
+    api.quit({ selectedEntry: null });
   }
 
   async function handleDialogSelect() {
@@ -291,7 +291,7 @@
 
   async function quitWithEntry(entry: FsEntry) {
     api.quit({
-      selectedFile: await api.fs.getPath(entry),
+      selectedEntry: await api.fs.getPath(entry),
     });
   }
 </script>

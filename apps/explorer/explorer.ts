@@ -30,7 +30,7 @@ export type ExplorerArgs = {
 };
 
 export type ExplorerResult = {
-  selectedFile: string[] | null;
+  selectedEntry: string[] | null;
 };
 
 export let explorerManifest: AppManifest = {
