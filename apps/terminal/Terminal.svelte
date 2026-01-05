@@ -73,7 +73,7 @@
       isCmdRunning = false;
       await tick();
       scrollToBottom();
-      textInput.focus();
+      textInput.focus({ preventScroll: true });
     });
   }
 
@@ -128,12 +128,12 @@
   }
 
   winApi.on("focus", () => {
-    textInput.focus();
+    textInput.focus({ preventScroll: true });
   });
 
   function handleBlur(e: FocusEvent) {
     if ((!isCmdRunning || isInputRunning) && winApi.isFocused()) {
-      textInput.focus();
+      textInput.focus({ preventScroll: true });
     }
   }
 </script>
