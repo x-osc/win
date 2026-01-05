@@ -4,6 +4,7 @@ export let fsApi = {
   splitPath,
   joinPath,
   getEntry,
+  getEntryFromId,
   getPath,
   resolvePath,
   exists,
@@ -130,7 +131,7 @@ export function joinPath(path: string[], trailingSlash = true): string {
 
 export function resolvePath(
   relativeTo: string[],
-  path: string
+  path: string,
 ): string[] | null {
   let relTo = [...relativeTo];
   let parts = splitPath(path);
@@ -174,6 +175,12 @@ export async function getEntry(path: string[]): Promise<FsEntry | null> {
   }
 
   return (await store.get(currId)) ?? null;
+}
+
+export async function getEntryFromId(id: string): Promise<FsEntry | null> {
+  const db = await FSDB;
+
+  return (await db.get("entries", id)) ?? null;
 }
 
 export async function getPath(entry: FsEntry): Promise<string[] | null> {
@@ -262,7 +269,7 @@ async function mkdirIgnoreExists(path: string[]): Promise<DirEntry | null> {
 
 export async function writeFile(
   path: string[],
-  content: FileContent
+  content: FileContent,
 ): Promise<FileEntry> {
   const db = await FSDB;
   const name = path.pop();
@@ -381,7 +388,7 @@ export async function listDirRecursive(path: string[]): Promise<FsEntry[]> {
     const children = await db.getAllFromIndex(
       "entries",
       "by-parent",
-      dirEntry.id
+      dirEntry.id,
     );
     for (const child of children) {
       if (child.id === ROOT_ID) {

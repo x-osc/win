@@ -3,7 +3,6 @@
   import {
     fsApi,
     FsError,
-    getPath,
     joinPath,
     type EntryType,
     type FsEntry,
@@ -17,7 +16,11 @@
     api,
     winApi,
     args,
-  }: { api: AppApi; winApi: WindowApi; args?: ExplorerArgs } = $props();
+  }: {
+    api: AppApi;
+    winApi: WindowApi;
+    args?: ExplorerArgs;
+  } = $props();
 
   type CreatingData = {
     mode: "creating";
@@ -119,11 +122,11 @@
   async function openEntry(entry: FsEntry) {
     if (entry.type === "dir") {
       // TODO: error here
-      cwd = (await getPath(entry)) ?? cwd;
+      cwd = (await api.fs.getPath(entry)) ?? cwd;
       clearSelection();
       await refresh();
     } else {
-      console.log(`XDG_OPEN ${joinPath((await getPath(entry)) ?? [])}`);
+      console.log(`XDG_OPEN ${joinPath((await api.fs.getPath(entry)) ?? [])}`);
     }
   }
 
@@ -245,6 +248,27 @@
       openEntry(selectedEntry);
     }
   }
+
+  function handleDialogCancel() {
+    api.quit({ selectedFile: null });
+  }
+
+  async function handleDialogSelect() {
+    if (mainSelectedEntry === null) {
+      api.quit({ selectedFile: null });
+      return;
+    }
+
+    let entry = await api.fs.getEntryFromId(mainSelectedEntry);
+    if (entry === null) {
+      api.quit({ selectedFile: null });
+      return;
+    }
+
+    api.quit({
+      selectedFile: await api.fs.getPath(entry),
+    });
+  }
 </script>
 
 <svelte:window onkeypress={handleKeyPress} />
@@ -305,8 +329,8 @@
 
   {#if isDialog}
     <div class="dialogbar">
-      <button>cancel</button>
-      <button>open</button>
+      <button onclick={handleDialogCancel}>cancel</button>
+      <button onclick={handleDialogSelect}>open</button>
     </div>
   {/if}
 </div>

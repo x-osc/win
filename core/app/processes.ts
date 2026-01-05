@@ -18,7 +18,7 @@ export interface Process {
 
 type ProcessEvents = {
   setupFinished(): void;
-  exit(): void;
+  exit(result?: Record<string, any>): void;
 };
 
 export interface ExtraProcessOptions {
@@ -107,7 +107,7 @@ function makeProcess(
   return processApi;
 }
 
-export function closeApp(instId: number) {
+export function closeApp(instId: number, result?: Record<string, any>) {
   if (!processes.has(instId)) {
     return;
   }
@@ -125,7 +125,7 @@ export function closeApp(instId: number) {
   }
 
   let [process, processApi] = processes.get(instId)!;
-  process.callbacks.emit("exit");
+  process.callbacks.emit("exit", result);
 
   processes.delete(instId);
 }

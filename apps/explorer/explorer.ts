@@ -29,8 +29,8 @@ export type ExplorerArgs = {
   workingDir?: string[];
 };
 
-type ExplorerResult = {
-  selectedFile: boolean | null;
+export type ExplorerResult = {
+  selectedFile: string[] | null;
 };
 
 export let explorerManifest: AppManifest = {

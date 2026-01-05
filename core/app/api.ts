@@ -7,7 +7,7 @@ import { closeApp, type ProcessApi } from "./processes";
 
 export interface AppApi {
   getId(): number;
-  quit(): void;
+  quit(result?: Record<string, any>): void;
 
   launchApp(id: string, args?: Record<string, any>): ProcessApi | null;
   launchCmd(id: string, cmdApi: CmdApi): ProcessApi | null;
@@ -23,7 +23,7 @@ export interface AppApi {
 export function getAppApi(instId: number): AppApi {
   const api: AppApi = {
     getId: () => instId,
-    quit: () => closeApp(instId),
+    quit: (result) => closeApp(instId, result),
 
     launchApp: (id, args) => launchApp(id, args, { owner: instId }),
     launchCmd: (id, cmdApi) => launchCmd(id, cmdApi, { owner: instId }),
