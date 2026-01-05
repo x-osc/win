@@ -7,6 +7,16 @@
   text-rendering: optimizeLegibility;
 }
 
+@font-face {
+  font-family: "DOS-V_TWN16";
+  src: url("../assets/Web437_DOS-V_TWN16.woff");
+}
+
+@font-face {
+  font-family: "Cozette";
+  src: url("../assets/CozetteVector.woff");
+}
+
 body {
   margin: 0;
   padding: 0;

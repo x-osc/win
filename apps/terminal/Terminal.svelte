@@ -177,9 +177,12 @@
     box-sizing: border-box;
     background-color: black;
     color: #f5f5f5;
-    font-size: 14px;
-    font-family: monospace;
-    line-height: 1.4;
+
+    font-size: 13px;
+    font-family: "Cozette", monospace;
+    font-smooth: never;
+    line-height: 17px;
+
     margin: 0;
     padding: 0.3rem;
     overflow-x: hidden;
@@ -209,8 +212,10 @@
     color: #f5f5f5;
     margin: 0;
     padding: 0;
-    font-family: monospace;
-    font-size: 14px;
+
+    font-size: inherit;
+    font-family: inherit;
+
     outline: none;
     border: none;
     word-wrap: break-word;
