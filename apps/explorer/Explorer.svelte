@@ -97,8 +97,11 @@
   }
 
   function expGetEntry(id: string): FsEntry {
-    // hopefull should be fine?? maybe
-    return (entries.find((entry) => entry.id === id) ?? null)!;
+    let entry = entries.find((entry) => entry.id === id) ?? null;
+    if (entry === null) {
+      throw new Error(`uhoh entry ${id} missing from explorer`);
+    }
+    return entry;
   }
 
   function selectEntry(id: string) {
