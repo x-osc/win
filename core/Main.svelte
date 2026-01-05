@@ -8,6 +8,7 @@
   import { notepadManifest } from "../apps/notepad/notepad";
   import { paintManifest } from "../apps/paint/paint";
   import { terminalManifest } from "../apps/terminal/terminal";
+  import { testAppManifest } from "../apps/testApp";
   import { asdfManifest } from "../cmds/asdf";
   import { cdManifest } from "../cmds/cd";
   import { deleteManifest } from "../cmds/delete";
@@ -24,7 +25,6 @@
   import { pwdManifest } from "../cmds/pwd";
   import { readManifest } from "../cmds/read";
   import { sleepManifest } from "../cmds/sleep";
-  import { testAppManifest } from "./testApp";
 
   registerApp(testAppManifest);
   registerApp(notepadManifest);
