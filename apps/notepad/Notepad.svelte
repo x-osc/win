@@ -5,7 +5,7 @@
   let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 
   async function handleOpen() {
-    let procApi = api.launchApp("explorer", { isDialog: true });
+    let procApi = api.launchApp("explorer", { dialogType: "fileonly" });
 
     procApi?.on("exit", (result) => console.log(result));
   }

@@ -28,7 +28,8 @@
     name: string;
   };
 
-  let isDialog: boolean = args?.isDialog ?? false;
+  let dialogType = args?.dialogType ?? "none";
+  let isDialog = dialogType !== "none";
 
   let cwd: string[] = $state([]);
   let entries: FsEntry[] = $state([]);
@@ -94,6 +95,10 @@
     return newEntries;
   }
 
+  function expGetEntry(id: string): FsEntry | null {
+    return entries.find((entry) => entry.id === id) ?? null;
+  }
+
   function selectEntry(id: string) {
     if (selectedEntries.includes(id)) {
       return;
@@ -126,6 +131,14 @@
       clearSelection();
       await refresh();
     } else {
+      if (
+        (dialogType === "fileonly" || dialogType === "both") &&
+        entry.type === "file"
+      ) {
+        quitWithEntry(entry);
+        return;
+      }
+
       console.log(`XDG_OPEN ${joinPath((await api.fs.getPath(entry)) ?? [])}`);
     }
   }
@@ -238,10 +251,11 @@
     }
 
     if (e.key === "Enter") {
-      let selectedEntry = entries.find(
-        (entry) => entry.id === mainSelectedEntry,
-      );
-      if (selectedEntry === undefined) {
+      if (mainSelectedEntry === null) {
+        return;
+      }
+      let selectedEntry = expGetEntry(mainSelectedEntry);
+      if (selectedEntry === null) {
         return;
       }
 
@@ -255,16 +269,27 @@
 
   async function handleDialogSelect() {
     if (mainSelectedEntry === null) {
-      api.quit({ selectedFile: null });
       return;
     }
 
-    let entry = await api.fs.getEntryFromId(mainSelectedEntry);
+    let entry = expGetEntry(mainSelectedEntry);
     if (entry === null) {
-      api.quit({ selectedFile: null });
       return;
     }
 
+    if (dialogType === "fileonly" && entry.type !== "file") {
+      openEntry(entry);
+      return;
+    }
+
+    if (dialogType === "dironly" && entry.type !== "dir") {
+      return; // TODO: do smth here
+    }
+
+    quitWithEntry(entry);
+  }
+
+  async function quitWithEntry(entry: FsEntry) {
     api.quit({
       selectedFile: await api.fs.getPath(entry),
     });
