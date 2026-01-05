@@ -11,6 +11,7 @@ export let fsApi = {
   type,
   mkdir,
   writeFile,
+  overwriteFile,
   readFile,
   listDir,
   listDirRecursive,
@@ -314,6 +315,34 @@ export async function writeFile(
   }
 
   return entry;
+}
+
+export async function overwriteFile(path: string[], content: FileContent) {
+  const db = await FSDB;
+  const entry = await getEntry(path);
+
+  if (!entry) {
+    throw new FsError({ type: "notfound", path });
+  }
+
+  if (entry.type !== "file") {
+    throw new FsError({
+      type: "typemismatch",
+      path,
+      expected: "file",
+      actual: entry.type,
+    });
+  }
+
+  try {
+    await db.put("contents", content, entry.id);
+  } catch (e) {
+    throw new FsError({
+      type: "backendfailure",
+      path: path,
+      cause: e,
+    });
+  }
 }
 
 export async function readFile(path: string[]): Promise<FileContent> {

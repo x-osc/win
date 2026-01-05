@@ -5,6 +5,7 @@
 
   let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 
+  let currentFile: string[] | null = $state(null);
   let textarea: HTMLTextAreaElement;
 
   async function openFile(path: string[]) {
@@ -18,6 +19,7 @@
       return;
     }
 
+    currentFile = path;
     textarea.value = await content.data.text();
   }
 
@@ -32,24 +34,47 @@
       openFile(result.selectedEntry);
     });
   }
+
+  async function handleSave() {
+    if (currentFile === null) {
+      return;
+    }
+
+    try {
+      await api.fs.overwriteFile(currentFile, {
+        data: new Blob([textarea.value]),
+      });
+    } catch (err) {
+      if (err instanceof FsError) {
+        textarea.value = `an unexpected error occured: ${err.message}`;
+      }
+      return;
+    }
+  }
 </script>
 
-<div class="container">
-  <div class="toolbar"><button onclick={handleOpen}>open</button></div>
+<div class="notepad">
+  <div class="toolbar">
+    <button onclick={handleOpen}>open</button>
+    <button onclick={handleSave}>save</button>
+  </div>
+  <div class="pathbar">{currentFile ?? "untitled-1"}</div>
   <textarea bind:this={textarea}></textarea>
 </div>
 
 <style>
-  .container {
+  .notepad {
     display: flex;
     flex-direction: column;
     height: 100%;
   }
 
   .toolbar {
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
+    flex: 0 0 auto;
+  }
+
+  .pathbar {
+    flex: 0 0 auto;
   }
 
   textarea {
