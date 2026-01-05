@@ -22,8 +22,6 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
     workingDir = newCwd;
   }
 
-  let appId = args[0];
-
   cmdApi.writeLine(`launching explorer`);
 
   await sleep(randint(125, 250));

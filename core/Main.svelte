@@ -4,6 +4,7 @@
   import Taskbar from "@core/wm/Taskbar.svelte";
   import Window from "@core/wm/Window.svelte";
   import { winDataBuilder, wmApi } from "@core/wm/wm.svelte";
+  import { dialogManifest } from "../apps/dialog/dialog";
   import { explorerManifest } from "../apps/explorer/explorer";
   import { notepadManifest } from "../apps/notepad/notepad";
   import { paintManifest } from "../apps/paint/paint";
@@ -12,6 +13,7 @@
   import { asdfManifest } from "../cmds/asdf";
   import { cdManifest } from "../cmds/cd";
   import { deleteManifest } from "../cmds/delete";
+  import { dialogCmdManifest } from "../cmds/dialog";
   import { echoManifest } from "../cmds/echo";
   import { explorerCmdManifest } from "../cmds/explorer";
   import { helpManifest } from "../cmds/help";
@@ -31,6 +33,7 @@
   registerApp(terminalManifest);
   registerApp(paintManifest);
   registerApp(explorerManifest);
+  registerApp(dialogManifest);
 
   registerCmd(helpManifest);
   registerCmd(asdfManifest);
@@ -48,6 +51,7 @@
   registerCmd(sleepManifest);
   registerCmd(mkwindowManifest);
   registerCmd(explorerCmdManifest);
+  registerCmd(dialogCmdManifest);
 </script>
 
 <div id="root">
