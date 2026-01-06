@@ -53,6 +53,9 @@
   let editingInput: HTMLInputElement | null = $state(null);
 
   let mainSelectedEntry: string | null = $state(null);
+  let mainSelectionPath: Promise<string[] | null> | null = $derived(
+    mainSelectedEntry ? getPath(expGetEntry(mainSelectedEntry)) : null,
+  );
   let selectedEntries: string[] = $state([]);
 
   onMount(async () => {
@@ -67,6 +70,9 @@
     error = null;
     loading = true;
     let currEntries;
+
+    clearSelection();
+
     try {
       currEntries = await api.fs.listDir(cwd);
       currEntries = sortEntries(currEntries);
@@ -480,6 +486,11 @@
 
   {#if isDialog}
     <div class="dialogbar">
+      <div class="dialogselected">
+        {#await mainSelectionPath then path}
+          {path ? joinPath(path) : ""}
+        {/await}
+      </div>
       <div class="dialogbuttons">
         <button onclick={handleDialogCancel}>cancel</button>
         <button onclick={handleDialogSelect}>
@@ -517,9 +528,14 @@
     margin-top: auto;
   }
 
-  .dialogbuttons {
-    margin-left: auto;
+  .dialogselected {
+    flex-grow: 1;
+    margin-right: 1em;
   }
+
+  /* .dialogbuttons {
+    margin-left: auto;
+  } */
 
   .entry {
     cursor: pointer;
