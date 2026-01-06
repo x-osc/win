@@ -15,7 +15,7 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
 
   await sleep(randint(125, 250));
 
-  let code = await api.showDialog(message ?? "");
+  let code = await api.showDialog({ message: message ?? "" });
   if (code) {
     cmdApi.writeLine(code.toString());
   }

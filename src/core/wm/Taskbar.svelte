@@ -25,7 +25,7 @@
     gap: 4px;
     padding: 0 8px;
     /* TODO: jank */
-    z-index: 1000000;
+    z-index: 10000;
   }
 
   #taskbar button {

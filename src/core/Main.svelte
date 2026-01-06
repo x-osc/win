@@ -63,30 +63,32 @@
 </script>
 
 <div id="root">
-  <div id="desktop">
-    {#each wmApi.getWindows().entries() as [id, win] (id)}
-      <Window
-        {id}
-        windowData={win.data}
-        focused={id ===
-          wmApi.getFocusHistory()[wmApi.getFocusHistory().length - 1]}
-        {wmApi}
-      />
-    {/each}
+  <div id="desktop-container">
+    <div id="desktop">
+      {#each wmApi.getWindows().entries() as [id, win] (id)}
+        <Window
+          {id}
+          windowData={win.data}
+          focused={id ===
+            wmApi.getFocusHistory()[wmApi.getFocusHistory().length - 1]}
+          {wmApi}
+        />
+      {/each}
 
-    <button
-      onclick={(_) =>
-        wmApi.createWindow(winDataBuilder().withTitle("test_win").build())}
-      >make window</button
-    >
-    <button onclick={(_) => launchApp("test_app")}>make app</button>
-    <button onclick={(_) => launchApp("notepad")}>notepad</button>
-    <button onclick={(_) => launchApp("terminal")}>terminal</button>
-    <button onclick={(_) => launchApp("paint")}>michaelsoft paint</button>
-    <button onclick={(_) => launchApp("explorer")}>file explorer</button>
-    <button onclick={(_) => launchApp("calc")}>calcoolator</button>
+      <button
+        onclick={(_) =>
+          wmApi.createWindow(winDataBuilder().withTitle("test_win").build())}
+        >make window</button
+      >
+      <button onclick={(_) => launchApp("test_app")}>make app</button>
+      <button onclick={(_) => launchApp("notepad")}>notepad</button>
+      <button onclick={(_) => launchApp("terminal")}>terminal</button>
+      <button onclick={(_) => launchApp("paint")}>michaelsoft paint</button>
+      <button onclick={(_) => launchApp("explorer")}>file explorer</button>
+      <button onclick={(_) => launchApp("calc")}>calcoolator</button>
+    </div>
+    <Taskbar taskbar={wmApi.getTaskbar()} {wmApi} />
   </div>
-  <Taskbar taskbar={wmApi.getTaskbar()} {wmApi} />
 </div>
 
 <svelte:window onmousemove={handleMouseMove} />
@@ -94,6 +96,13 @@
 <style>
   #root {
     height: 100vh;
+  }
+
+  #desktop-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
   }
 
   #desktop {

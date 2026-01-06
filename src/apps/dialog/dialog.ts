@@ -11,7 +11,10 @@ async function launch(api: AppApi, args?: DialogArgs) {
     winDataBuilder()
       .withMinSize(290, 100)
       .withSize(300, 100)
-      .withPosition(mousePos.x - 120, mousePos.y - 40)
+      .withPosition(
+        args?.position?.x ?? mousePos.x - 120,
+        args?.position?.y ?? mousePos.y - 40,
+      )
       .withTitle("dialog")
       .build(),
   );
@@ -33,6 +36,7 @@ async function launch(api: AppApi, args?: DialogArgs) {
 
 export type DialogArgs = {
   message?: string;
+  position?: { x: number; y: number };
 };
 
 export type DialogResult = {
@@ -46,10 +50,10 @@ export let dialogManifest: AppManifest = {
 };
 
 export async function showDialog(
-  message: string,
+  args: DialogArgs,
   owner: number,
 ): Promise<number | null> {
-  let procApi = launchAppFromManifest(dialogManifest, { message }, { owner });
+  let procApi = launchAppFromManifest(dialogManifest, args, { owner });
 
   return new Promise((resolve) => {
     procApi.on("exit", (result) => {

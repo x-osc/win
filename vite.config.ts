@@ -17,6 +17,13 @@ export default defineConfig(({ command }) => ({
             crossorigin: true,
           },
         },
+        {
+          entryMatch: /.*DOS-V_TWN.*\.woff$/,
+          attributes: {
+            as: "font",
+            crossorigin: true,
+          },
+        },
       ],
     }),
   ],

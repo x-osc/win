@@ -203,9 +203,9 @@
     ) {
       let entry = expGetEntry(selectedEntries[0]);
 
-      let code = await api.showDialog(
-        `delete file '${joinPath((await api.fs.getPath(entry)) ?? [entry.name], false)}'?`,
-      );
+      let code = await api.showDialog({
+        message: `delete file '${joinPath((await api.fs.getPath(entry)) ?? [entry.name], false)}'?`,
+      });
 
       if (code !== 1) {
         return;
@@ -249,7 +249,7 @@
       }
     }
 
-    let code = await api.showDialog(`delete ${count} entries?`);
+    let code = await api.showDialog({ message: `delete ${count} entries?` });
 
     if (code !== 1) {
       return;
@@ -402,9 +402,9 @@
         quitWithEntry(entry);
         return;
       } else {
-        let code = await api.showDialog(
-          `overwrite file '${path ? joinPath(path, false) : entry.name}' ??`,
-        );
+        let code = await api.showDialog({
+          message: `overwrite file '${path ? joinPath(path, false) : entry.name}' ??`,
+        });
 
         if (code === 1) {
           quitWithEntry(entry);
