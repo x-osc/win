@@ -1,5 +1,6 @@
 import type { AppApi } from "@core/app/api";
 import type { AppManifest } from "@core/app/app";
+import { mousePos } from "@core/state.svelte";
 import { winDataBuilder } from "@core/wm/wm.svelte";
 import { mount } from "svelte";
 import Dialog from "./Dialog.svelte";
@@ -9,6 +10,7 @@ async function launch(api: AppApi, args?: DialogArgs) {
     winDataBuilder()
       .withMinSize(290, 100)
       .withSize(300, 100)
+      .withPosition(mousePos.x - 120, mousePos.y - 40)
       .withTitle("dialog")
       .build(),
   );

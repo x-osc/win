@@ -27,6 +27,7 @@
   import { pwdManifest } from "../cmds/pwd";
   import { readManifest } from "../cmds/read";
   import { sleepManifest } from "../cmds/sleep";
+  import { mousePos } from "./state.svelte";
 
   registerApp(testAppManifest);
   registerApp(notepadManifest);
@@ -52,6 +53,11 @@
   registerCmd(mkwindowManifest);
   registerCmd(explorerCmdManifest);
   registerCmd(dialogCmdManifest);
+
+  function handleMouseMove(e: MouseEvent) {
+    mousePos.x = e.clientX;
+    mousePos.y = e.clientY;
+  }
 </script>
 
 <div id="root">
@@ -79,6 +85,8 @@
   </div>
   <Taskbar taskbar={wmApi.getTaskbar()} {wmApi} />
 </div>
+
+<svelte:window onmousemove={handleMouseMove} />
 
 <style>
   #root {

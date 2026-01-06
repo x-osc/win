@@ -9,3 +9,8 @@ export const zIndex = $state({
 export const instanceId = $state({
   value: 1,
 });
+
+export const mousePos = {
+  x: 0,
+  y: 0,
+};

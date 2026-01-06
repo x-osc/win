@@ -6,7 +6,11 @@ import Notepad from "./Notepad.svelte";
 
 async function launch(api: AppApi) {
   let winApi = await api.window.createWindowAsync(
-    winDataBuilder().withMinSize(290, 161).withTitle("notepad").build(),
+    winDataBuilder()
+      .withMinSize(290, 161)
+      .withSize(300, 420)
+      .withTitle("notepad")
+      .build(),
   );
 
   let body = winApi.getBody();

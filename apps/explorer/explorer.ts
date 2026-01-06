@@ -6,7 +6,11 @@ import Explorer from "./Explorer.svelte";
 
 async function launch(api: AppApi, args?: ExplorerArgs) {
   let winApi = await api.window.createWindowAsync(
-    winDataBuilder().withMinSize(290, 161).withTitle("file explorerer").build(),
+    winDataBuilder()
+      .withMinSize(290, 161)
+      .withSize(410, 237)
+      .withTitle("file explorerer")
+      .build(),
   );
 
   let body = winApi.getBody();
