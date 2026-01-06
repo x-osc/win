@@ -10,15 +10,15 @@
     id,
     windowData,
     focused,
+    callbacks,
     wmApi,
   }: {
     id: number;
     windowData: WinData;
     focused: boolean;
+    callbacks: CallbackManager<WindowEvents>;
     wmApi: WmApi;
   } = $props();
-
-  let callbacks = new CallbackManager<WindowEvents>();
 
   let bodyElement: HTMLElement;
   let windowElement: HTMLElement;
@@ -40,8 +40,11 @@
     getBody: () => bodyElement,
     isOpen: () => id in wmApi.getWindows(),
 
+    // svelte-ignore state_referenced_locally
     on: callbacks.on.bind(callbacks),
+    // svelte-ignore state_referenced_locally
     once: callbacks.once.bind(callbacks),
+    // svelte-ignore state_referenced_locally
     off: callbacks.off.bind(callbacks),
   };
 
@@ -51,7 +54,6 @@
   });
 
   function focus() {
-    callbacks.emit("focus");
     wmApi.focusWindow(id);
   }
 

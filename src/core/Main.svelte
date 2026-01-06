@@ -71,6 +71,7 @@
           windowData={win.data}
           focused={id ===
             wmApi.getFocusHistory()[wmApi.getFocusHistory().length - 1]}
+          callbacks={win.callbacks}
           {wmApi}
         />
       {/each}

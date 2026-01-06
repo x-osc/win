@@ -1,10 +1,16 @@
-import type { OffFunction, OnceFunction, OnFunction } from "@core/callbacks";
+import {
+  CallbackManager,
+  type OffFunction,
+  type OnceFunction,
+  type OnFunction,
+} from "@core/callbacks";
 import { windowId, zIndex } from "@core/state.svelte";
 import { SvelteMap } from "svelte/reactivity";
 
 export type Win = {
   data: WinData;
   api: WindowApi | null;
+  callbacks: CallbackManager<WindowEvents>;
 };
 
 export type WinData = {
@@ -123,10 +129,13 @@ async function createWindowAsync(data: WinData): Promise<WindowApi> {
 function createWindow(data: WinData): number {
   let id = windowId.value++;
 
-  // TODO: why does this work im scared
+  let callbacks = new CallbackManager<WindowEvents>();
+
+  // why does this work im scared
   const newWindow: Win = $state({
     data,
     api: null,
+    callbacks,
   });
   windows.set(id, newWindow);
 
@@ -176,6 +185,8 @@ function focusWindow(id: number) {
     console.warn(`Window with id ${id} does not exist.`);
     return;
   }
+
+  windows.get(id)?.callbacks.emit("focus");
 
   win.isMinimized = false;
   win.z = zIndex.value++;

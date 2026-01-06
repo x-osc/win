@@ -5,7 +5,7 @@ import { winDataBuilder } from "@core/wm/wm.svelte";
 async function launch(api: AppApi) {
   console.log("yipe it worke");
   let winApi = await api.window.createWindowAsync(
-    winDataBuilder().withTitle("test_app").build()
+    winDataBuilder().withTitle("test_app").build(),
   );
 
   console.log(winApi.getData().owner);
@@ -30,6 +30,10 @@ async function launch(api: AppApi) {
   winApi.on("focus", () => {
     console.log("fjdkjfk");
   });
+
+  // winApi.on("resize", (w, h) => {
+  //   console.log(`width: ${w}, height: ${h}`);
+  // });
 
   winApi.on("close", () => {
     console.log("asdfjkl");
