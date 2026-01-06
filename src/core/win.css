@@ -1,14 +1,29 @@
+button {
+  white-space: nowrap;
+  border: 1px black solid;
+  background: #e4e4e4;
+  cursor: pointer;
+  text-decoration: none;
+}
+
 button.win-button {
   box-sizing: border-box;
+  font-size: 13px;
+  line-height: normal;
   border: none;
   color: transparent;
   text-shadow: 0 0 #222222;
   background: #c0c0c0;
-  box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #ffffff;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #ffffff;
   border-radius: 0;
 }
 
 button:active.win-button {
-  box-shadow: inset -1px -1px #ffffff, inset 1px 1px #0a0a0a,
-    inset -2px -2px #ffffff, inset 2px 2px #808080;
+  box-shadow:
+    inset -1px -1px #ffffff,
+    inset 1px 1px #0a0a0a,
+    inset -2px -2px #ffffff,
+    inset 2px 2px #808080;
 }

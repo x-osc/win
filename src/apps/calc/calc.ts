@@ -9,8 +9,8 @@ import Calc from "./Calc.svelte";
 async function launch(api: AppApi) {
   let winApi = await api.window.createWindowAsync(
     winDataBuilder()
-      .withMinSize(200, 348)
-      .withSize(270, 348)
+      .withMinSize(200, 382)
+      .withSize(270, 382)
       .withTitle("calculator")
       .build(),
   );
