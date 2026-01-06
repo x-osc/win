@@ -15,14 +15,10 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
 
   await sleep(randint(125, 250));
 
-  let processApi = api.launchApp("dialog", { message });
-
-  await new Promise<void>((resolve) => {
-    processApi?.on("exit", (result) => {
-      cmdApi.writeLine(((result?.code ?? 0) as number).toString());
-      resolve();
-    });
-  });
+  let code = await api.showDialog(message ?? "");
+  if (code) {
+    cmdApi.writeLine(code.toString());
+  }
 }
 
 export let dialogCmdManifest: CmdManifest = {

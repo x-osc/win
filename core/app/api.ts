@@ -2,6 +2,7 @@ import { launchCmd } from "@core/cmd/cmdregistry";
 import type { CmdApi } from "@core/cmd/command";
 import { fsApi } from "@core/fs/filesystem";
 import { wmApi, type WinData, type WindowApi } from "@core/wm/wm.svelte";
+import { showDialog } from "../../apps/dialog/dialog";
 import type { AppArgs, AppResult } from "./app";
 import { launchApp } from "./appregistry";
 import { closeApp, type ProcessApi } from "./processes";
@@ -12,6 +13,7 @@ export interface AppApi {
 
   launchApp(id: string, args?: AppArgs): ProcessApi | null;
   launchCmd(id: string, cmdApi: CmdApi): ProcessApi | null;
+  showDialog(message: string): Promise<number | null>;
 
   window: {
     createWindow(data: WinData): number;
@@ -28,6 +30,7 @@ export function getAppApi(instId: number): AppApi {
 
     launchApp: (id, args) => launchApp(id, args, { owner: instId }),
     launchCmd: (id, cmdApi) => launchCmd(id, cmdApi, { owner: instId }),
+    showDialog: (message) => showDialog(message, instId),
 
     window: {
       createWindow: (data: WinData) => {

@@ -1,5 +1,6 @@
 import type { AppApi } from "@core/app/api";
 import type { AppManifest } from "@core/app/app";
+import { launchAppFromManifest } from "@core/app/processes";
 import { mousePos } from "@core/state.svelte";
 import { winDataBuilder } from "@core/wm/wm.svelte";
 import { mount } from "svelte";
@@ -43,3 +44,16 @@ export let dialogManifest: AppManifest = {
 
   launch,
 };
+
+export async function showDialog(
+  message: string,
+  owner: number,
+): Promise<number | null> {
+  let procApi = launchAppFromManifest(dialogManifest, { message }, { owner });
+
+  return new Promise((resolve) => {
+    procApi.on("exit", (result) => {
+      resolve(result?.code ?? null);
+    });
+  });
+}

@@ -203,29 +203,29 @@
     ) {
       let entry = expGetEntry(selectedEntries[0]);
 
-      let procApi = api.launchApp("dialog", {
-        message: `delete file '${joinPath((await api.fs.getPath(entry)) ?? [entry.name], false)}'?`,
-      });
+      let code = await api.showDialog(
+        `delete file '${joinPath((await api.fs.getPath(entry)) ?? [entry.name], false)}'?`,
+      );
 
-      procApi?.on("exit", async (result) => {
-        if (result?.code === 1) {
-          clearSelection();
+      if (code !== 1) {
+        return;
+      }
 
-          let path = await getPath(entry);
+      clearSelection();
 
-          if (path === null) return;
-          if (!(await api.fs.exists(path))) return;
+      let path = await getPath(entry);
 
-          try {
-            await api.fs.remove(path);
-            entries = entries.filter((e) => e.id !== entry.id);
-          } catch (err) {
-            if (err instanceof FsError) {
-              error = "an unexpected error occured: " + err.message;
-            }
-          }
+      if (path === null) return;
+      if (!(await api.fs.exists(path))) return;
+
+      try {
+        await api.fs.remove(path);
+        entries = entries.filter((e) => e.id !== entry.id);
+      } catch (err) {
+        if (err instanceof FsError) {
+          error = "an unexpected error occured: " + err.message;
         }
-      });
+      }
 
       return;
     }
@@ -249,26 +249,24 @@
       }
     }
 
-    let procApi = api.launchApp("dialog", {
-      message: `delete ${count} entries?`,
-    });
+    let code = await api.showDialog(`delete ${count} entries?`);
 
-    procApi?.on("exit", async (result) => {
-      if (result?.code === 1) {
-        clearSelection();
+    if (code !== 1) {
+      return;
+    }
 
-        try {
-          for (const [id, path] of entriesToRemove) {
-            await api.fs.removeRecursive(path);
-            entries = entries.filter((e) => e.id !== id);
-          }
-        } catch (err) {
-          if (err instanceof FsError) {
-            error = "an unexpected error occured: " + err.message;
-          }
-        }
+    clearSelection();
+
+    try {
+      for (const [id, path] of entriesToRemove) {
+        await api.fs.removeRecursive(path);
+        entries = entries.filter((e) => e.id !== id);
       }
-    });
+    } catch (err) {
+      if (err instanceof FsError) {
+        error = "an unexpected error occured: " + err.message;
+      }
+    }
   }
 
   async function commitEdits() {
@@ -404,15 +402,13 @@
         quitWithEntry(entry);
         return;
       } else {
-        let procApi = api.launchApp("dialog", {
-          message: `overwrite file '${path ? joinPath(path, false) : entry.name}' ??`,
-        });
+        let code = await api.showDialog(
+          `overwrite file '${path ? joinPath(path, false) : entry.name}' ??`,
+        );
 
-        procApi?.on("exit", async (result) => {
-          if (result?.code === 1) {
-            quitWithEntry(entry);
-          }
-        });
+        if (code === 1) {
+          quitWithEntry(entry);
+        }
 
         return;
       }
