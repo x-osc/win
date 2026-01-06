@@ -27,6 +27,7 @@
   let currPrompt: HTMLElement;
 
   onMount(() => {
+    addLine("type help for help");
     textInput.focus();
   });
 
