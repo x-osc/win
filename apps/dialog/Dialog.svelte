@@ -13,6 +13,7 @@
     args?: DialogArgs;
   } = $props();
 
+  // svelte-ignore state_referenced_locally
   let message = args?.message ?? "\xa0"; // nbsp
 
   function handleKeyPress() {}

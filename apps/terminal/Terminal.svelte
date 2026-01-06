@@ -128,6 +128,7 @@
     }
   }
 
+  // svelte-ignore state_referenced_locally
   winApi.on("focus", () => {
     textInput.focus({ preventScroll: true });
   });

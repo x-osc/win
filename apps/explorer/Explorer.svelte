@@ -29,6 +29,7 @@
     name: string;
   };
 
+  // svelte-ignore state_referenced_locally
   let dialogType = args?.dialogType ?? "none";
   let dialogMode: "none" | "open" | "save" = $state("none");
   let isDialog = dialogType !== "none";
