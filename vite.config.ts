@@ -12,6 +12,10 @@ export default defineConfig(({ command }) => ({
       files: [
         {
           entryMatch: /Cozette.*\.woff$/,
+          attributes: {
+            as: "font",
+            crossorigin: true,
+          },
         },
       ],
     }),
