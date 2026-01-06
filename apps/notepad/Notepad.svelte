@@ -104,11 +104,19 @@
 <div class="notepad">
   <div class="toolbar">
     <button onclick={handleOpen}>open</button>
-    <button onclick={handleSave}>save</button>
+    <button
+      onclick={() => {
+        if (currentFile === null) {
+          handleSaveAs();
+        } else {
+          handleSave();
+        }
+      }}>save</button
+    >
     <button onclick={handleSaveAs}>save as</button>
   </div>
   <div class="pathbar">
-    {currentFile ?? "untitled-1"}{isSaved ? "" : "*"}
+    {currentFile ?? "untitled-1 (new file)"}{isSaved ? "" : "*"}
   </div>
   <textarea oninput={updateSaved} bind:this={textarea}></textarea>
 </div>
