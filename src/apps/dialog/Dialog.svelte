@@ -30,10 +30,33 @@
 <svelte:window onkeypress={handleKeyPress} />
 
 <div class="dialog">
-  <div>{message}</div>
-  <button onclick={handleCancel}>cancel</button>
-  <button onclick={handleOk}>ok</button>
+  <div class="main">
+    <div class="message">{message}</div>
+  </div>
+  <div class="buttons">
+    <button onclick={handleCancel}>cancel</button>
+    <button onclick={handleOk}>ok</button>
+  </div>
 </div>
 
 <style>
+  .dialog {
+    position: relative;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+  }
+
+  .main {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .buttons {
+    display: flex;
+    justify-content: flex-end;
+  }
 </style>
