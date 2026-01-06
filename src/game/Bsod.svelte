@@ -31,8 +31,6 @@
     text-align: left;
     padding: 20px;
     box-sizing: border-box;
-
-    z-index: 100000;
   }
 
   .bsod {

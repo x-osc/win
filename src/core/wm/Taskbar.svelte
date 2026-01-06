@@ -24,8 +24,6 @@
     align-items: center;
     gap: 4px;
     padding: 0 8px;
-    /* TODO: jank */
-    z-index: 10000;
   }
 
   #taskbar button {

@@ -102,7 +102,7 @@
     position: absolute;
     width: 100%;
     height: 100%;
-    z-index: 1;
+    isolation: isolate;
   }
 
   #desktop {
@@ -111,5 +111,6 @@
     height: 100%;
     background-color: teal;
     overflow: hidden;
+    isolation: isolate;
   }
 </style>

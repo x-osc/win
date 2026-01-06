@@ -35,6 +35,7 @@ export async function doError(api: AppApi) {
 export function bsod() {
   mount(Bsod, {
     target: document.getElementById("root")!,
+    anchor: document.getElementById("desktop-container")!,
   });
 }
 
