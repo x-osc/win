@@ -13,6 +13,7 @@ export let fsApi = {
   writeFile,
   overwriteFile,
   readFile,
+  getContent,
   listDir,
   listDirRecursive,
   rename,
@@ -373,6 +374,14 @@ export async function readFile(path: string[]): Promise<FileContent> {
       path,
     });
   }
+
+  return content;
+}
+
+export async function getContent(id: string): Promise<FileContent | null> {
+  const db = await FSDB;
+
+  const content = (await db.get("contents", id)) ?? null;
 
   return content;
 }

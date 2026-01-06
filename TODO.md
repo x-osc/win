@@ -1,8 +1,7 @@
  - rework terminal to be like lok.computer's (prompt on bottom, logs on top)
  - full ui css stuff
- - rename app to process
  - focusing with taskbar doesnt trigger focus callback 
- - maybe remove process altogether and just launch func?
+ - decide on how saving works in explorer..
  - depressed clippy
  - custom cursors + support
  - theme support
@@ -11,11 +10,8 @@
 to stdout and terminal commands need to access appapi and apps need flags so like
  - dithering ?
  - cool animations
- - file stuff (idb)
- - file explorer
  - calculator
  - web browser
- - paint
  - custom ml
  - custom lang
  - game engine

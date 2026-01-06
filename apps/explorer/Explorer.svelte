@@ -30,7 +30,20 @@
   };
 
   let dialogType = args?.dialogType ?? "none";
+  let dialogMode: "none" | "open" | "save" = $state("none");
   let isDialog = dialogType !== "none";
+
+  if (dialogType === "none") {
+    dialogMode = "none";
+  } else if (
+    dialogType === "both" ||
+    dialogType === "dironly" ||
+    dialogType === "fileonly"
+  ) {
+    dialogMode = "open";
+  } else if (dialogType === "save") {
+    dialogMode = "save";
+  }
 
   let cwd: string[] = $state([]);
   let entries: FsEntry[] = $state([]);
@@ -144,6 +157,10 @@
         return;
       }
 
+      if (dialogType !== "none") {
+        return;
+      }
+
       console.log(`XDG_OPEN ${joinPath((await api.fs.getPath(entry)) ?? [])}`);
     }
   }
@@ -180,7 +197,7 @@
       let entry = expGetEntry(selectedEntries[0]);
 
       let procApi = api.launchApp("dialog", {
-        message: `delete file '${joinPath((await api.fs.getPath(entry)) ?? [entry.name])}'?`,
+        message: `delete file '${joinPath((await api.fs.getPath(entry)) ?? [entry.name], false)}'?`,
       });
 
       procApi?.on("exit", async (result) => {
@@ -357,17 +374,41 @@
     }
 
     let entry = expGetEntry(mainSelectedEntry);
-    if (entry === null) {
-      return;
-    }
 
     if (dialogType === "fileonly" && entry.type !== "file") {
       openEntry(entry);
       return;
     }
 
+    if (dialogType === "save" && entry.type !== "file") {
+      openEntry(entry);
+      return;
+    }
+
     if (dialogType === "dironly" && entry.type !== "dir") {
       return; // TODO: do smth here
+    }
+
+    if (dialogType === "save" && entry.type === "file") {
+      let content = await api.fs.getContent(entry.id);
+      let path = await api.fs.getPath(entry);
+
+      if (content === null || (await content?.data.text()) === "") {
+        quitWithEntry(entry);
+        return;
+      } else {
+        let procApi = api.launchApp("dialog", {
+          message: `overwrite file '${path ? joinPath(path, false) : entry.name}' ??`,
+        });
+
+        procApi?.on("exit", async (result) => {
+          if (result?.code === 1) {
+            quitWithEntry(entry);
+          }
+        });
+
+        return;
+      }
     }
 
     quitWithEntry(entry);
@@ -439,8 +480,12 @@
 
   {#if isDialog}
     <div class="dialogbar">
-      <button onclick={handleDialogCancel}>cancel</button>
-      <button onclick={handleDialogSelect}>open</button>
+      <div class="dialogbuttons">
+        <button onclick={handleDialogCancel}>cancel</button>
+        <button onclick={handleDialogSelect}>
+          {dialogMode === "save" ? "save" : "open"}
+        </button>
+      </div>
     </div>
   {/if}
 </div>
@@ -467,8 +512,13 @@
   }
 
   .dialogbar {
+    display: flex;
     flex: 0 0 auto;
     margin-top: auto;
+  }
+
+  .dialogbuttons {
+    margin-left: auto;
   }
 
   .entry {

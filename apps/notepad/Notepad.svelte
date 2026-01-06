@@ -60,6 +60,42 @@
     updateSaved();
   }
 
+  async function handleSaveAs() {
+    let wd = null;
+    let name = null;
+    if (currentFile !== null) {
+      wd = [...currentFile];
+      name = wd.pop();
+    }
+
+    let procApi = api.launchApp("explorer", {
+      dialogType: "save",
+      workingDir: wd,
+      saveDefaultName: name,
+    });
+
+    procApi?.on("exit", async (result) => {
+      if (result?.selectedEntry == null) {
+        return;
+      }
+
+      try {
+        await api.fs.overwriteFile(result.selectedEntry, {
+          data: new Blob([textarea.value]),
+        });
+      } catch (err) {
+        if (err instanceof FsError) {
+          textarea.value = `an unexpected error occured: ${err.message}`;
+        }
+        return;
+      }
+
+      currentFile = result.selectedEntry;
+      currentFileContent = textarea.value;
+      updateSaved();
+    });
+  }
+
   function updateSaved() {
     isSaved = textarea?.value === currentFileContent;
   }
@@ -69,6 +105,7 @@
   <div class="toolbar">
     <button onclick={handleOpen}>open</button>
     <button onclick={handleSave}>save</button>
+    <button onclick={handleSaveAs}>save as</button>
   </div>
   <div class="pathbar">
     {currentFile ?? "untitled-1"}{isSaved ? "" : "*"}
