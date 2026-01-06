@@ -191,6 +191,8 @@ function minimizeWindow(id: number) {
   }
 
   win.isMinimized = true;
+
+  focusPrevWindow();
 }
 
 function closeWindow(id: number) {
@@ -204,9 +206,14 @@ function closeWindow(id: number) {
   focusHistory = focusHistory.filter((winId) => winId !== id);
   windows.delete(id);
 
-  let lastFocused = focusHistory[focusHistory.length - 1];
-  if (lastFocused !== null && lastFocused !== undefined) {
-    focusWindow(lastFocused);
+  focusPrevWindow();
+}
+
+function focusPrevWindow() {
+  for (const lastFocused of focusHistory) {
+    if (!getWindows().get(lastFocused)?.data.isMinimized) {
+      focusWindow(lastFocused);
+    }
   }
 }
 
