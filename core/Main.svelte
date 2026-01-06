@@ -4,6 +4,7 @@
   import Taskbar from "@core/wm/Taskbar.svelte";
   import Window from "@core/wm/Window.svelte";
   import { winDataBuilder, wmApi } from "@core/wm/wm.svelte";
+  import { calcManifest } from "../apps/calc/calc";
   import { dialogManifest } from "../apps/dialog/dialog";
   import { explorerManifest } from "../apps/explorer/explorer";
   import { notepadManifest } from "../apps/notepad/notepad";
@@ -34,6 +35,7 @@
   registerApp(terminalManifest);
   registerApp(paintManifest);
   registerApp(explorerManifest);
+  registerApp(calcManifest);
   registerApp(dialogManifest);
 
   registerCmd(helpManifest);
@@ -82,6 +84,7 @@
     <button onclick={(_) => launchApp("terminal")}>terminal</button>
     <button onclick={(_) => launchApp("paint")}>michaelsoft paint</button>
     <button onclick={(_) => launchApp("explorer")}>file explorer</button>
+    <button onclick={(_) => launchApp("calc")}>calcoolator</button>
   </div>
   <Taskbar taskbar={wmApi.getTaskbar()} {wmApi} />
 </div>
