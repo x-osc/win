@@ -22,7 +22,7 @@ export default defineConfig(({ command }) => ({
   ],
   resolve: {
     alias: {
-      "@core": path.resolve(__dirname, "./core"),
+      "@core": path.resolve(__dirname, "./src/core"),
     },
   },
 }));

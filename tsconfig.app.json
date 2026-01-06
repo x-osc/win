@@ -16,7 +16,7 @@
     "checkJs": true,
     "isolatedModules": true,
     "moduleDetection": "force",
-    "baseUrl": ".",
+    "baseUrl": "./src",
     "paths": {
       "@core/*": [
         "./core/*"
@@ -24,8 +24,8 @@
     }
   },
   "include": [
-    "**/*.ts",
-    "**/*.js",
-    "**/*.svelte",
+    "src/**/*.ts",
+    "src/**/*.js",
+    "src/**/*.svelte",
   ]
 }
