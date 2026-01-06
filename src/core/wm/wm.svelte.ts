@@ -16,6 +16,7 @@ export type WinData = {
   z: number;
   minWidth: number;
   minHeight: number;
+  isMinimized: boolean;
   // TODO: make non-data (runtime only) stuff part of a different type
   owner: number | null;
 };
@@ -55,6 +56,7 @@ export function winDataBuilder() {
     z: 1,
     minHeight: 50,
     minWidth: 120,
+    isMinimized: false,
     owner: null,
   };
 
@@ -99,13 +101,16 @@ export const wmApi = {
   moveWindow,
   setWindowSize,
   focusWindow,
+  minimizeWindow,
   closeWindow,
   getWindows,
   getFocusHistory,
   getTaskbar,
   registerWindowApi,
   getWindowApi,
-};
+} as const;
+
+export type WmApi = typeof wmApi;
 
 async function createWindowAsync(data: WinData): Promise<WindowApi> {
   let id = createWindow(data);
@@ -172,9 +177,20 @@ function focusWindow(id: number) {
     return;
   }
 
+  win.isMinimized = false;
   win.z = zIndex.value++;
   focusHistory = focusHistory.filter((winId) => winId !== id);
   focusHistory.push(id);
+}
+
+function minimizeWindow(id: number) {
+  const win = windows.get(id)?.data;
+  if (!win) {
+    console.warn(`Window with id ${id} does not exist.`);
+    return;
+  }
+
+  win.isMinimized = true;
 }
 
 function closeWindow(id: number) {

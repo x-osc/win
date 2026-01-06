@@ -4,15 +4,19 @@
   import { onMount } from "svelte";
   import { on } from "svelte/events";
   import { ResizeDirection } from "./types";
-  import type { WinData, WindowApi, WindowEvents } from "./wm.svelte";
+  import type { WinData, WindowApi, WindowEvents, WmApi } from "./wm.svelte";
 
   let {
     id,
     windowData,
     focused,
     wmApi,
-  }: { id: number; windowData: WinData; focused: boolean; wmApi: any } =
-    $props();
+  }: {
+    id: number;
+    windowData: WinData;
+    focused: boolean;
+    wmApi: WmApi;
+  } = $props();
 
   let callbacks = new CallbackManager<WindowEvents>();
 
@@ -104,7 +108,7 @@
       ) {
         newHeight = Math.max(
           startHeight + (moveEvent.clientY - startMouseY),
-          windowData.minHeight
+          windowData.minHeight,
         );
       }
       if (
@@ -114,7 +118,7 @@
       ) {
         newWidth = Math.max(
           startWidth + (moveEvent.clientX - startMouseX),
-          windowData.minWidth
+          windowData.minWidth,
         );
       }
       if (
@@ -124,7 +128,7 @@
       ) {
         newHeight = Math.max(
           startHeight - (moveEvent.clientY - startMouseY),
-          windowData.minHeight
+          windowData.minHeight,
         );
         newY = startY + (startHeight - newHeight);
       }
@@ -135,7 +139,7 @@
       ) {
         newWidth = Math.max(
           startWidth - (moveEvent.clientX - startMouseX),
-          windowData.minWidth
+          windowData.minWidth,
         );
         newX = startX + (startWidth - newWidth);
       }
@@ -154,7 +158,9 @@
     let removeMouseUp = on(window, "mouseup", onMouseUp);
   }
 
-  function handleMinimize(e: MouseEvent) {}
+  function handleMinimize(e: MouseEvent) {
+    wmApi.minimizeWindow(id);
+  }
 
   function handleMaximize(e: MouseEvent) {}
 
@@ -165,7 +171,7 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
-  class="window {focused ? 'focused' : ''}"
+  class={["window", { focused }, { minimized: windowData.isMinimized }]}
   style="left: {windowData.x}px; top: {windowData.y}px; width: {windowData.width}px; height: {windowData.height}px; z-index: {windowData.z}"
   bind:this={windowElement}
 >
@@ -228,6 +234,10 @@
     background: #c0c0c0;
     border: 2px solid black;
     box-shadow: 4px 4px black;
+  }
+
+  .window.minimized {
+    display: none;
   }
 
   .window.focused .titlebar {
