@@ -17,6 +17,16 @@
   src: url("../assets/CozetteVector.woff");
 }
 
+@font-face {
+  font-family: "Terminus";
+  src: url("../assets/VecTerminus16Medium.woff");
+}
+
+@font-face {
+  font-family: "3270font";
+  src: url("../assets/3270Condensed-Regular.woff");
+}
+
 body {
   margin: 0;
   padding: 0;
