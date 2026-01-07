@@ -13,8 +13,8 @@ async function launch(api: AppApi, args?: DialogArgs) {
       .withSize(300, 100)
       .withTitle(args?.title ?? "dialog")
       .withPosition(
-        args?.position?.x ?? mousePos.x - 300,
-        args?.position?.y ?? mousePos.y - 100,
+        args?.position?.x ?? mousePos.x - 120,
+        args?.position?.y ?? mousePos.y - 40,
       )
       .build(),
   );

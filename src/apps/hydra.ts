@@ -25,8 +25,8 @@ function spawnHydras(api: AppApi) {
       message: randFromArray(hydraDialogs),
       title: "hydra dot exe",
       position: {
-        x: randint(0, window.innerWidth),
-        y: randint(0, window.innerHeight),
+        x: randint(0, window.innerWidth) - 300,
+        y: randint(0, window.innerHeight) - 100,
       },
     })
     .then(() => {
