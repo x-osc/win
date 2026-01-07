@@ -52,6 +52,15 @@ export type WindowEvents = {
   close(): void;
 };
 
+export type WmEvents = {
+  anyfocused(id: number): void;
+  anymoved(id: number, x: number, y: number): void;
+  anyresized(id: number, width: number, height: number): void;
+  anyclosed(id: number): void;
+};
+
+let wmglobalCallbacks = new CallbackManager<WmEvents>();
+
 export function winDataBuilder() {
   const data: WinData = {
     title: "",
@@ -114,6 +123,10 @@ export const wmApi = {
   getTaskbar,
   registerWindowApi,
   getWindowApi,
+
+  on: wmglobalCallbacks.on.bind(wmglobalCallbacks),
+  off: wmglobalCallbacks.off.bind(wmglobalCallbacks),
+  once: wmglobalCallbacks.once.bind(wmglobalCallbacks),
 } as const;
 
 export type WmApi = typeof wmApi;
@@ -165,6 +178,8 @@ function moveWindow(id: number, x: number, y: number) {
 
   win.x = x;
   win.y = y;
+
+  wmglobalCallbacks.emit("anymoved", id, x, y);
 }
 
 // window's responsibility to ensure minwidth and minheight
@@ -177,6 +192,8 @@ function setWindowSize(id: number, width: number, height: number) {
 
   win.width = Math.max(width, 0);
   win.height = Math.max(height, 0);
+
+  wmglobalCallbacks.emit("anyresized", id, width, height);
 }
 
 function focusWindow(id: number) {
@@ -192,6 +209,8 @@ function focusWindow(id: number) {
   win.z = zIndex.value++;
   focusHistory = focusHistory.filter((winId) => winId !== id);
   focusHistory.push(id);
+
+  wmglobalCallbacks.emit("anyfocused", id);
 }
 
 function minimizeWindow(id: number) {
@@ -218,6 +237,8 @@ function closeWindow(id: number) {
   windows.delete(id);
 
   focusPrevWindow();
+
+  wmglobalCallbacks.emit("anyclosed", id);
 }
 
 function focusPrevWindow() {

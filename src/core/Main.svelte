@@ -28,6 +28,8 @@
   import { pwdManifest } from "../cmds/pwd";
   import { readManifest } from "../cmds/read";
   import { sleepManifest } from "../cmds/sleep";
+  import Bsod from "../game/Bsod.svelte";
+  import { gameState } from "../game/gameState.svelte";
   import Trail from "../game/Trail.svelte";
   import { mousePos } from "./state.svelte";
 
@@ -91,12 +93,18 @@
       <button onclick={(_) => launchApp("explorer")}>file explorer</button>
       <button onclick={(_) => launchApp("calc")}>calcoolator</button>
 
-      {#each wmApi.getWindows().entries() as [id, win] (id)}
-        <Trail {win} />
-      {/each}
+      {#if gameState.isTrail}
+        {#each wmApi.getWindows().entries() as [id, win] (id)}
+          <Trail {win} />
+        {/each}
+      {/if}
     </div>
     <Taskbar taskbar={wmApi.getTaskbar()} {wmApi} />
   </div>
+
+  {#if gameState.isBsod}
+    <Bsod />
+  {/if}
 </div>
 
 <svelte:window onmousemove={handleMouseMove} />
