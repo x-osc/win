@@ -120,4 +120,26 @@ describe("Combinators", () => {
       offset: 3,
     });
   });
+
+  it("expect: should provide a custom error message when the child fails", () => {
+    const tagName = P.alphanumeric1();
+    const importantTag = P.expect(
+      tagName,
+      "A valid tag name is required here!",
+    );
+
+    const successRes = importantTag("myTag123", 0);
+    expect(successRes.success).toBe(true);
+    if (successRes.success) {
+      expect(successRes.value).toBe("myTag123");
+      expect(successRes.offset).toBe(8);
+    }
+
+    const failRes = importantTag("!!!", 0);
+    expect(failRes.success).toBe(false);
+    if (!failRes.success) {
+      expect(failRes.error).toBe("A valid tag name is required here!");
+      expect(failRes.offset).toBe(0);
+    }
+  });
 });
