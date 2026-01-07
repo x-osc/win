@@ -48,7 +48,7 @@
     }
 
     for (const data of trails.values()) {
-      screenshot(data);
+      await screenshot(data);
     }
   });
 
