@@ -227,8 +227,6 @@ export async function mkdir(path: string[]): Promise<DirEntry> {
     throw new FsError({ type: "invalidpath", path });
   }
 
-  console.log("mkdir", name, "in", path);
-
   const parentEntry = await getEntry(path);
   if (!parentEntry || parentEntry.type !== "dir") {
     throw new FsError({ type: "notfound", path });
