@@ -5,6 +5,8 @@ import type { CmdApi, CmdManifest } from "@core/cmd/command";
 import { randint, sleep } from "@core/utils";
 
 async function launch(api: AppApi, cmdApi: CmdApi) {
+  cmdApi.writeLine("currently installed commands:");
+
   for (let [cmdName, cmdManifest] of getCmds()) {
     await sleep(randint(0, 1));
 
