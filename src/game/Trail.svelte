@@ -1,6 +1,6 @@
 <script lang="ts">
   import { type Win } from "@core/wm/wm.svelte";
-  import { drawHTML } from "rasterizeHTML";
+  import { drawHTML } from "rasterizehtml";
   import { onMount, tick } from "svelte";
 
   // TODO: fix z-index
