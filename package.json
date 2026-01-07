@@ -22,6 +22,7 @@
     "vite": "^7.0.0"
   },
   "dependencies": {
-    "idb": "^8.0.3"
+    "idb": "^8.0.3",
+    "rasterizehtml": "^1.4.0"
   }
 }

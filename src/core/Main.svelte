@@ -28,6 +28,7 @@
   import { pwdManifest } from "../cmds/pwd";
   import { readManifest } from "../cmds/read";
   import { sleepManifest } from "../cmds/sleep";
+  import Trail from "../game/Trail.svelte";
   import { mousePos } from "./state.svelte";
 
   registerApp(testAppManifest);
@@ -60,6 +61,8 @@
     mousePos.x = e.clientX;
     mousePos.y = e.clientY;
   }
+
+  let trail: Trail;
 </script>
 
 <div id="root">
@@ -87,6 +90,10 @@
       <button onclick={(_) => launchApp("paint")}>michaelsoft paint</button>
       <button onclick={(_) => launchApp("explorer")}>file explorer</button>
       <button onclick={(_) => launchApp("calc")}>calcoolator</button>
+
+      {#each wmApi.getWindows().entries() as [id, win] (id)}
+        <Trail {win} />
+      {/each}
     </div>
     <Taskbar taskbar={wmApi.getTaskbar()} {wmApi} />
   </div>
