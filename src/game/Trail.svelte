@@ -44,8 +44,6 @@
       return null;
     }
 
-    console.log("screenshoting");
-
     isCapturing = true;
 
     let img = document.createElement("canvas");

@@ -34,13 +34,19 @@ export async function doError(api: AppApi) {
     continueError();
   });
 
-  wmApi.once("anyclosed", async () => {
-    await sleep(500);
-    continueError();
+  let closeCount = 0;
+  wmApi.on("anyclosed", async () => {
+    closeCount++;
+    console.log(closeCount);
+
+    if (closeCount >= 4) {
+      await sleep(750);
+      continueError();
+    }
   });
 }
 
-export function continueError() {
+function continueError() {
   gameState.isBsod = true;
 }
 
