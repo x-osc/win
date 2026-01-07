@@ -12,6 +12,41 @@ export function failure<T>(error: string, offset: number): ParseResult<T> {
   return { success: false, error, offset };
 }
 
+// location stuffs
+
+export type SourceLocation = {
+  start: number;
+  end: number;
+};
+
+export interface Located<T> {
+  value: T;
+  loc: SourceLocation;
+}
+
+export function located<T>(parser: Parser<T>): Parser<Located<T>> {
+  return (input, offset) => {
+    const start = offset;
+    const result = parser(input, offset);
+
+    if (!result.success) return result;
+
+    let val: Located<T> = {
+      value: result.value,
+      loc: {
+        start: start,
+        end: result.offset,
+      },
+    };
+
+    return success(val, result.offset);
+  };
+}
+
+export function unwraploc<T>(loc: Located<T>): T {
+  return loc.value;
+}
+
 // basic parsers
 
 /// take expected string if available

@@ -1,4 +1,5 @@
 import {
+  type Located,
   type Parser,
   alphanumeric1,
   choice,
@@ -6,6 +7,7 @@ import {
   eof,
   expect,
   failure,
+  located,
   many,
   manyUntil,
   map,
@@ -13,22 +15,26 @@ import {
   success,
   take1Until,
   takeUntil,
+  unwraploc,
   ws,
 } from "./parser";
 
-export type AttributeValue = string | boolean;
-export type AttributeStore = Record<string, AttributeValue>;
+export type AttributeValue = {
+  key: Located<string>;
+  value: Located<string | boolean>;
+};
+export type AttributeStore = AttributeValue[];
 
 export type MlNode =
   | {
       type: "tag";
-      tag: string;
+      tag: Located<string>;
       attributes: AttributeStore;
-      children: MlNode[];
+      children: Located<MlNode>[];
     }
   | { type: "text"; content: string };
 
-export type BasicAST = { nodes: MlNode[] };
+export type BasicAST = { nodes: Located<MlNode>[] };
 
 // takes until <
 const parseTextNode: Parser<MlNode> = (input, offset) => {
@@ -45,25 +51,31 @@ const parseTextNode: Parser<MlNode> = (input, offset) => {
 };
 
 // foo = "bar" || foo
-const parseAttribute: Parser<[string, AttributeValue]> = (input, offset) => {
+const parseAttribute: Parser<AttributeValue> = (input, offset) => {
   const keyvalResult = seq(
-    alphanumeric1(),
+    located(alphanumeric1()),
     ws(),
     consume("="),
     ws(),
     consume('"'),
-    takeUntil((c) => c === '"'),
+    located(takeUntil((c) => c === '"')),
     consume('"'),
   )(input, offset);
 
   if (keyvalResult.success) {
     const [key, , , , , value] = keyvalResult.value;
-    return success([key, value], keyvalResult.offset);
+    return success({ key, value }, keyvalResult.offset);
   }
 
-  const boolResult = alphanumeric1()(input, offset);
+  const boolResult = located(alphanumeric1())(input, offset);
   if (boolResult.success) {
-    return success([boolResult.value, true], boolResult.offset);
+    return success(
+      {
+        key: boolResult.value,
+        value: { value: true, loc: boolResult.value.loc },
+      },
+      boolResult.offset,
+    );
   }
 
   return failure("Expected attribute", offset);
@@ -72,20 +84,14 @@ const parseAttribute: Parser<[string, AttributeValue]> = (input, offset) => {
 // many attributes separated by whitespace
 const parseAttributes: Parser<AttributeStore> = map(
   many(seq(ws(), parseAttribute)),
-  (results) => {
-    const attrs: AttributeStore = {};
-    for (const [, [key, value]] of results) {
-      attrs[key] = value;
-    }
-    return attrs;
-  },
+  (results) => results.map(([, attr]) => attr),
 );
 
 const parseNode: Parser<MlNode> = (input, offset) => {
   const openResult = seq(
     expect(consume("<"), "Expected a start tag"),
     ws(),
-    expect(alphanumeric1(), "Tag name must be alphanumeric"),
+    expect(located(alphanumeric1()), "Tag name must be alphanumeric"),
     parseAttributes,
     ws(),
     expect(consume(">"), "Missing closing '>' for opening tag"),
@@ -99,11 +105,11 @@ const parseNode: Parser<MlNode> = (input, offset) => {
   const closingTag = seq(
     consume("</"),
     ws(),
-    consume(tagName),
+    consume(unwraploc(tagName)),
     ws(),
     consume(">"),
   );
-  const childNodeParser = choice(parseNode, parseTextNode);
+  const childNodeParser = located(choice(parseNode, parseTextNode));
 
   const childrenResult = manyUntil(childNodeParser, closingTag)(
     input,
@@ -112,7 +118,7 @@ const parseNode: Parser<MlNode> = (input, offset) => {
 
   if (!childrenResult.success) {
     return failure(
-      `${childrenResult.error} (inside <${tagName}> starting at ${offset})`,
+      `${childrenResult.error} (inside <${unwraploc(tagName)}> starting at ${offset})`,
       childrenResult.offset,
     );
   }
@@ -121,7 +127,7 @@ const parseNode: Parser<MlNode> = (input, offset) => {
   if (!closeResult.success) {
     // TODO: cool pointers in output
     return failure(
-      `Expected closing tag </${tagName}> for the tag opened at position ${offset}`,
+      `Expected closing tag </${unwraploc(tagName)}> for the tag opened at position ${offset}`,
       childrenResult.offset,
     );
   }
@@ -130,14 +136,16 @@ const parseNode: Parser<MlNode> = (input, offset) => {
     type: "tag",
     tag: tagName,
     attributes,
-    children: childrenResult.value.filter((node) => !isTextNodeEmpty(node)),
+    children: childrenResult.value.filter(
+      (node) => !isTextNodeEmpty(unwraploc(node)),
+    ),
   };
 
   return success(node, closeResult.offset);
 };
 
 export const parseDocument: Parser<BasicAST> = (input, offset) => {
-  const nodeParser = choice(parseNode, parseTextNode);
+  const nodeParser = located(choice(parseNode, parseTextNode));
 
   const result = many(nodeParser)(input, offset);
 
@@ -159,7 +167,7 @@ export const parseDocument: Parser<BasicAST> = (input, offset) => {
   }
 
   return success(
-    { nodes: result.value.filter((node) => !isTextNodeEmpty(node)) },
+    { nodes: result.value.filter((node) => !isTextNodeEmpty(unwraploc(node))) },
     result.offset,
   );
 };
