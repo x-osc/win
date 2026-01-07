@@ -1,6 +1,6 @@
 <script lang="ts">
   import { type Win } from "@core/wm/wm.svelte";
-  import rasterizeHTML from "rasterizeHTML";
+  import { drawHTML } from "rasterizeHTML";
   import { onMount, tick } from "svelte";
 
   // TODO: fix z-index
@@ -75,7 +75,7 @@
 
     // console.log(clone.outerHTML);
 
-    await rasterizeHTML.drawHTML(clone.outerHTML, img, {
+    await drawHTML(clone.outerHTML, img, {
       width: window.innerWidth,
       height: window.innerHeight,
     });
