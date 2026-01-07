@@ -6,7 +6,10 @@ import { hydraError } from "../game/error";
 let count = 1;
 
 async function launch(api: AppApi) {
-  await api.showDialog({ message: "hey gangalang its me the hydra" });
+  await api.showDialog({
+    message: "hey gangalang its me the hydra",
+    title: "hydra dot exe",
+  });
   spawnHydras(api);
 }
 
@@ -20,6 +23,7 @@ function spawnHydras(api: AppApi) {
   api
     .showDialog({
       message: randFromArray(hydraDialogs),
+      title: "hydra dot exe",
       position: {
         x: randint(0, window.innerWidth),
         y: randint(0, window.innerHeight),
@@ -32,6 +36,7 @@ function spawnHydras(api: AppApi) {
   api
     .showDialog({
       message: randFromArray(hydraDialogs),
+      title: "hydra dot exe",
       position: {
         x: randint(0, window.innerWidth),
         y: randint(0, window.innerHeight),

@@ -11,11 +11,11 @@ async function launch(api: AppApi, args?: DialogArgs) {
     winDataBuilder()
       .withMinSize(290, 100)
       .withSize(300, 100)
+      .withTitle(args?.title ?? "dialog")
       .withPosition(
-        args?.position?.x ?? mousePos.x - 120,
-        args?.position?.y ?? mousePos.y - 40,
+        args?.position?.x ?? mousePos.x - 300,
+        args?.position?.y ?? mousePos.y - 100,
       )
-      .withTitle("dialog")
       .build(),
   );
 
@@ -36,6 +36,7 @@ async function launch(api: AppApi, args?: DialogArgs) {
 
 export type DialogArgs = {
   message?: string;
+  title?: string;
   position?: { x: number; y: number };
 };
 
