@@ -28,7 +28,7 @@ export type MlNode =
     }
   | { type: "text"; content: string };
 
-export type AST = MlNode[];
+export type BasicAST = { nodes: MlNode[] };
 
 // takes until <
 const parseTextNode: Parser<MlNode> = (input, offset) => {
@@ -136,7 +136,7 @@ const parseNode: Parser<MlNode> = (input, offset) => {
   return success(node, closeResult.offset);
 };
 
-const parseDocument: Parser<AST> = (input, offset) => {
+export const parseDocument: Parser<BasicAST> = (input, offset) => {
   const nodeParser = choice(parseNode, parseTextNode);
 
   const result = many(nodeParser)(input, offset);
@@ -159,7 +159,7 @@ const parseDocument: Parser<AST> = (input, offset) => {
   }
 
   return success(
-    result.value.filter((node) => !isTextNodeEmpty(node)),
+    { nodes: result.value.filter((node) => !isTextNodeEmpty(node)) },
     result.offset,
   );
 };
@@ -167,5 +167,3 @@ const parseDocument: Parser<AST> = (input, offset) => {
 function isTextNodeEmpty(node: MlNode) {
   return node.type === "text" && node.content.trim().length <= 0;
 }
-
-export const testParser = parseDocument;
