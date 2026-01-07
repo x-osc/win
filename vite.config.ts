@@ -1,6 +1,7 @@
 /// <reference types="vitest/config" />
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import path from "path";
+import { visualizer } from "rollup-plugin-visualizer";
 import UnpluginInjectPreload from "unplugin-inject-preload/vite";
 import { defineConfig } from "vite";
 
@@ -14,6 +15,11 @@ export default defineConfig(({}) => ({
   base: process.env.GITHUB_ACTIONS ? "/win/" : "/",
   plugins: [
     svelte(),
+    visualizer({
+      filename: "bundle-stats.html",
+      gzipSize: true,
+      brotliSize: true,
+    }),
     UnpluginInjectPreload({
       files: [
         {
