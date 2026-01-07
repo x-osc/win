@@ -3,7 +3,7 @@
   import { registerCmd } from "@core/cmd/cmdregistry";
   import Taskbar from "@core/wm/Taskbar.svelte";
   import Window from "@core/wm/Window.svelte";
-  import { winDataBuilder, wmApi } from "@core/wm/wm.svelte";
+  import { wmApi } from "@core/wm/wm.svelte";
   import { calcManifest } from "../apps/calc/calc";
   import { dialogManifest } from "../apps/dialog/dialog";
   import { explorerManifest } from "../apps/explorer/explorer";
@@ -83,11 +83,6 @@
         />
       {/each}
 
-      <button
-        onclick={(_) =>
-          wmApi.createWindow(winDataBuilder().withTitle("test_win").build())}
-        >make window</button
-      >
       <button onclick={(_) => launchApp("test_app")}>make app</button>
       <button onclick={(_) => launchApp("notepad")}>notepad</button>
       <button onclick={(_) => launchApp("terminal")}>terminal</button>
@@ -97,9 +92,7 @@
       <button onclick={(_) => launchApp("hydra")}>hydra.exe</button>
 
       {#if gameState.isTrail}
-        {#each wmApi.getWindows().entries() as [id, win] (id)}
-          <Trail {win} />
-        {/each}
+        <Trail />
       {/if}
     </div>
     <Taskbar taskbar={wmApi.getTaskbar()} {wmApi} />

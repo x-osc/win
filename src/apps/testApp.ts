@@ -4,7 +4,7 @@ import { winDataBuilder } from "@core/wm/wm.svelte";
 
 async function launch(api: AppApi) {
   console.log("yipe it worke");
-  let winApi = await api.window.createWindowAsync(
+  let winApi = await api.window.createWindow(
     winDataBuilder().withTitle("test_app").build(),
   );
 

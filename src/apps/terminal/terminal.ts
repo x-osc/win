@@ -5,8 +5,8 @@ import { mount } from "svelte";
 import Terminal from "./Terminal.svelte";
 
 async function launch(api: AppApi) {
-  let winApi = await api.window.createWindowAsync(
-    winDataBuilder().withTitle("terminal").build()
+  let winApi = await api.window.createWindow(
+    winDataBuilder().withTitle("terminal").build(),
   );
 
   let body = winApi.getBody();

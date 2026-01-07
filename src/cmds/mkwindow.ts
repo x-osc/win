@@ -10,8 +10,8 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
     title = args[0];
   }
 
-  let winApi = await api.window.createWindowAsync(
-    winDataBuilder().withTitle(title).build()
+  let winApi = await api.window.createWindow(
+    winDataBuilder().withTitle(title).build(),
   );
 
   await new Promise<void>((resolve) => {

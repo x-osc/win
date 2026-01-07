@@ -5,7 +5,7 @@ import { mount } from "svelte";
 import Explorer from "./Explorer.svelte";
 
 async function launch(api: AppApi, args?: ExplorerArgs) {
-  let winApi = await api.window.createWindowAsync(
+  let winApi = await api.window.createWindow(
     winDataBuilder()
       .withMinSize(290, 161)
       .withSize(410, 237)

@@ -5,12 +5,12 @@ import { mount } from "svelte";
 import Paint from "./Paint.svelte";
 
 async function launch(api: AppApi) {
-  let winApi = await api.window.createWindowAsync(
+  let winApi = await api.window.createWindow(
     winDataBuilder()
       .withMinSize(290, 161)
       .withSize(344, 414)
       .withTitle("michaelsoft pain")
-      .build()
+      .build(),
   );
 
   let body = winApi.getBody();

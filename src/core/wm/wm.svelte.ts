@@ -57,6 +57,7 @@ export type WmEvents = {
   anymoved(id: number, x: number, y: number): void;
   anyresized(id: number, width: number, height: number): void;
   anyclosed(id: number): void;
+  anymounted(id: number): void;
 };
 
 let wmglobalCallbacks = new CallbackManager<WmEvents>();
@@ -110,8 +111,7 @@ let taskbar: number[] = $state([]);
 let focusHistory: number[] = $state([]);
 
 export const wmApi = {
-  createWindow,
-  createWindowAsync,
+  createWindow: createWindowAsync,
   setWindowTitle,
   moveWindow,
   setWindowSize,
@@ -135,7 +135,10 @@ async function createWindowAsync(data: WinData): Promise<WindowApi> {
   let id = createWindow(data);
 
   return new Promise((resolve) => {
-    windowApiResolvers.set(id, resolve);
+    windowApiResolvers.set(id, (api) => {
+      wmglobalCallbacks.emit("anymounted", id);
+      resolve(api);
+    });
   });
 }
 

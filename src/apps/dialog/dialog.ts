@@ -7,7 +7,7 @@ import { mount } from "svelte";
 import Dialog from "./Dialog.svelte";
 
 async function launch(api: AppApi, args?: DialogArgs) {
-  let winApi = await api.window.createWindowAsync(
+  let winApi = await api.window.createWindow(
     winDataBuilder()
       .withMinSize(290, 100)
       .withSize(300, 100)

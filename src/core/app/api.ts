@@ -16,8 +16,7 @@ export interface AppApi {
   showDialog(args: DialogArgs): Promise<number | null>;
 
   window: {
-    createWindow(data: WinData): number;
-    createWindowAsync(data: WinData): Promise<WindowApi>;
+    createWindow(data: WinData): Promise<WindowApi>;
   };
 
   fs: typeof fsApi;
@@ -36,10 +35,6 @@ export function getAppApi(instId: number): AppApi {
       createWindow: (data: WinData) => {
         data.owner = instId;
         return wmApi.createWindow(data);
-      },
-      createWindowAsync: (data: WinData) => {
-        data.owner = instId;
-        return wmApi.createWindowAsync(data);
       },
     },
 

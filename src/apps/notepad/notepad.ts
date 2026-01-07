@@ -5,7 +5,7 @@ import { mount } from "svelte";
 import Notepad from "./Notepad.svelte";
 
 async function launch(api: AppApi) {
-  let winApi = await api.window.createWindowAsync(
+  let winApi = await api.window.createWindow(
     winDataBuilder()
       .withMinSize(290, 161)
       .withSize(300, 420)

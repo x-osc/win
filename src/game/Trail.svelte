@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type Win } from "@core/wm/wm.svelte";
+  import { wmApi } from "@core/wm/wm.svelte";
   import { drawHTML } from "rasterizehtml";
   import { onMount, tick } from "svelte";
 
@@ -8,52 +8,67 @@
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
 
-  let winEl: HTMLElement;
+  let trails: Map<number, TrailData> = new Map();
 
-  let currentCapture: HTMLCanvasElement | null = null;
-
-  let isCapturing = false;
-
-  let sourceX = 0;
-  let sourceY = 0;
+  type TrailData = {
+    element: HTMLElement;
+    currentCapture: HTMLCanvasElement | null;
+    isCapturing: boolean;
+    lastRefreshTime: number;
+    lastCaptureTime: number;
+  };
 
   const captureInterval = 10;
   const refreshInterval = 3200;
-  let lastRefreshTime = 0;
-  let lastCaptureTime = 0;
-
-  let { win }: { win: Win } = $props();
 
   onMount(async () => {
     ctx = canvas.getContext("2d")!;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
-    win.callbacks.on("move", handleMove);
-    win.callbacks.on("focus", handleFocus);
-    win.callbacks.on("resize", handleResize);
+    wmApi.on("anymoved", (id, x, y) => handleMove(id, x, y));
+    wmApi.on("anyfocused", (id) => handleFocus(id));
+    wmApi.on("anyresized", (id, width, height) =>
+      handleResize(id, width, height),
+    );
+    wmApi.on("anymounted", (id) => handleMount(id));
 
     await tick();
 
-    winEl = win.api?.getWindowElement()!;
-    screenshot();
+    for (const [id, win] of wmApi.getWindows().entries()) {
+      if (win.api === null) return;
+
+      trails.set(id, {
+        element: win.api.getWindowElement(),
+        currentCapture: null,
+        isCapturing: false,
+        lastRefreshTime: 0,
+        lastCaptureTime: 0,
+      });
+    }
+
+    for (const data of trails.values()) {
+      screenshot(data);
+    }
   });
 
-  async function screenshot(): Promise<HTMLCanvasElement | null> {
-    if (isCapturing) {
+  async function screenshot(
+    data: TrailData,
+  ): Promise<HTMLCanvasElement | null> {
+    if (data.isCapturing) {
       return null;
     }
 
-    isCapturing = true;
+    data.isCapturing = false;
 
     let img = document.createElement("canvas");
     img.width = window.innerWidth;
     img.height = window.innerHeight;
 
-    const clone = winEl.cloneNode(true) as HTMLElement;
+    const clone = data.element.cloneNode(true) as HTMLElement;
 
     const elements = [clone, ...clone.querySelectorAll("*")];
-    const origElements = [winEl, ...winEl.querySelectorAll("*")];
+    const origElements = [data.element, ...data.element.querySelectorAll("*")];
 
     // most jank thing ever but like.. it works
     elements.forEach((el, i) => {
@@ -78,22 +93,19 @@
       height: window.innerHeight,
     });
 
-    sourceX = win.data.x;
-    sourceY = win.data.y;
-
-    currentCapture = img;
+    data.currentCapture = img;
 
     // console.log(img.toDataURL());
 
-    isCapturing = false;
+    data.isCapturing = false;
 
     return img;
   }
 
-  export async function drawImage() {
-    let rect = winEl.getBoundingClientRect();
+  export async function drawImage(data: TrailData) {
+    let rect = data.element.getBoundingClientRect();
 
-    const capture = currentCapture ?? (await screenshot());
+    const capture = data.currentCapture ?? (await screenshot(data));
     if (capture === null) {
       return;
     }
@@ -111,23 +123,49 @@
     );
   }
 
-  function handleMove(x: number, y: number) {
-    const now = Date.now();
-    if (now - lastCaptureTime > captureInterval) {
-      lastCaptureTime = now;
-      drawImage();
+  function handleMount(id: number) {
+    let win = wmApi.getWindows().get(id)!;
+
+    let data = {
+      element: win.api!.getWindowElement(),
+      currentCapture: null,
+      isCapturing: false,
+      lastRefreshTime: 0,
+      lastCaptureTime: 0,
+    };
+
+    trails.set(id, data);
+
+    screenshot(data);
+  }
+
+  function handleMove(id: number, x: number, y: number) {
+    let data = trails.get(id);
+    if (data == undefined) {
+      return;
     }
 
-    if (now - lastRefreshTime > refreshInterval) {
-      lastRefreshTime = now;
-      screenshot();
+    const now = Date.now();
+    if (now - data.lastCaptureTime > captureInterval) {
+      data.lastCaptureTime = now;
+      drawImage(data);
+    }
+
+    if (now - data.lastRefreshTime > refreshInterval) {
+      data.lastRefreshTime = now;
+      screenshot(data);
     }
   }
 
-  function handleFocus() {}
+  function handleFocus(id: number) {}
 
-  function handleResize() {
-    currentCapture = null;
+  function handleResize(id: number, width: number, height: number) {
+    let data = trails.get(id);
+    if (data == undefined) {
+      return;
+    }
+
+    data.currentCapture = null;
   }
 
   function handleCanvasResize() {

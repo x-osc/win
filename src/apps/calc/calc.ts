@@ -7,7 +7,7 @@ import { mount } from "svelte";
 import Calc from "./Calc.svelte";
 
 async function launch(api: AppApi) {
-  let winApi = await api.window.createWindowAsync(
+  let winApi = await api.window.createWindow(
     winDataBuilder()
       .withMinSize(200, 382)
       .withSize(270, 382)
