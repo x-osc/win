@@ -7,6 +7,7 @@
   import { calcManifest } from "../apps/calc/calc";
   import { dialogManifest } from "../apps/dialog/dialog";
   import { explorerManifest } from "../apps/explorer/explorer";
+  import { hydraManifest } from "../apps/hydra";
   import { notepadManifest } from "../apps/notepad/notepad";
   import { paintManifest } from "../apps/paint/paint";
   import { terminalManifest } from "../apps/terminal/terminal";
@@ -40,6 +41,7 @@
   registerApp(explorerManifest);
   registerApp(calcManifest);
   registerApp(dialogManifest);
+  registerApp(hydraManifest);
 
   registerCmd(helpManifest);
   registerCmd(asdfManifest);
@@ -92,6 +94,7 @@
       <button onclick={(_) => launchApp("paint")}>michaelsoft paint</button>
       <button onclick={(_) => launchApp("explorer")}>file explorer</button>
       <button onclick={(_) => launchApp("calc")}>calcoolator</button>
+      <button onclick={(_) => launchApp("hydra")}>hydra.exe</button>
 
       {#if gameState.isTrail}
         {#each wmApi.getWindows().entries() as [id, win] (id)}
