@@ -8,12 +8,19 @@
 
   <script type="module">
     import { testParser } from "./src/core/ml/mlparser.ts"
+    import { formatError } from "./src/core/ml/parser.ts"
 
     function processText() {
       const input = document.getElementById("input").value;
       const output = document.getElementById("output");
 
-      let processed = JSON.stringify(testParser(input));
+      let res = testParser(input, 0)
+      let processed = JSON.stringify(res);
+      if (!res.success) {
+        processed += "\n"
+        processed += "\n"
+        processed += formatError(input, res)
+      }
 
       output.value = processed;
     }

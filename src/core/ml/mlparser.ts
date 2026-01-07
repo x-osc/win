@@ -3,7 +3,10 @@ import {
   alphanumeric1,
   choice,
   consume,
+  eof,
+  expect,
   failure,
+  many,
   manyUntil,
   map,
   seq,
@@ -16,35 +19,37 @@ export type MlNode =
   | { type: "tag"; tag: string; children: MlNode[] }
   | { type: "text"; content: string };
 
+export type AST = MlNode[];
+
 // takes until <
-const parseTextNode: Parser<MlNode> = (input: string) => {
-  if (input.length === 0) return failure("EOF");
+const parseTextNode: Parser<MlNode> = (input, offset) => {
+  if (offset >= input.length) return failure("Unexpected EOF", offset);
 
-  if (input.startsWith("<")) {
-    return failure("Expected text, but found a tag");
+  if (input.startsWith("<", offset)) {
+    return failure("Expected text, but found the start of a tag", offset);
   }
 
-  const result = take1Until((char) => char === "<")(input);
-  if (!result.success) {
-    return result;
-  }
+  const result = take1Until((char) => char === "<")(input, offset);
+  if (!result.success) return result;
 
-  return success({ type: "text", content: result.value }, result.remaining);
+  return success({ type: "text", content: result.value }, result.offset);
 };
 
-const parseNode: Parser<MlNode> = (input: string) => {
+const parseNode: Parser<MlNode> = (input, offset) => {
   const openResult = map(
-    seq(consume("<"), ws(), alphanumeric1(), ws(), consume(">")),
+    expect(
+      seq(consume("<"), ws(), alphanumeric1(), ws(), consume(">")),
+      "Expected a start tag",
+    ),
     ([, , tagName, ,]) => {
       return tagName;
     },
-  )(input);
+  )(input, offset);
 
-  if (!openResult.success) {
-    return openResult;
-  }
+  if (!openResult.success) return openResult;
 
   const tagName = openResult.value;
+  const newOffset = openResult.offset;
 
   const closingTag = seq(
     consume("</"),
@@ -55,19 +60,25 @@ const parseNode: Parser<MlNode> = (input: string) => {
   );
   const childNodeParser = choice(parseNode, parseTextNode);
 
-  const childrenResult = manyUntil(
-    childNodeParser,
-    closingTag,
-  )(openResult.remaining);
+  const childrenResult = manyUntil(childNodeParser, closingTag)(
+    input,
+    newOffset,
+  );
 
   if (!childrenResult.success) {
-    return childrenResult;
+    return failure(
+      `${childrenResult.error} (inside <${tagName}> starting at ${offset})`,
+      childrenResult.offset,
+    );
   }
 
-  const closeResult = seq(ws(), closingTag)(childrenResult.remaining);
-
+  const closeResult = closingTag(input, childrenResult.offset);
   if (!closeResult.success) {
-    return failure(`Expected closing tag </${tagName}>`);
+    // TODO: cool pointers in output
+    return failure(
+      `Expected closing tag </${tagName}> for the tag opened at position ${offset}`,
+      childrenResult.offset,
+    );
   }
 
   return success(
@@ -76,12 +87,29 @@ const parseNode: Parser<MlNode> = (input: string) => {
       tag: tagName,
       children: childrenResult.value.filter((node) => !isTextNodeEmpty(node)),
     },
-    closeResult.remaining,
+    closeResult.offset,
   );
 };
 
+const parseDocument: Parser<AST> = (input, offset) => {
+  const nodeParser = choice(parseNode, parseTextNode);
+
+  const result = many(nodeParser)(input, offset);
+
+  if (!result.success) return result;
+
+  const endCheck = eof()(input, result.offset);
+  if (!endCheck.success) {
+    return endCheck;
+  }
+
+  result.value = result.value.filter((node) => !isTextNodeEmpty(node));
+
+  return result;
+};
+
 function isTextNodeEmpty(node: MlNode) {
-  return node.type === "text" && node.content.length <= 0;
+  return node.type === "text" && node.content.trim().length <= 0;
 }
 
-export const testParser = parseNode;
+export const testParser = parseDocument;

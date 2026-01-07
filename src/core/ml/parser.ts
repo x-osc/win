@@ -1,105 +1,100 @@
-export type Parser<T> = (input: string) => ParseResult<T>;
+export type Parser<T> = (input: string, offset: number) => ParseResult<T>;
 
 export type ParseResult<T> =
-  | { success: true; value: T; remaining: string }
-  | { success: false; error: string };
+  | { success: true; value: T; offset: number }
+  | { success: false; error: string; offset: number };
 
-export function success<T>(value: T, remaining: string): ParseResult<T> {
-  return { success: true, value, remaining };
+export function success<T>(value: T, offset: number): ParseResult<T> {
+  return { success: true, value, offset };
 }
 
-export function failure<T>(error: string): ParseResult<T> {
-  return { success: false, error };
+export function failure<T>(error: string, offset: number): ParseResult<T> {
+  return { success: false, error, offset };
 }
 
 // basic parsers
 
 /// take expected string if available
 export function consume(expected: string): Parser<string> {
-  return (input: string) => {
-    if (input.startsWith(expected)) {
-      return success(expected, input.slice(expected.length));
+  return (input, offset) => {
+    if (input.startsWith(expected, offset)) {
+      return success(expected, offset + expected.length);
     }
-    return failure(`Expected "${expected}"`);
+    return failure(`Expected "${expected}"`, offset);
   };
 }
 
 /// any amount of whitespace
 export function ws(): Parser<string> {
-  return (input: string) => {
-    let res = "";
-    let current = input;
-    while (current.length > 0 && /\s/.test(current[0])) {
-      res += current[0];
-      current = current.slice(1);
+  return (input: string, offset: number) => {
+    let current = offset;
+    while (current < input.length && /\s/.test(input[current])) {
+      current++;
     }
-    return success(res, current);
+    return success(input.slice(offset, current), current);
   };
 }
 
 /// takes until a predicate is true
 export function takeUntil(pred: (char: string) => boolean): Parser<string> {
-  return (input: string) => {
-    let res = "";
-    let current = input;
-    while (current.length > 0 && !pred(current[0])) {
-      res += current[0];
-      current = current.slice(1);
+  return (input, offset) => {
+    let current = offset;
+    while (current < input.length && !pred(input[current])) {
+      current++;
     }
-    console.log(res);
-    return success(res, current);
+    return success(input.slice(offset, current), current);
   };
 }
 
 /// takes 1 or more chars until a predicate is true
 export function take1Until(pred: (char: string) => boolean): Parser<string> {
-  return (input: string) => {
-    let res = "";
-    let current = input;
-    do {
-      res += current[0];
-      current = current.slice(1);
-    } while (current.length > 0 && !pred(current[0]));
-    console.log(res);
-    return success(res, current);
+  return (input, offset) => {
+    if (offset >= input.length) return failure("Unexpected EOF", offset);
+
+    if (pred(input[offset])) {
+      return failure("Predicate matched immediately; nothing to take", offset);
+    }
+
+    let current = offset;
+    current++;
+
+    while (current < input.length && !pred(input[current])) {
+      current++;
+    }
+
+    return success(input.slice(offset, current), current);
   };
 }
 
 /// eof
 export function eof(): Parser<null> {
-  return (input: string) => {
-    if (input.length === 0) {
-      return success(null, "");
-    }
-    return failure("Expected end of input");
+  return (input, offset) => {
+    if (offset >= input.length) return success(null, offset);
+    return failure("Expected end of input", offset);
   };
 }
 
 /// sequence of 1 or more alphanumeric chars
 export function alphanumeric1(): Parser<string> {
-  return (input: string) => {
-    let res = "";
-    let current = input;
-
-    while (current.length > 0 && /[a-zA-Z0-9]/.test(current[0])) {
-      res += current[0];
-      current = current.slice(1);
+  return (input, offset) => {
+    let start = offset;
+    while (offset < input.length && /[a-zA-Z0-9]/.test(input[offset])) {
+      offset++;
     }
-
-    if (res.length === 0) {
-      return failure("Expected at least one alphanumeric character");
+    if (start === offset) {
+      return failure("Expected alphanumeric character", start);
     }
-
-    return success(res, current);
+    return success(input.slice(start, offset), offset);
   };
 }
 
 export function anyChar(): Parser<string> {
-  return (input: string) => {
-    if (input.length === 0) {
-      return failure("Unexpected end of input");
+  return (input, offset) => {
+    const char = input[offset];
+    if (char === undefined) {
+      return failure("Unexpected EOF", offset);
     }
-    return success(input[0], input.slice(1));
+    return success(char, offset + 1);
   };
 }
 
@@ -108,99 +103,98 @@ export function anyChar(): Parser<string> {
 export function seq<T extends any[]>(
   ...parsers: { [K in keyof T]: Parser<T[K]> }
 ): Parser<T> {
-  return (input: string) => {
+  return (input, offset) => {
     const results: any[] = [];
-    let current = input;
+    let currentOffset = offset;
 
     for (const parser of parsers) {
-      const result = parser(current);
+      const result = parser(input, currentOffset);
       if (!result.success) {
-        return result as ParseResult<T>;
+        return result;
       }
       results.push(result.value);
-      current = result.remaining;
+      currentOffset = result.offset;
     }
 
-    return success(results as T, current);
+    return success(results as T, currentOffset);
   };
 }
 
-/// parse something between two parsers
-export function between<A, B, C>(
-  open: Parser<A>,
-  content: Parser<B>,
-  close: Parser<C>,
-): Parser<B> {
-  return map(seq(open, content, close), ([, value]) => value);
-}
-
 export function choice<T>(...parsers: Parser<T>[]): Parser<T> {
-  return (input: string) => {
+  return (input, offset) => {
+    let bestError: ParseResult<T> | null = null;
+
     for (const parser of parsers) {
-      const result = parser(input);
-      if (result.success) {
-        return result;
+      const result = parser(input, offset);
+      if (result.success) return result;
+
+      // remember the error that got furthest
+      if (!bestError || result.offset > bestError.offset) {
+        bestError = result;
       }
     }
-    return failure("All choices failed");
+    return bestError || failure("No choices matched", offset);
   };
 }
 
 /// transform the result of a parser
 export function map<T, U>(parser: Parser<T>, fn: (value: T) => U): Parser<U> {
-  return (input: string) => {
-    const result = parser(input);
+  return (input, offset) => {
+    const result = parser(input, offset);
     if (!result.success) {
       return result;
     }
-    return success(fn(result.value), result.remaining);
+    return success(fn(result.value), result.offset);
   };
 }
 
 /// parse if possible, otherwise return null
 export function optional<T>(parser: Parser<T>): Parser<T | null> {
-  return (input: string) => {
-    const result = parser(input);
+  return (input, offset) => {
+    const result = parser(input, offset);
     if (result.success) {
       return result;
     }
-    return success(null, input);
+    return success(null, offset);
   };
 }
 
 /// parse zero or more times
 export function many<T>(parser: Parser<T>): Parser<T[]> {
-  return (input: string) => {
+  return (input, offset) => {
     const results: T[] = [];
-    let current = input;
+    let currentOffset = offset;
 
     while (true) {
-      const result = parser(current);
-      if (!result.success) {
-        break;
-      }
+      const result = parser(input, currentOffset);
+      if (!result.success) break;
+
+      // guard against infinite loops
+      if (result.offset === currentOffset) break;
+
       results.push(result.value);
-      current = result.remaining;
+      currentOffset = result.offset;
     }
 
-    return success(results, current);
+    return success(results, currentOffset);
   };
 }
 
 /// parse one or more times
 export function many1<T>(parser: Parser<T>): Parser<T[]> {
-  return (input: string) => {
-    const result = parser(input);
-    if (!result.success) {
-      return result;
+  return (input, offset) => {
+    const firstResult = parser(input, offset);
+
+    if (!firstResult.success) {
+      return firstResult;
     }
 
-    const restResult = many(parser)(result.remaining);
+    const restResult = many(parser)(input, firstResult.offset);
     if (!restResult.success) {
       return restResult;
     }
 
-    return success([result.value, ...restResult.value], restResult.remaining);
+    return success([firstResult.value, ...restResult.value], restResult.offset);
   };
 }
 
@@ -209,57 +203,76 @@ export function manyUntil<T>(
   parser: Parser<T>,
   terminator: Parser<any>,
 ): Parser<T[]> {
-  return (input: string) => {
+  return (input, offset) => {
     const results: T[] = [];
-    let current = input;
+    let currentOffset = offset;
 
     while (true) {
-      const termCheck = lookahead(terminator)(current);
-      if (termCheck.success) {
-        break;
+      const termCheck = terminator(input, currentOffset);
+      if (termCheck.success) break;
+
+      if (currentOffset >= input.length) {
+        return failure("Reached EOF before terminator", currentOffset);
       }
 
-      const result = parser(current);
-      if (!result.success) {
-        return result;
-      }
+      const result = parser(input, currentOffset);
+      if (!result.success) return result;
 
-      if (current.length === 0) {
-        return failure("Reached EOF before terminator");
-      }
-
-      // guard against infinite loops
-      if (result.remaining.length === current.length) {
-        return failure("Parser stuck: Child parser did not consume any input");
+      if (result.offset === currentOffset) {
+        return failure(
+          "Parser stuck: child parser did not consume any input",
+          currentOffset,
+        );
       }
 
       results.push(result.value);
-      current = result.remaining;
+      currentOffset = result.offset;
     }
 
-    return success(results, current);
+    return success(results, currentOffset);
   };
 }
 
 /// check if parser succeeds without consuming input
 export function lookahead<T>(parser: Parser<T>): Parser<T> {
-  return (input: string) => {
-    const result = parser(input);
-    if (!result.success) {
-      return result;
-    }
-
-    return success(result.value, input);
+  return (input, offset) => {
+    const result = parser(input, offset);
+    if (!result.success) return result;
+    return success(result.value, offset);
   };
 }
 
 /// succeed only if parser fails (negative lookahead)
 export function not<T>(parser: Parser<T>): Parser<null> {
-  return (input: string) => {
-    const result = parser(input);
-    if (result.success) {
-      return failure("Expected parser to fail");
-    }
-    return success(null, input);
+  return (input, offset) => {
+    const result = parser(input, offset);
+    if (result.success) return failure("Expected parser to fail", offset);
+    return success(null, offset);
   };
+}
+
+/// uses custom error message instead of default one
+export function expect<T>(parser: Parser<T>, errorMessage: string): Parser<T> {
+  return (input, offset) => {
+    const result = parser(input, offset);
+    if (result.success) return result;
+    return failure(errorMessage, offset);
+  };
+}
+
+export function formatError(
+  input: string,
+  result: { success: false; offset: number; error: string },
+) {
+  const lines = input.slice(0, result.offset).split("\n");
+  const lineNum = lines.length;
+  const colNum = lines[lines.length - 1].length + 1;
+  const lineContent = input.split("\n")[lineNum - 1];
+
+  return [
+    `Parse Error: ${result.error}`,
+    `At: Line ${lineNum}, Column ${colNum}`,
+    `> ${lineContent}`,
+    `  ${" ".repeat(colNum - 1)}^`,
+  ].join("\n");
 }
