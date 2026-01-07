@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { AppApi } from "@core/app/api";
   import type { WindowApi } from "@core/wm/wm.svelte";
-  import { doError } from "../../game/error";
+  import { calcError } from "../../game/error";
 
   let display: string = $state("0");
   let previous: number | null = null;
@@ -61,7 +61,7 @@
       case "/":
         if (current === 0) {
           result = "ERROR !!!!";
-          doError(api);
+          calcError(api);
 
           break;
         }

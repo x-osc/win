@@ -4,7 +4,7 @@ import { wmApi } from "@core/wm/wm.svelte";
 import { gameState } from "./gameState.svelte";
 
 // TODO: either have a root app api or a background app that has this
-export async function doError(api: AppApi) {
+export async function calcError(api: AppApi) {
   gameState.isTrail = true;
   await sleep(100);
   api.showDialog({ message: "an error occured. uh oh" });
@@ -44,10 +44,10 @@ export async function doError(api: AppApi) {
       continueError();
     }
   });
-}
 
-function continueError() {
-  gameState.isBsod = true;
+  function continueError() {
+    gameState.isBsod = true;
+  }
 }
 
 let dialogpositions: { x: number; y: number }[][] = [
@@ -58,3 +58,12 @@ let dialogpositions: { x: number; y: number }[][] = [
     { x: 1252, y: 437 },
   ],
 ];
+
+export async function hydraError() {
+  gameState.isTrail = true;
+
+  wmApi.once("anymoved", async () => {
+    await sleep(850);
+    gameState.isBsod = true;
+  });
+}

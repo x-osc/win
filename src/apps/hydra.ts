@@ -1,6 +1,9 @@
 import type { AppApi } from "@core/app/api";
 import type { AppManifest } from "@core/app/app";
 import { randFromArray, randint } from "@core/utils";
+import { hydraError } from "../game/error";
+
+let count = 1;
 
 async function launch(api: AppApi) {
   await api.showDialog({ message: "hey gangalang its me the hydra" });
@@ -8,6 +11,12 @@ async function launch(api: AppApi) {
 }
 
 function spawnHydras(api: AppApi) {
+  count++;
+
+  if (count >= 20) {
+    hydraError();
+  }
+
   api
     .showDialog({
       message: randFromArray(hydraDialogs),
@@ -33,7 +42,7 @@ function spawnHydras(api: AppApi) {
     });
 }
 
-let hydraDialogs = [
+const hydraDialogs = [
   "hey gangalang im the hydra",
   "why dont u talk to the other head",
   "im feeling like some coffee do u want any",
