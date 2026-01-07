@@ -221,6 +221,7 @@ export async function type(path: string[]): Promise<EntryType | null> {
 
 export async function mkdir(path: string[]): Promise<DirEntry> {
   const db = await FSDB;
+  path = path.slice();
   const name = path.pop();
   if (!name) {
     throw new FsError({ type: "invalidpath", path });
@@ -278,6 +279,7 @@ export async function writeFile(
   content: FileContent,
 ): Promise<FileEntry> {
   const db = await FSDB;
+  path = path.slice();
   const name = path.pop();
   if (!name) {
     throw new FsError({ type: "invalidpath", path });
@@ -547,4 +549,22 @@ export async function removeRecursive(path: string[]) {
   }
 
   await removeEntryRec(entry);
+}
+
+export async function clearAllStores() {
+  const db = await FSDB;
+  const tx = db.transaction(["entries", "contents"], "readwrite");
+  await tx.objectStore("entries").clear();
+  await tx.objectStore("contents").clear();
+
+  // Re-seed the Root directory so the FS is valid
+  await tx.objectStore("entries").add({
+    id: ROOT_ID,
+    parentId: ROOT_ID,
+    name: "",
+    type: "dir",
+    created: Date.now(),
+    modified: Date.now(),
+  });
+  await tx.done;
 }
