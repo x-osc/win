@@ -12,11 +12,20 @@ import {
   seq,
   success,
   take1Until,
+  takeUntil,
   ws,
 } from "./parser";
 
+export type AttributeValue = string | boolean;
+export type AttributeStore = Record<string, AttributeValue>;
+
 export type MlNode =
-  | { type: "tag"; tag: string; children: MlNode[] }
+  | {
+      type: "tag";
+      tag: string;
+      attributes: AttributeStore;
+      children: MlNode[];
+    }
   | { type: "text"; content: string };
 
 export type AST = MlNode[];
@@ -35,20 +44,56 @@ const parseTextNode: Parser<MlNode> = (input, offset) => {
   return success({ type: "text", content: result.value }, result.offset);
 };
 
+// foo = "bar" || foo
+const parseAttribute: Parser<[string, AttributeValue]> = (input, offset) => {
+  const keyvalResult = seq(
+    alphanumeric1(),
+    ws(),
+    consume("="),
+    ws(),
+    consume('"'),
+    takeUntil((c) => c === '"'),
+    consume('"'),
+  )(input, offset);
+
+  if (keyvalResult.success) {
+    const [key, , , , , value] = keyvalResult.value;
+    return success([key, value], keyvalResult.offset);
+  }
+
+  const boolResult = alphanumeric1()(input, offset);
+  if (boolResult.success) {
+    return success([boolResult.value, true], boolResult.offset);
+  }
+
+  return failure("Expected attribute", offset);
+};
+
+// many attributes separated by whitespace
+const parseAttributes: Parser<AttributeStore> = map(
+  many(seq(ws(), parseAttribute)),
+  (results) => {
+    const attrs: AttributeStore = {};
+    for (const [, [key, value]] of results) {
+      attrs[key] = value;
+    }
+    return attrs;
+  },
+);
+
 const parseNode: Parser<MlNode> = (input, offset) => {
-  const openResult = map(
-    expect(
-      seq(consume("<"), ws(), alphanumeric1(), ws(), consume(">")),
-      "Expected a start tag",
-    ),
-    ([, , tagName, ,]) => {
-      return tagName;
-    },
+  const openResult = seq(
+    expect(consume("<"), "Expected a start tag"),
+    ws(),
+    expect(alphanumeric1(), "Tag name must be alphanumeric"),
+    parseAttributes,
+    ws(),
+    expect(consume(">"), "Missing closing '>' for opening tag"),
   )(input, offset);
 
   if (!openResult.success) return openResult;
 
-  const tagName = openResult.value;
+  const [, , tagName, attributes, ,] = openResult.value;
   const newOffset = openResult.offset;
 
   const closingTag = seq(
@@ -81,14 +126,14 @@ const parseNode: Parser<MlNode> = (input, offset) => {
     );
   }
 
-  return success(
-    {
-      type: "tag",
-      tag: tagName,
-      children: childrenResult.value.filter((node) => !isTextNodeEmpty(node)),
-    },
-    closeResult.offset,
-  );
+  const node: MlNode = {
+    type: "tag",
+    tag: tagName,
+    attributes,
+    children: childrenResult.value.filter((node) => !isTextNodeEmpty(node)),
+  };
+
+  return success(node, closeResult.offset);
 };
 
 const parseDocument: Parser<AST> = (input, offset) => {
@@ -100,12 +145,23 @@ const parseDocument: Parser<AST> = (input, offset) => {
 
   const endCheck = eof()(input, result.offset);
   if (!endCheck.success) {
-    return endCheck;
+    // we arent at the end of the file
+    // means we failed to parse the following node
+    // try to parse it to get an error
+
+    const errorCheck = nodeParser(input, result.offset);
+    // guaranteed to fail otherwise many() would have continued
+    if (!errorCheck.success) {
+      return errorCheck;
+    } else {
+      throw Error("unreachable ?");
+    }
   }
 
-  result.value = result.value.filter((node) => !isTextNodeEmpty(node));
-
-  return result;
+  return success(
+    result.value.filter((node) => !isTextNodeEmpty(node)),
+    result.offset,
+  );
 };
 
 function isTextNodeEmpty(node: MlNode) {
