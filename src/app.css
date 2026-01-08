@@ -10,22 +10,22 @@
 
 @font-face {
   font-family: "DOS-V_TWN16";
-  src: url("../assets/Web437_DOS-V_TWN16.woff");
+  src: url("./assets/Web437_DOS-V_TWN16.woff");
 }
 
 @font-face {
   font-family: "Cozette";
-  src: url("../assets/CozetteVector.woff");
+  src: url("./assets/CozetteVector.woff");
 }
 
 @font-face {
   font-family: "Terminus";
-  src: url("../assets/VecTerminus16Medium.woff");
+  src: url("./assets/VecTerminus16Medium.woff");
 }
 
 @font-face {
   font-family: "3270font";
-  src: url("../assets/3270Condensed-Regular.woff");
+  src: url("./assets/3270Condensed-Regular.woff");
 }
 
 body {
