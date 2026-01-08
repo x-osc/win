@@ -7,7 +7,7 @@
   <title>mltest</title>
 
   <script type="module">
-    import { parseDocument } from "./src/core/ml/mlparser.ts"
+    import { toHtmlAst, parseDocument } from "./src/core/ml/mlparser.ts"
     import { formatError } from "./src/core/ml/parser.ts"
     import { generateHTML } from "./src/core/ml/mldeparser.ts"
 
@@ -20,7 +20,12 @@
 
       let processed;
       if (res.success) {
-        processed = generateHTML(res.value.nodes);
+        const [ast, errors] = toHtmlAst(res.value);
+        if (errors.length > 0) {
+          processed = JSON.stringify(errors);
+        } else {
+          processed = generateHTML(ast.nodes);
+        }
       } else {
         processed = formatError(input, res);
       }

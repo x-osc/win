@@ -1,6 +1,7 @@
 import {
   type Located,
   type Parser,
+  type SourceLocation,
   alphanumeric1,
   choice,
   consume,
@@ -25,16 +26,19 @@ export type AttributeValue = {
 };
 export type AttributeStore = AttributeValue[];
 
-export type MlNode =
-  | {
-      type: "tag";
-      tag: Located<string>;
-      attributes: AttributeStore;
-      children: Located<MlNode>[];
-    }
-  | { type: "text"; content: string };
+export type MlNode = TagNode | TextNode;
 
-export type BasicAST = { nodes: Located<MlNode>[] };
+export type TagNode = {
+  type: "tag";
+  tag: Located<string>;
+  attributes: AttributeStore;
+  children: Located<MlNode>[];
+};
+export type TextNode = { type: "text"; content: string };
+
+export type BasicAst = { nodes: Located<MlNode>[] };
+
+// parser stuffs
 
 // takes until <
 const parseTextNode: Parser<MlNode> = (input, offset) => {
@@ -136,15 +140,13 @@ const parseNode: Parser<MlNode> = (input, offset) => {
     type: "tag",
     tag: tagName,
     attributes,
-    children: childrenResult.value.filter(
-      (node) => !isTextNodeEmpty(unwraploc(node)),
-    ),
+    children: childrenResult.value,
   };
 
   return success(node, closeResult.offset);
 };
 
-export const parseDocument: Parser<BasicAST> = (input, offset) => {
+export const parseDocument: Parser<BasicAst> = (input, offset) => {
   const nodeParser = located(choice(parseNode, parseTextNode));
 
   const result = many(nodeParser)(input, offset);
@@ -166,12 +168,87 @@ export const parseDocument: Parser<BasicAST> = (input, offset) => {
     }
   }
 
-  return success(
-    { nodes: result.value.filter((node) => !isTextNodeEmpty(unwraploc(node))) },
-    result.offset,
-  );
+  return success({ nodes: result.value }, result.offset);
 };
 
-function isTextNodeEmpty(node: MlNode) {
-  return node.type === "text" && node.content.trim().length <= 0;
+// walker and validator / transformer
+
+const TAG_MAP: Record<string, TagData> = {
+  box: {
+    html: "div",
+  },
+};
+
+export type TagData = {
+  html: string;
+};
+
+export interface TransformVisitor {
+  tag?: (node: Located<TagNode>) => Located<MlNode> | null;
+  text?: (node: Located<TextNode>) => Located<MlNode> | null;
+}
+
+export function transform(
+  nodes: Located<MlNode>[],
+  visitor: TransformVisitor,
+): Located<MlNode>[] {
+  const result: Located<MlNode>[] = [];
+
+  for (const node of nodes) {
+    let current: Located<MlNode> | null = node;
+
+    if (current.value.type === "tag" && visitor.tag) {
+      current = visitor.tag(current as Located<TagNode>);
+    } else if (current.value.type === "text" && visitor.text) {
+      current = visitor.text(current as Located<TextNode>);
+    }
+
+    if (!current) continue; // node was deleted by the visitor
+
+    if (current.value.type === "tag") {
+      const transformedChildren = transform(current.value.children, visitor);
+
+      // maintain immutability
+      current = {
+        ...current,
+        value: {
+          ...current.value,
+          children: transformedChildren,
+        },
+      };
+    }
+
+    result.push(current);
+  }
+
+  return result;
+}
+
+export interface MlError {
+  message: string;
+  loc: SourceLocation;
+}
+
+export function toHtmlAst(ast: BasicAst): [BasicAst, MlError[]] {
+  let errors: MlError[] = [];
+
+  let newTree = transform(ast.nodes, {
+    tag: (nodeloc) => {
+      let node = nodeloc.value;
+
+      let tagData = TAG_MAP[unwraploc(node.tag)];
+      if (tagData == undefined) {
+        errors.push({
+          message: "invalid tag",
+          loc: node.tag.loc,
+        });
+        return nodeloc;
+      }
+
+      node.tag.value = tagData.html;
+      return nodeloc;
+    },
+  });
+
+  return [{ nodes: newTree }, errors];
 }

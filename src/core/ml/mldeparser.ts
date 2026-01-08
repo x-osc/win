@@ -1,6 +1,8 @@
 import type { MlNode } from "./mlparser";
 import { unwraploc, type Located } from "./parser";
 
+// generator
+
 export function generateHTML(nodes: Located<MlNode>[]): string {
   return nodes
     .map((locnode) => {
