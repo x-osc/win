@@ -374,13 +374,17 @@
   }
 
   async function handleDialogSelect() {
-    if (mainSelectedEntry === null) {
-      return;
-    }
+    const id = mainSelectedEntry;
+    if (!id) return;
 
-    let entry = expGetEntry(mainSelectedEntry);
+    let entry = expGetEntry(id);
+    const path = await api.fs.getPath(entry);
+    if (!path) return;
 
-    if (dialogType === "fileonly" && entry.type !== "file") {
+    const isFile = entry.type === "file";
+    const isDir = entry.type === "dir";
+
+    if (isDir && dialogType === "fileonly") {
       openEntry(entry);
       return;
     }
@@ -396,22 +400,23 @@
 
     if (dialogType === "save" && entry.type === "file") {
       let content = await api.fs.getContent(entry.id);
-      let path = await api.fs.getPath(entry);
+      const hasContent = content && (await content?.data.text()) !== "";
 
-      if (content === null || (await content?.data.text()) === "") {
+      if (!hasContent) {
         quitWithEntry(entry);
         return;
-      } else {
-        let code = await api.showDialog({
-          message: `overwrite file '${path ? joinPath(path, false) : entry.name}' ??`,
-        });
-
-        if (code === 1) {
-          quitWithEntry(entry);
-        }
-
-        return;
       }
+
+      // we have content
+      let code = await api.showDialog({
+        message: `overwrite file '${path ? joinPath(path, false) : entry.name}' ??`,
+      });
+
+      if (code === 1) {
+        quitWithEntry(entry);
+      }
+
+      return;
     }
 
     quitWithEntry(entry);
