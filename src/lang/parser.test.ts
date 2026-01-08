@@ -40,6 +40,19 @@ describe("Basic Parsers", () => {
     expect(parser("!abc", 0).success).toBe(false);
   });
 
+  it("numeric1: should require at least one numeric char", () => {
+    const parser = P.numeric1();
+    const input = "123abc!";
+
+    expect(parser(input, 0)).toEqual({
+      success: true,
+      value: "123",
+      offset: 3,
+    });
+
+    expect(parser("!123", 0).success).toBe(false);
+  });
+
   it("eof: should succeed only at end of string", () => {
     const parser = P.eof();
 

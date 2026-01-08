@@ -59,10 +59,6 @@ export function located<T>(parser: Parser<T>): Parser<Located<T>> {
   };
 }
 
-export function unwraploc<T>(loc: Located<T>): T {
-  return loc.value;
-}
-
 // basic parsers
 
 /// take expected string if available
@@ -130,6 +126,20 @@ export function alphanumeric1(): Parser<string> {
   return (input, offset) => {
     let start = offset;
     while (offset < input.length && /[a-zA-Z0-9]/.test(input[offset])) {
+      offset++;
+    }
+    if (start === offset) {
+      return failure("Expected alphanumeric character", start);
+    }
+    return success(input.slice(start, offset), offset);
+  };
+}
+
+/// sequence of 1 or more numbers
+export function numeric1(): Parser<string> {
+  return (input, offset) => {
+    let start = offset;
+    while (offset < input.length && /[0-9]/.test(input[offset])) {
       offset++;
     }
     if (start === offset) {

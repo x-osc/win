@@ -11,13 +11,10 @@ import {
   failure,
   located,
   many,
-  manyUntil,
-  map,
   seq,
   success,
   take1Until,
   takeUntil,
-  unwraploc,
   ws,
 } from "../parser";
 
@@ -42,8 +39,6 @@ export type TagNode = {
 };
 export type TextNode = { type: "text"; content: string };
 
-export type BasicAst = { nodes: Located<MlNode>[] };
-
 export interface MlError {
   type: "parser" | "transformer";
   message: string;
@@ -52,6 +47,16 @@ export interface MlError {
 }
 
 // parser stuffs
+
+// -123.45
+const parseNumber: Parser<number> = (input, offset) => {
+  // optional negative sign
+  const match = input.slice(offset).match(/^-?\d+(\.\d+)?/);
+  if (!match) return failure("Expected a number", offset);
+
+  const value = parseFloat(match[0]);
+  return success(value, offset + match[0].length);
+};
 
 // takes until <
 const parseTextNode: Parser<MlNode> = (input, offset) => {
@@ -69,23 +74,51 @@ const parseTextNode: Parser<MlNode> = (input, offset) => {
 
 // foo = "bar" || foo
 const parseAttribute: Parser<AttributeData> = (input, offset) => {
-  const keyvalResult = seq(
+  const headResult = seq(
     located(alphanumeric1()),
     ws(),
     consume("="),
     ws(),
-    consume('"'),
-    located(takeUntil((c) => c === '"')),
-    consume('"'),
   )(input, offset);
 
-  if (keyvalResult.success) {
-    const [key, , , , , locval] = keyvalResult.value;
-    let res: AttributeData = {
-      key,
-      attr: { value: { type: "string", value: locval.value }, loc: locval.loc },
-    };
-    return success(res, keyvalResult.offset);
+  if (headResult.success) {
+    const [key, , ,] = headResult.value;
+
+    const stringResult = seq(
+      consume('"'),
+      located(takeUntil((c) => c === '"')),
+      consume('"'),
+    )(input, headResult.offset);
+    if (stringResult.success) {
+      const [, locval, _] = stringResult.value;
+      return success(
+        {
+          key,
+          attr: {
+            value: { type: "string", value: locval.value },
+            loc: locval.loc,
+          },
+        },
+        stringResult.offset,
+      );
+    }
+
+    const numResult = located(parseNumber)(input, headResult.offset);
+    if (numResult.success) {
+      const locval = numResult.value;
+      return success(
+        {
+          key,
+          attr: {
+            value: { type: "number", value: locval.value },
+            loc: locval.loc,
+          },
+        },
+        numResult.offset,
+      );
+    }
+
+    return failure("Expected string or number after '='", headResult.offset);
   }
 
   const boolResult = located(alphanumeric1())(input, offset);
@@ -100,14 +133,33 @@ const parseAttribute: Parser<AttributeData> = (input, offset) => {
     return success(res, boolResult.offset);
   }
 
-  return failure("Expected attribute", offset);
+  return failure(
+    "Unterminated opening tag (expected '>' or attributes)",
+    offset,
+  );
 };
 
 // many attributes separated by whitespace
-const parseAttributes: Parser<AttributeStore> = map(
-  many(seq(ws(), parseAttribute)),
-  (results) => results.map(([, attr]) => attr),
-);
+const parseAttributes: Parser<AttributeStore> = (input, offset) => {
+  const attrs: AttributeStore = [];
+  let currentOffset = offset;
+
+  while (true) {
+    const whitespace = ws()(input, currentOffset);
+    currentOffset = whitespace.offset;
+
+    // if the next char is '>', we are done with attributes
+    if (input[currentOffset] === ">") break;
+
+    const result = parseAttribute(input, currentOffset);
+    if (!result.success) return result;
+
+    attrs.push(result.value);
+    currentOffset = result.offset;
+  }
+
+  return success(attrs, currentOffset);
+};
 
 const parseNode: Parser<MlNode> = (input, offset) => {
   const openResult = seq(
@@ -122,49 +174,63 @@ const parseNode: Parser<MlNode> = (input, offset) => {
   if (!openResult.success) return openResult;
 
   const [, , tagName, attributes, ,] = openResult.value;
-  const newOffset = openResult.offset;
+  const tagStr = tagName.value;
 
-  const closingTag = seq(
-    consume("</"),
-    ws(),
-    consume(unwraploc(tagName)),
-    ws(),
-    consume(">"),
-  );
-  const childNodeParser = located(choice(parseNode, parseTextNode));
+  let currentOffset = openResult.offset;
+  let children: Located<MlNode>[] = [];
 
-  const childrenResult = manyUntil(childNodeParser, closingTag)(
-    input,
-    newOffset,
-  );
+  const closePattern = new RegExp(`^<\\/\\s*${tagStr}\\s*>`);
 
-  if (!childrenResult.success) {
-    return failure(
-      `${childrenResult.reason} (inside <${unwraploc(tagName)}> starting at ${offset})`,
-      childrenResult.offset,
-    );
-  }
+  while (true) {
+    const whitespace = ws()(input, currentOffset);
+    currentOffset = whitespace.offset;
 
-  const closeResult = closingTag(input, childrenResult.offset);
-  if (!closeResult.success) {
-    // TODO: cool pointers in output
-    return failure(
-      `Expected closing tag </${unwraploc(tagName)}> for the tag opened at position ${offset}`,
-      childrenResult.offset,
-    );
+    if (currentOffset >= input.length) {
+      return failure(
+        `Unclosed tag <${tagStr}>: reached end of file`,
+        currentOffset,
+      );
+    }
+
+    const closeMatch = input.slice(currentOffset).match(closePattern);
+
+    if (closeMatch) {
+      currentOffset += closeMatch[0].length;
+      break;
+    }
+
+    if (input.startsWith("</", currentOffset)) {
+      return failure(
+        `Unexpected closing tag or mismatched nesting for <${tagStr}>`,
+        currentOffset,
+      );
+    }
+
+    // if not closing tag, must be child
+    const childParser = located(choice(parseNode, parseTextNode));
+    const childResult = childParser(input, currentOffset);
+
+    if (!childResult.success)
+      return failure(
+        `${childResult.reason} (inside <${tagName.value}> starting at ${offset})`,
+        childResult.offset,
+      );
+
+    children.push(childResult.value);
+    currentOffset = childResult.offset;
   }
 
   const node: MlNode = {
     type: "tag",
     tag: tagName,
     attributes,
-    children: childrenResult.value,
+    children,
   };
 
-  return success(node, closeResult.offset);
+  return success(node, currentOffset);
 };
 
-export const parseDocument: Parser<BasicAst> = (input, offset) => {
+export const parseDocument: Parser<Located<MlNode>[]> = (input, offset) => {
   const nodeParser = located(choice(parseNode, parseTextNode));
 
   const result = many(nodeParser)(input, offset);
@@ -186,7 +252,7 @@ export const parseDocument: Parser<BasicAst> = (input, offset) => {
     }
   }
 
-  return success({ nodes: result.value }, result.offset);
+  return success(result.value, result.offset);
 };
 
 // transformer
@@ -247,6 +313,7 @@ type AttrRecord = Record<string, AttrValue["value"]>;
 
 interface TagDefinition {
   attrs: Record<string, AttrDefinition>;
+  validate?: (attrs: AttrRecord) => string[];
   render: (
     attrs: Record<string, AttrValue["value"] | undefined>,
     children: string,
@@ -269,9 +336,17 @@ const SCHEMA: Record<string, TagDefinition> = {
   box: {
     attrs: {
       color: { type: "string" },
+      width: { type: "number" },
+      height: { type: "number" },
     },
     render: (attrs, children) => {
-      return `<div style="background-color: ${attrs.color}">${children}</div>`;
+      const styles = styleString({
+        display: "flex",
+        width: attrs.width,
+        height: attrs.height,
+        "background-color": attrs.color,
+      });
+      return `<div style=${styles}>${children}</div>`;
     },
   },
   main: {
@@ -292,6 +367,10 @@ export function refineAst(
     const node = locnode.value;
 
     if (node.type === "text") {
+      if (node.content.trim().length === 0) {
+        continue;
+      }
+
       refined.push({
         loc: locnode.loc,
         value: { type: "text", content: node.content },
@@ -322,6 +401,8 @@ export function refineAst(
           children: refinedChildren,
         },
       });
+
+      continue;
     }
   }
 
@@ -382,6 +463,13 @@ function getAttrsWithSchema(node: TagNode): [AttrRecord | null, MlError[]] {
     }
   }
 
+  if (definition.validate) {
+    const validationErrors = definition.validate(refinedAttrs);
+    for (const error of validationErrors) {
+      errors.push(makeMlError(error, node.tag.loc));
+    }
+  }
+
   return [refinedAttrs, errors];
 }
 
@@ -435,9 +523,20 @@ export function processDocument(input: string): [string | null, MlError[]] {
     return [null, [toMlError(parseRes)]];
   }
 
-  const [ast, errors] = refineAst(parseRes.value.nodes);
+  const [ast, errors] = refineAst(parseRes.value);
 
   const htmlString = renderToHtml(ast);
 
   return [htmlString, errors];
+}
+
+function styleString(styles: Record<string, any>) {
+  const css = Object.entries(styles)
+    .filter(
+      ([_, value]) => value !== undefined && value != null && value != false,
+    )
+    .map(([prop, value]) => `${prop}: ${value}`)
+    .join("; ");
+
+  return css ? ` style="${css}"` : "";
 }
