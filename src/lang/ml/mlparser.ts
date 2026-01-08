@@ -19,7 +19,7 @@ import {
   takeUntil,
   unwraploc,
   ws,
-} from "./parser";
+} from "../parser";
 
 export type AttrValue =
   | { type: "string"; value: string }
