@@ -21,11 +21,16 @@ import {
   ws,
 } from "./parser";
 
-export type AttributeValue = {
+export type AttrValue =
+  | { type: "string"; value: string }
+  | { type: "number"; value: number }
+  | { type: "boolean"; value: boolean };
+
+export type AttributeData = {
   key: Located<string>;
-  value: Located<string | boolean>;
+  attr: Located<AttrValue>;
 };
-export type AttributeStore = AttributeValue[];
+export type AttributeStore = AttributeData[];
 
 export type MlNode = TagNode | TextNode;
 
@@ -63,7 +68,7 @@ const parseTextNode: Parser<MlNode> = (input, offset) => {
 };
 
 // foo = "bar" || foo
-const parseAttribute: Parser<AttributeValue> = (input, offset) => {
+const parseAttribute: Parser<AttributeData> = (input, offset) => {
   const keyvalResult = seq(
     located(alphanumeric1()),
     ws(),
@@ -75,19 +80,24 @@ const parseAttribute: Parser<AttributeValue> = (input, offset) => {
   )(input, offset);
 
   if (keyvalResult.success) {
-    const [key, , , , , value] = keyvalResult.value;
-    return success({ key, value }, keyvalResult.offset);
+    const [key, , , , , locval] = keyvalResult.value;
+    let res: AttributeData = {
+      key,
+      attr: { value: { type: "string", value: locval.value }, loc: locval.loc },
+    };
+    return success(res, keyvalResult.offset);
   }
 
   const boolResult = located(alphanumeric1())(input, offset);
   if (boolResult.success) {
-    return success(
-      {
-        key: boolResult.value,
-        value: { value: true, loc: boolResult.value.loc },
+    let res: AttributeData = {
+      key: boolResult.value,
+      attr: {
+        value: { type: "boolean", value: true },
+        loc: boolResult.value.loc,
       },
-      boolResult.offset,
-    );
+    };
+    return success(res, boolResult.offset);
   }
 
   return failure("Expected attribute", offset);
@@ -179,7 +189,7 @@ export const parseDocument: Parser<BasicAst> = (input, offset) => {
   return success({ nodes: result.value }, result.offset);
 };
 
-// walker and validator / transformer
+// transformer
 
 export function formatErrorAtLoc(
   input: string,
@@ -224,99 +234,210 @@ export function makeMlError(
   };
 }
 
-const TAG_MAP: Record<string, TagData> = {
-  box: {
-    html: "div",
-  },
-};
-
 export type TagData = {
   html: string;
 };
 
-export interface TransformVisitor {
-  tag?: (node: Located<TagNode>) => Located<MlNode> | null;
-  text?: (node: Located<TextNode>) => Located<MlNode> | null;
+interface AttrDefinition {
+  type: AttrValue["type"];
+  required?: boolean;
 }
 
-export function transform(
+type AttrRecord = Record<string, AttrValue["value"]>;
+
+interface TagDefinition {
+  attrs: Record<string, AttrDefinition>;
+  render: (
+    attrs: Record<string, AttrValue["value"] | undefined>,
+    children: string,
+  ) => string;
+}
+
+type TagNames = keyof typeof SCHEMA;
+
+type RefinedTagNode = {
+  type: "tag";
+  refinedType: string;
+  tag: Located<string>;
+  children: Located<RefinedNode>[];
+  attrs: AttrRecord;
+};
+
+type RefinedNode = RefinedTagNode | TextNode;
+
+const SCHEMA: Record<string, TagDefinition> = {
+  box: {
+    attrs: {
+      color: { type: "string" },
+    },
+    render: (attrs, children) => {
+      return `<div style="background-color: ${attrs.color}">${children}</div>`;
+    },
+  },
+  main: {
+    attrs: {},
+    render: (attrs, children) => {
+      return `<main>${children}</main>`;
+    },
+  },
+} as const;
+
+export function refineAst(
   nodes: Located<MlNode>[],
-  visitor: TransformVisitor,
-): Located<MlNode>[] {
-  const result: Located<MlNode>[] = [];
-
-  for (const node of nodes) {
-    let current: Located<MlNode> | null = node;
-
-    if (current.value.type === "tag" && visitor.tag) {
-      current = visitor.tag(current as Located<TagNode>);
-    } else if (current.value.type === "text" && visitor.text) {
-      current = visitor.text(current as Located<TextNode>);
-    }
-
-    if (!current) continue; // node was deleted by the visitor
-
-    if (current.value.type === "tag") {
-      const transformedChildren = transform(current.value.children, visitor);
-
-      // maintain immutability
-      current = {
-        ...current,
-        value: {
-          ...current.value,
-          children: transformedChildren,
-        },
-      };
-    }
-
-    result.push(current);
-  }
-
-  return result;
-}
-
-export function toHtmlAst(ast: BasicAst): [BasicAst, MlError[]] {
+): [Located<RefinedNode>[], MlError[]] {
+  let refined: Located<RefinedNode>[] = [];
   let errors: MlError[] = [];
 
-  let newTree = transform(ast.nodes, {
-    tag: (nodeloc) => {
-      let node = nodeloc.value;
+  for (const locnode of nodes) {
+    const node = locnode.value;
 
-      let tagData = TAG_MAP[unwraploc(node.tag)];
-      if (tagData == undefined) {
-        errors.push(makeMlError("invalid tag", node.tag.loc, "invalid_tag"));
-        return nodeloc;
+    if (node.type === "text") {
+      refined.push({
+        loc: locnode.loc,
+        value: { type: "text", content: node.content },
+      });
+      continue;
+    }
+
+    if (node.type === "tag") {
+      if (!(node.tag.value in SCHEMA)) {
+        errors.push(
+          makeMlError(`unknown tag <${node.tag.value}>`, node.tag.loc),
+        );
       }
 
-      // TODO: mutation !!!! uhoh
-      node.tag.value = tagData.html;
-      return nodeloc;
-    },
-  });
+      const [attrs, attrerrors] = getAttrsWithSchema(node);
+      errors = errors.concat(attrerrors);
 
-  return [{ nodes: newTree }, errors];
+      const [refinedChildren, childerrs] = refineAst(node.children);
+      errors = errors.concat(childerrs);
+
+      refined.push({
+        loc: locnode.loc,
+        value: {
+          type: "tag",
+          refinedType: node.tag.value,
+          tag: node.tag,
+          attrs: attrs ?? {},
+          children: refinedChildren,
+        },
+      });
+    }
+  }
+
+  return [refined, errors];
+}
+
+function getAttrsWithSchema(node: TagNode): [AttrRecord | null, MlError[]] {
+  let errors: MlError[] = [];
+
+  const tagName = node.tag.value;
+  const definition = SCHEMA[tagName];
+
+  if (!definition) {
+    return [null, errors];
+  }
+
+  const refinedAttrs: AttrRecord = {};
+  const seenAttrs = new Set<string>();
+
+  for (const attrdata of node.attributes) {
+    const key = attrdata.key.value;
+    const spec = definition.attrs[key];
+    seenAttrs.add(key);
+
+    if (!spec) {
+      errors.push(
+        makeMlError(
+          `unexpected attribute "${key}" on <${tagName}>`,
+          attrdata.key.loc,
+        ),
+      );
+      continue;
+    }
+
+    const rawValue = attrdata.attr.value;
+    const parsed = checkType(rawValue, spec.type);
+
+    if (parsed === null) {
+      errors.push(
+        makeMlError(
+          `Attribute "${key}" expects a ${spec.type}, got "${typeof rawValue.value}"`,
+          attrdata.attr.loc,
+        ),
+      );
+    } else {
+      refinedAttrs[key] = parsed;
+    }
+  }
+
+  for (const [key, spec] of Object.entries(definition.attrs)) {
+    if (spec.required && !seenAttrs.has(key)) {
+      errors.push(
+        makeMlError(
+          `<${tagName}> is missing required attribute "${key}"`,
+          node.tag.loc,
+        ),
+      );
+    }
+  }
+
+  return [refinedAttrs, errors];
+}
+
+function checkType(
+  val: AttrValue,
+  type: AttrValue["type"],
+): AttrValue["value"] | null {
+  if (type === "string") {
+    return typeof val.value === "string" ? val.value : null;
+  }
+  if (type === "boolean") {
+    return typeof val.value === "boolean" ? val.value : null;
+  }
+  if (type === "number") {
+    return typeof val.value === "number" ? val.value : null;
+  }
+  return null;
 }
 
 // generator
 
-export function generateHTML(nodes: Located<MlNode>[]): string {
+export function renderToHtml(nodes: Located<RefinedNode>[]): string {
   return nodes
     .map((locnode) => {
-      const node = unwraploc(locnode);
+      const node = locnode.value;
+
       if (node.type === "text") {
         return node.content;
       }
 
-      const attrString = node.attributes
-        .map(({ key, value }) =>
-          unwraploc(value) === true
-            ? ` ${unwraploc(key)}`
-            : ` ${unwraploc(key)}="${unwraploc(value)}"`,
-        )
-        .join("");
+      if (node.type === "tag") {
+        const tagName = node.tag.value;
+        const definition = SCHEMA[tagName];
 
-      const childrenString = generateHTML(node.children);
-      return `<${node.tag.value}${attrString}>${childrenString}</${node.tag.value}>`;
+        if (!definition) return "";
+
+        const childrenHtml = renderToHtml(node.children);
+
+        return definition.render(node.attrs, childrenHtml);
+      }
+
+      return "";
     })
     .join("");
+}
+
+export function processDocument(input: string): [string | null, MlError[]] {
+  let parseRes = parseDocument(input, 0);
+
+  if (!parseRes.success) {
+    return [null, [toMlError(parseRes)]];
+  }
+
+  const [ast, errors] = refineAst(parseRes.value.nodes);
+
+  const htmlString = renderToHtml(ast);
+
+  return [htmlString, errors];
 }
