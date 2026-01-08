@@ -7,27 +7,26 @@
   <title>mltest</title>
 
   <script type="module">
-    import { toHtmlAst, parseDocument } from "./src/core/ml/mlparser.ts"
-    import { formatError } from "./src/core/ml/parser.ts"
-    import { generateHTML } from "./src/core/ml/mldeparser.ts"
+    import { toHtmlAst, parseDocument, generateHTML, formatErrorAtLoc } from "./src/core/ml/mlparser.ts"
 
     function processText() {
       const input = document.getElementById("input").value;
       const output = document.getElementById("output");
 
       let res = parseDocument(input, 0);
-      console.log(res)
 
-      let processed;
+      let processed = "";
       if (res.success) {
         const [ast, errors] = toHtmlAst(res.value);
         if (errors.length > 0) {
-          processed = JSON.stringify(errors);
+          for (const err of errors) {
+            processed += formatErrorAtLoc(input, err.message, err.loc) + "\n\n"
+          }
         } else {
           processed = generateHTML(ast.nodes);
         }
       } else {
-        processed = formatError(input, res);
+        processed = formatErrorAtLoc(input, res.reason, res.loc);
       }
 
       output.value = processed;

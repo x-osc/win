@@ -1,15 +1,31 @@
 export type Parser<T> = (input: string, offset: number) => ParseResult<T>;
 
-export type ParseResult<T> =
-  | { success: true; value: T; offset: number }
-  | { success: false; error: string; offset: number };
+export type ParseResult<T> = ParseSuccess<T> | ParseFaliure;
+
+export type ParseSuccess<T> = { success: true; value: T; offset: number };
+export type ParseFaliure = {
+  success: false;
+  reason: string;
+  offset: number;
+  loc: SourceLocation;
+};
 
 export function success<T>(value: T, offset: number): ParseResult<T> {
   return { success: true, value, offset };
 }
 
-export function failure<T>(error: string, offset: number): ParseResult<T> {
-  return { success: false, error, offset };
+// start and end are backward !!! be warned !!!
+export function failure<T>(
+  error: string,
+  endOffset: number,
+  startOffset?: number,
+): ParseResult<T> {
+  return {
+    success: false,
+    reason: error,
+    offset: endOffset,
+    loc: { start: startOffset ?? endOffset, end: endOffset },
+  };
 }
 
 // location stuffs
@@ -164,7 +180,7 @@ export function choice<T>(...parsers: Parser<T>[]): Parser<T> {
       if (result.success) return result;
 
       // remember the error that got furthest
-      if (!bestError || result.offset > bestError.offset) {
+      if (!bestError || result.loc.end > bestError.loc.end) {
         bestError = result;
       }
     }
@@ -287,27 +303,19 @@ export function not<T>(parser: Parser<T>): Parser<null> {
 }
 
 /// uses custom error message instead of default one
-export function expect<T>(parser: Parser<T>, errorMessage: string): Parser<T> {
+export function expect<T>(
+  parser: Parser<T>,
+  errorMessage: string,
+  createSpan = true,
+): Parser<T> {
   return (input, offset) => {
     const result = parser(input, offset);
     if (result.success) return result;
-    return failure(errorMessage, offset);
+    if (createSpan) {
+      // return error from start to end
+      return failure(errorMessage, offset, result.loc.start);
+    } else {
+      return failure(errorMessage, offset);
+    }
   };
-}
-
-export function formatError(
-  input: string,
-  result: { success: false; offset: number; error: string },
-) {
-  const lines = input.slice(0, result.offset).split("\n");
-  const lineNum = lines.length;
-  const colNum = lines[lines.length - 1].length + 1;
-  const lineContent = input.split("\n")[lineNum - 1];
-
-  return [
-    `Parse Error: ${result.error}`,
-    `At: Line ${lineNum}, Column ${colNum}`,
-    `> ${lineContent}`,
-    `  ${" ".repeat(colNum - 1)}^`,
-  ].join("\n");
 }

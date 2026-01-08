@@ -138,7 +138,7 @@ describe("Combinators", () => {
     const failRes = importantTag("!!!", 0);
     expect(failRes.success).toBe(false);
     if (!failRes.success) {
-      expect(failRes.error).toBe("A valid tag name is required here!");
+      expect(failRes.reason).toBe("A valid tag name is required here!");
       expect(failRes.offset).toBe(0);
     }
   });

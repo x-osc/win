@@ -1,5 +1,6 @@
 import {
   type Located,
+  type ParseFaliure,
   type Parser,
   type SourceLocation,
   alphanumeric1,
@@ -37,6 +38,13 @@ export type TagNode = {
 export type TextNode = { type: "text"; content: string };
 
 export type BasicAst = { nodes: Located<MlNode>[] };
+
+export interface MlError {
+  type: "parser" | "transformer";
+  message: string;
+  loc: SourceLocation;
+  code?: string;
+}
 
 // parser stuffs
 
@@ -122,7 +130,7 @@ const parseNode: Parser<MlNode> = (input, offset) => {
 
   if (!childrenResult.success) {
     return failure(
-      `${childrenResult.error} (inside <${unwraploc(tagName)}> starting at ${offset})`,
+      `${childrenResult.reason} (inside <${unwraploc(tagName)}> starting at ${offset})`,
       childrenResult.offset,
     );
   }
@@ -172,6 +180,49 @@ export const parseDocument: Parser<BasicAst> = (input, offset) => {
 };
 
 // walker and validator / transformer
+
+export function formatErrorAtLoc(
+  input: string,
+  message: string,
+  loc: SourceLocation,
+) {
+  const lines = input.slice(0, loc.start).split("\n");
+  const lineNum = lines.length;
+  const colNum = lines[lines.length - 1].length + 1;
+  const allLines = input.split("\n");
+  const lineContent = allLines[lineNum - 1];
+
+  // Calculate how many carets to draw if it's a span
+  const spanLength = Math.max(1, loc.end - loc.start);
+  const carets = "^".repeat(spanLength);
+
+  return [
+    `Error: ${message}`,
+    `At: Line ${lineNum}, Column ${colNum}`,
+    `> ${lineContent}`,
+    `  ${" ".repeat(colNum - 1)}${carets}`,
+  ].join("\n");
+}
+
+export function toMlError(result: ParseFaliure): MlError {
+  return {
+    type: "parser",
+    message: result.reason,
+    loc: result.loc,
+  };
+}
+
+export function makeMlError(
+  reason: string,
+  loc: SourceLocation,
+  code?: string,
+): MlError {
+  return {
+    type: "transformer",
+    message: reason,
+    loc,
+  };
+}
 
 const TAG_MAP: Record<string, TagData> = {
   box: {
@@ -224,11 +275,6 @@ export function transform(
   return result;
 }
 
-export interface MlError {
-  message: string;
-  loc: SourceLocation;
-}
-
 export function toHtmlAst(ast: BasicAst): [BasicAst, MlError[]] {
   let errors: MlError[] = [];
 
@@ -238,17 +284,39 @@ export function toHtmlAst(ast: BasicAst): [BasicAst, MlError[]] {
 
       let tagData = TAG_MAP[unwraploc(node.tag)];
       if (tagData == undefined) {
-        errors.push({
-          message: "invalid tag",
-          loc: node.tag.loc,
-        });
+        errors.push(makeMlError("invalid tag", node.tag.loc, "invalid_tag"));
         return nodeloc;
       }
 
+      // TODO: mutation !!!! uhoh
       node.tag.value = tagData.html;
       return nodeloc;
     },
   });
 
   return [{ nodes: newTree }, errors];
+}
+
+// generator
+
+export function generateHTML(nodes: Located<MlNode>[]): string {
+  return nodes
+    .map((locnode) => {
+      const node = unwraploc(locnode);
+      if (node.type === "text") {
+        return node.content;
+      }
+
+      const attrString = node.attributes
+        .map(({ key, value }) =>
+          unwraploc(value) === true
+            ? ` ${unwraploc(key)}`
+            : ` ${unwraploc(key)}="${unwraploc(value)}"`,
+        )
+        .join("");
+
+      const childrenString = generateHTML(node.children);
+      return `<${node.tag.value}${attrString}>${childrenString}</${node.tag.value}>`;
+    })
+    .join("");
 }
