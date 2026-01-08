@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { processDocument } from "./mlparser";
 
-describe("Ml parser", () => {
+describe("Document Parsing", () => {
   it("renders simple text and tags", () => {
     const input = "<main>Hello World</main>";
     const [html, errors] = processDocument(input);
@@ -45,35 +45,37 @@ describe("Ml parser", () => {
     expect(errors).toHaveLength(0);
     expect(html).toContain("");
   });
+});
 
+describe("Error States", () => {
   it("reports error for unknown tags", () => {
     const input = `<asdf>content</asdf>`;
     const [_, errors] = processDocument(input);
-    expect(errors[0].message).toContain("<asdf>");
+    expect(errors[0].code).toBe("unknown-tag");
   });
 
   it("reports type mismatch errors", () => {
     const input = `<box width="not-a-number"></box>`;
     const [_, errors] = processDocument(input);
-    expect(errors[0].message).toContain("number");
+    expect(errors[0].code).toBe("attribute-type-mismatch");
   });
 
   it("catches unclosed tags at EOF", () => {
     const input = "<a><b></a>";
     const [html, errors] = processDocument(input);
-    expect(errors[0].message).toContain("mismatched");
+    expect(errors[0].code).toBe("mismatched-nesting");
   });
 
   it("catches unclosed attributes", () => {
     const input = "<box width=";
     const [html, errors] = processDocument(input);
-    expect(errors[0].message).toContain("Expected string");
+    expect(errors[0].code).toBe("expected-attr-value");
   });
 
   it("catches missing closing bracket", () => {
-    const input = "<box width=10";
+    const input = "<box width=10 ";
     const [html, errors] = processDocument(input);
-    expect(errors[0].message).toContain("opening tag");
+    expect(errors[0].code).toBe("unterminated-tag");
   });
 });
 

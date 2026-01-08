@@ -1,7 +1,6 @@
  - rework terminal to be like lok.computer's (prompt on bottom, logs on top)
  - full ui css stuff
  - focusing with taskbar doesnt trigger focus callback 
- - rewrite mlparser to use error ids 
  - decide on how saving works in explorer..
  - depressed clippy
  - custom cursors + support

@@ -41,9 +41,42 @@ export type TextNode = { type: "text"; content: string };
 
 export interface MlError {
   type: "parser" | "transformer";
-  message: string;
+  code: ErrorCode;
+  params?: Record<string, string | number>; // error message template interpolation
   loc: SourceLocation;
-  code?: string;
+}
+
+export const ERROR_CODES = {
+  "generic-error": "{message}",
+
+  // Parser Phase
+  "missing-opening-bracket": "Expected a start tag '<'",
+  "tag-name-alphanumeric": "Tag name must be alphanumeric",
+  "unclosed-tag": "Unclosed tag <{tag}>: reached end of file",
+  "mismatched-nesting":
+    "Unexpected closing tag or mismatched nesting for <{tag}>",
+  "expected-attr-value": "Expected quoted string or a number after '='",
+  "unterminated-tag": "Unterminated opening tag (expected '>' or attributes)",
+  "unexpected-eof": "Unexpected end of file",
+  "expected-text-found-tag": "Expected text, but found the start of a tag",
+  "expected-number": "Expected a number",
+
+  // Transformer Phase
+  "unknown-tag": "Unknown tag <{tag}>",
+  "unexpected-attribute": "Unexpected attribute '{key}' on <{tag}>",
+  "attribute-type-mismatch":
+    "Attribute '{key}' expects a {expected}, got {actual}",
+  "missing-required-attribute": "<{tag}> is missing required attribute '{key}'",
+} as const;
+
+export type ErrorCode = keyof typeof ERROR_CODES;
+
+// jank
+function errorPayload(
+  code: ErrorCode,
+  params?: Record<string, string | number>,
+): string {
+  return JSON.stringify({ code, params });
 }
 
 // parser stuffs
@@ -52,7 +85,7 @@ export interface MlError {
 const parseNumber: Parser<number> = (input, offset) => {
   // optional negative sign
   const match = input.slice(offset).match(/^-?\d+(\.\d+)?/);
-  if (!match) return failure("Expected a number", offset);
+  if (!match) return failure(errorPayload("expected-number"), offset);
 
   const value = parseFloat(match[0]);
   return success(value, offset + match[0].length);
@@ -60,10 +93,11 @@ const parseNumber: Parser<number> = (input, offset) => {
 
 // takes until <
 const parseTextNode: Parser<MlNode> = (input, offset) => {
-  if (offset >= input.length) return failure("Unexpected EOF", offset);
+  if (offset >= input.length)
+    return failure(errorPayload("unexpected-eof"), offset);
 
   if (input.startsWith("<", offset)) {
-    return failure("Expected text, but found the start of a tag", offset);
+    return failure(errorPayload("expected-text-found-tag"), offset);
   }
 
   const result = take1Until((char) => char === "<")(input, offset);
@@ -118,7 +152,7 @@ const parseAttribute: Parser<AttributeData> = (input, offset) => {
       );
     }
 
-    return failure("Expected string or number after '='", headResult.offset);
+    return failure(errorPayload("expected-attr-value"), headResult.offset);
   }
 
   const boolResult = located(alphanumeric1())(input, offset);
@@ -133,10 +167,7 @@ const parseAttribute: Parser<AttributeData> = (input, offset) => {
     return success(res, boolResult.offset);
   }
 
-  return failure(
-    "Unterminated opening tag (expected '>' or attributes)",
-    offset,
-  );
+  return failure(errorPayload("unterminated-tag"), offset);
 };
 
 // many attributes separated by whitespace
@@ -163,12 +194,12 @@ const parseAttributes: Parser<AttributeStore> = (input, offset) => {
 
 const parseNode: Parser<MlNode> = (input, offset) => {
   const openResult = seq(
-    expect(consume("<"), "Expected a start tag"),
+    expect(consume("<"), errorPayload("missing-opening-bracket")),
     ws(),
-    expect(located(alphanumeric1()), "Tag name must be alphanumeric"),
+    expect(located(alphanumeric1()), errorPayload("tag-name-alphanumeric")),
     parseAttributes,
     ws(),
-    expect(consume(">"), "Missing closing '>' for opening tag"),
+    expect(consume(">"), errorPayload("unterminated-tag")),
   )(input, offset);
 
   if (!openResult.success) return openResult;
@@ -187,7 +218,7 @@ const parseNode: Parser<MlNode> = (input, offset) => {
 
     if (currentOffset >= input.length) {
       return failure(
-        `Unclosed tag <${tagStr}>: reached end of file`,
+        errorPayload("unclosed-tag", { tag: tagStr }),
         currentOffset,
       );
     }
@@ -201,7 +232,7 @@ const parseNode: Parser<MlNode> = (input, offset) => {
 
     if (input.startsWith("</", currentOffset)) {
       return failure(
-        `Unexpected closing tag or mismatched nesting for <${tagStr}>`,
+        errorPayload("mismatched-nesting", { tag: tagStr }),
         currentOffset,
       );
     }
@@ -210,11 +241,7 @@ const parseNode: Parser<MlNode> = (input, offset) => {
     const childParser = located(choice(parseNode, parseTextNode));
     const childResult = childParser(input, currentOffset);
 
-    if (!childResult.success)
-      return failure(
-        `${childResult.reason} (inside <${tagName.value}> starting at ${offset})`,
-        childResult.offset,
-      );
+    if (!childResult.success) return childResult;
 
     children.push(childResult.value);
     currentOffset = childResult.offset;
@@ -257,11 +284,10 @@ export const parseDocument: Parser<Located<MlNode>[]> = (input, offset) => {
 
 // transformer
 
-export function formatErrorAtLoc(
-  input: string,
-  message: string,
-  loc: SourceLocation,
-) {
+export function formatError(input: string, error: MlError) {
+  const message = getErrorMessage(error);
+  const loc = error.loc;
+
   const lines = input.slice(0, loc.start).split("\n");
   const lineNum = lines.length;
   const colNum = lines[lines.length - 1].length + 1;
@@ -273,7 +299,7 @@ export function formatErrorAtLoc(
   const carets = "^".repeat(spanLength);
 
   return [
-    `Error: ${message}`,
+    `Error [${error.code}]: ${message}`,
     `At: Line ${lineNum}, Column ${colNum}`,
     `> ${lineContent}`,
     `  ${" ".repeat(colNum - 1)}${carets}`,
@@ -281,23 +307,48 @@ export function formatErrorAtLoc(
 }
 
 export function toMlError(result: ParseFaliure): MlError {
+  try {
+    const data = JSON.parse(result.reason);
+
+    if (data.code in ERROR_CODES) {
+      return {
+        type: "parser",
+        code: data.code,
+        params: data.params,
+        loc: result.loc,
+      };
+    }
+  } catch {}
+
   return {
     type: "parser",
-    message: result.reason,
+    code: "generic-error",
+    params: { message: result.reason },
     loc: result.loc,
   };
 }
 
 export function makeMlError(
-  reason: string,
+  code: ErrorCode,
   loc: SourceLocation,
-  code?: string,
+  params?: Record<string, string | number>,
 ): MlError {
   return {
     type: "transformer",
-    message: reason,
+    code,
     loc,
+    params,
   };
+}
+
+function getErrorMessage(error: MlError): string {
+  let template: string = ERROR_CODES[error.code];
+  if (error.params) {
+    for (const [key, val] of Object.entries(error.params)) {
+      template = template.replace(`{${key}}`, String(val));
+    }
+  }
+  return template;
 }
 
 export type TagData = {
@@ -313,7 +364,7 @@ type AttrRecord = Record<string, AttrValue["value"]>;
 
 interface TagDefinition {
   attrs: Record<string, AttrDefinition>;
-  validate?: (attrs: AttrRecord) => string[];
+  validate?: (attrs: AttrRecord) => MlError[];
   render: (
     attrs: Record<string, AttrValue["value"] | undefined>,
     children: string,
@@ -381,7 +432,9 @@ export function refineAst(
     if (node.type === "tag") {
       if (!(node.tag.value in SCHEMA)) {
         errors.push(
-          makeMlError(`unknown tag <${node.tag.value}>`, node.tag.loc),
+          makeMlError("unknown-tag", node.tag.loc, {
+            tag: node.tag.value,
+          }),
         );
       }
 
@@ -429,10 +482,10 @@ function getAttrsWithSchema(node: TagNode): [AttrRecord | null, MlError[]] {
 
     if (!spec) {
       errors.push(
-        makeMlError(
-          `unexpected attribute "${key}" on <${tagName}>`,
-          attrdata.key.loc,
-        ),
+        makeMlError("unexpected-attribute", attrdata.key.loc, {
+          key,
+          tag: tagName,
+        }),
       );
       continue;
     }
@@ -442,10 +495,11 @@ function getAttrsWithSchema(node: TagNode): [AttrRecord | null, MlError[]] {
 
     if (parsed === null) {
       errors.push(
-        makeMlError(
-          `Attribute "${key}" expects a ${spec.type}, got "${typeof rawValue.value}"`,
-          attrdata.attr.loc,
-        ),
+        makeMlError("attribute-type-mismatch", attrdata.attr.loc, {
+          key,
+          expected: spec.type,
+          actual: typeof rawValue.value,
+        }),
       );
     } else {
       refinedAttrs[key] = parsed;
@@ -455,10 +509,10 @@ function getAttrsWithSchema(node: TagNode): [AttrRecord | null, MlError[]] {
   for (const [key, spec] of Object.entries(definition.attrs)) {
     if (spec.required && !seenAttrs.has(key)) {
       errors.push(
-        makeMlError(
-          `<${tagName}> is missing required attribute "${key}"`,
-          node.tag.loc,
-        ),
+        makeMlError("missing-required-attribute", node.tag.loc, {
+          tag: tagName,
+          key,
+        }),
       );
     }
   }
@@ -466,7 +520,7 @@ function getAttrsWithSchema(node: TagNode): [AttrRecord | null, MlError[]] {
   if (definition.validate) {
     const validationErrors = definition.validate(refinedAttrs);
     for (const error of validationErrors) {
-      errors.push(makeMlError(error, node.tag.loc));
+      errors.push(error);
     }
   }
 
