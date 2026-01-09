@@ -67,6 +67,7 @@ export const ERROR_CODES = {
   "attribute-type-mismatch":
     "Attribute '{key}' expects a {expected}, got {actual}",
   "missing-required-attribute": "<{tag}> is missing required attribute '{key}'",
+  "text-not-allowed": "Text is not allowed directly inside <{tag}>",
 } as const;
 
 export type ErrorCode = keyof typeof ERROR_CODES;
@@ -364,6 +365,7 @@ type AttrRecord = Record<string, AttrValue["value"]>;
 
 interface TagDefinition {
   attrs: Record<string, AttrDefinition>;
+  textAllowed?: boolean;
   validate?: (attrs: AttrRecord) => MlError[];
   render: (
     attrs: Record<string, AttrValue["value"] | undefined>,
@@ -411,19 +413,41 @@ const SCHEMA: Record<string, TagDefinition> = {
       return `<main>${children}</main>`;
     },
   },
+  text: {
+    attrs: {},
+    textAllowed: true,
+    render: (attrs, children) => `<span>${children}</span>`,
+  },
+  heading: {
+    attrs: {},
+    textAllowed: true,
+    render: (attrs, children) => `<h1>${children}</h1>`,
+  },
 } as const;
 
 export function refineAst(
   nodes: Located<MlNode>[],
+  locParentNode: Located<TagNode> | null = null,
 ): [Located<RefinedNode>[], MlError[]] {
   let refined: Located<RefinedNode>[] = [];
   let errors: MlError[] = [];
 
   for (const locnode of nodes) {
     const node = locnode.value;
+    const parentNode = locParentNode?.value;
 
     if (node.type === "text") {
-      if (node.content.trim().length === 0) {
+      if (node.content.trim().length === 0) continue;
+
+      if (
+        parentNode?.tag.value == undefined ||
+        SCHEMA[parentNode?.tag.value].textAllowed !== true
+      ) {
+        errors.push(
+          makeMlError("text-not-allowed", locnode.loc, {
+            tag: parentNode?.tag.value ?? "ROOT",
+          }),
+        );
         continue;
       }
 
@@ -431,6 +455,7 @@ export function refineAst(
         loc: locnode.loc,
         value: { type: "text", content: node.content },
       });
+
       continue;
     }
 
@@ -441,12 +466,17 @@ export function refineAst(
             tag: node.tag.value,
           }),
         );
+
+        continue;
       }
 
       const [attrs, attrerrors] = getAttrsWithSchema(node);
       errors = errors.concat(attrerrors);
 
-      const [refinedChildren, childerrs] = refineAst(node.children);
+      const [refinedChildren, childerrs] = refineAst(
+        node.children,
+        locnode as Located<TagNode>,
+      );
       errors = errors.concat(childerrs);
 
       refined.push({
@@ -552,7 +582,7 @@ function checkType(
 
 /// pls attach ml.css to wherever ur rendering this aswell thx
 export function renderToHtml(nodes: Located<RefinedNode>[]): string {
-  let html = nodes
+  return nodes
     .map((locnode) => {
       const node = locnode.value;
 
@@ -574,8 +604,6 @@ export function renderToHtml(nodes: Located<RefinedNode>[]): string {
       return "";
     })
     .join("");
-
-  return `<div style="width: 100%; height: 100%">${html}</div>`;
 }
 
 export function processDocument(input: string): [string | null, MlError[]] {
@@ -589,7 +617,9 @@ export function processDocument(input: string): [string | null, MlError[]] {
 
   const htmlString = renderToHtml(ast);
 
-  return [htmlString, errors];
+  let finalHtml = `<div style="width: 100%; height: 100%">${htmlString}</div>`;
+
+  return [finalHtml, errors];
 }
 
 function styleString(styles: Record<string, any>) {

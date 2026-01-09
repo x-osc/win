@@ -3,10 +3,10 @@ import { processDocument } from "./mlparser";
 
 describe("Document Parsing", () => {
   it("renders simple text and tags", () => {
-    const input = "<main>Hello World</main>";
+    const input = "<box><text>Hello World</text></box>";
     const [html, errors] = processDocument(input);
     expect(errors).toHaveLength(0);
-    expect(html).toBe("<main>Hello World</main>");
+    expect(html).toContain("Hello World");
   });
 
   it("renders nested boxes with styles", () => {
@@ -29,7 +29,7 @@ describe("Document Parsing", () => {
     const [html, errors] = processDocument(input);
     expect(errors).toHaveLength(0);
     // no whitespace
-    expect(html).toBe("<main><main></main></main>");
+    expect(html).toContain("<main><main></main></main>");
   });
 
   it("parses numeric attributes without quotes", () => {
@@ -39,11 +39,25 @@ describe("Document Parsing", () => {
     expect(html).toContain("width: 500");
   });
 
-  it.skip("parses boolean attributes without values", () => {
-    const input = `<box width></box>`;
+  it("parses boolean attributes without values", () => {
+    const input = `<box center></box>`;
     const [html, errors] = processDocument(input);
     expect(errors).toHaveLength(0);
-    expect(html).toContain("");
+    expect(html).toContain("center");
+  });
+
+  it("allows text inside <text> and <heading> tags", () => {
+    const input = `
+      <box>
+        <text>test</text>
+      </box>
+      <heading>test2</heading>
+    `;
+    const [html, errors] = processDocument(input);
+
+    expect(errors).toHaveLength(0);
+    expect(html).toContain("test");
+    expect(html).toContain("test2");
   });
 });
 
@@ -76,6 +90,27 @@ describe("Error States", () => {
     const input = "<box width=10 ";
     const [html, errors] = processDocument(input);
     expect(errors[0].code).toBe("unterminated-tag");
+  });
+
+  it("disallows text nodes at the root level", () => {
+    const input = `asdf`;
+    const [html, errors] = processDocument(input);
+
+    expect(errors[0].code).toBe("text-not-allowed");
+  });
+
+  it("rejects text nodes directly inside <box>", () => {
+    const input = `
+      <box>
+        This text should not be here
+      </box>
+    `;
+    const [html, errors] = processDocument(input);
+
+    expect(errors).toHaveLength(1);
+    expect(errors[0].code).toBe("text-not-allowed");
+
+    expect(html).not.toContain("This text should not be here");
   });
 });
 
