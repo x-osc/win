@@ -1,11 +1,28 @@
+.rootdiv {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  text-wrap: balance;
+  flex: 0 1 auto;
+  width: 0;
+  min-width: 100%;
+}
+
 main,
 div {
   display: flex;
+  flex-direction: column;
 }
 
 div.center-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  flex: 1;
 }

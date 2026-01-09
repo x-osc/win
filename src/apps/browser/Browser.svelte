@@ -129,6 +129,7 @@
   .titlebar {
     display: flex;
     gap: 8px;
+    overflow: auto;
   }
 
   .urlbar {

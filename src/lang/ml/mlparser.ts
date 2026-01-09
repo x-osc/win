@@ -389,21 +389,42 @@ const SCHEMA: Record<string, TagDefinition> = {
   box: {
     attrs: {
       center: { type: "boolean" },
+      expand: { type: "boolean" },
       color: { type: "string" },
       width: { type: "number" },
       height: { type: "number" },
     },
     render: (attrs, children) => {
-      const styles = styleString({
-        width: attrs.width + "px",
-        height: attrs.height + "px",
-        "background-color": attrs.color,
-      });
+      if (attrs.width && attrs.expand) {
+        attrs.vexpand = true;
+        attrs.expand = undefined;
+      }
 
+      if (attrs.height && attrs.expand) {
+        attrs.hexpand = true;
+        attrs.expand = undefined;
+      }
+
+      // TODO: most of this stuff only works for columns
+      // needa redo the whole thing to support like vcenter hcenter and stuff
+      const styles = styleString({
+        width: attrs.hexpand ? "100%" : attrs.width ? attrs.width + "px" : null,
+        height: attrs.vexpand
+          ? "100%"
+          : attrs.height
+            ? attrs.height + "px"
+            : null,
+        "background-color": attrs.color,
+        flex: attrs.expand && "1",
+      });
       let el = `<div style="${styles}">${children}</div>`;
 
-      if (attrs.center) el = `<div class="center-container">${el}</div>`;
-
+      const centerStyles = styleString({
+        height: attrs.vexpand && "100%",
+        width: attrs.hexpand && "100%",
+        flex: attrs.expand && "1",
+      });
+      if (attrs.center) el = center(el, centerStyles);
       return el;
     },
   },
@@ -414,14 +435,34 @@ const SCHEMA: Record<string, TagDefinition> = {
     },
   },
   text: {
-    attrs: {},
+    attrs: {
+      center: { type: "boolean" },
+    },
     textAllowed: true,
-    render: (attrs, children) => `<span>${children}</span>`,
+    render: (attrs, children) => {
+      const styles = styleString({
+        "text-align": attrs.center && "center",
+      });
+
+      let el = `<span style="${styles}">${children}</span>`;
+      if (attrs.center) el = center(el);
+      return el;
+    },
   },
   heading: {
-    attrs: {},
+    attrs: {
+      center: { type: "boolean" },
+    },
     textAllowed: true,
-    render: (attrs, children) => `<h1>${children}</h1>`,
+    render: (attrs, children) => {
+      const styles = styleString({
+        "text-align": attrs.center && "center",
+      });
+
+      let el = `<h1 style="${styles}">${children}</h1>`;
+      if (attrs.center) el = center(el);
+      return el;
+    },
   },
 } as const;
 
@@ -617,7 +658,7 @@ export function processDocument(input: string): [string | null, MlError[]] {
 
   const htmlString = renderToHtml(ast);
 
-  let finalHtml = `<div style="width: 100%; height: 100%">${htmlString}</div>`;
+  let finalHtml = `<div class="rootdiv" style="width: 100%; height: 100%">${htmlString}</div>`;
 
   return [finalHtml, errors];
 }
@@ -631,4 +672,8 @@ function styleString(styles: Record<string, any>) {
     .join("; ");
 
   return css ? `${css}` : "";
+}
+
+function center(el: string, styles: string = ""): string {
+  return `<div class="center-container" style="${styles}">${el}</div>`;
 }
