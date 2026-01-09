@@ -43,6 +43,19 @@
       for (const error of resErrors) {
         errors.push(formatError(input, error));
       }
+    } else {
+      const resp = await fetch(`web/${url}/index.ml`);
+      if (!resp.ok) {
+        return;
+      }
+
+      input = await resp.text();
+      let [resHtml, resErrors] = processDocument(input);
+      html = resHtml;
+
+      for (const error of resErrors) {
+        errors.push(formatError(input, error));
+      }
     }
   }
 </script>
