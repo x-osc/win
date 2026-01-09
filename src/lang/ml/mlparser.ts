@@ -393,11 +393,11 @@ const SCHEMA: Record<string, TagDefinition> = {
     render: (attrs, children) => {
       const styles = styleString({
         display: "flex",
-        width: attrs.width,
-        height: attrs.height,
+        width: attrs.width + "px",
+        height: attrs.height + "px",
         "background-color": attrs.color,
       });
-      return `<div style=${styles}>${children}</div>`;
+      return `<div style="${styles}">${children}</div>`;
     },
   },
   main: {
@@ -592,5 +592,5 @@ function styleString(styles: Record<string, any>) {
     .map(([prop, value]) => `${prop}: ${value}`)
     .join("; ");
 
-  return css ? ` style="${css}"` : "";
+  return css ? `${css}` : "";
 }

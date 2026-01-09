@@ -4,6 +4,7 @@
   import Taskbar from "@core/wm/Taskbar.svelte";
   import Window from "@core/wm/Window.svelte";
   import { wmApi } from "@core/wm/wm.svelte";
+  import { browserManifest } from "./apps/browser/browser";
   import { calcManifest } from "./apps/calc/calc";
   import { dialogManifest } from "./apps/dialog/dialog";
   import { explorerManifest } from "./apps/explorer/explorer";
@@ -41,6 +42,7 @@
   registerApp(explorerManifest);
   registerApp(calcManifest);
   registerApp(dialogManifest);
+  registerApp(browserManifest);
   registerApp(hydraManifest);
 
   registerCmd(helpManifest);
@@ -89,6 +91,7 @@
       <button onclick={(_) => launchApp("paint")}>michaelsoft paint</button>
       <button onclick={(_) => launchApp("explorer")}>file explorer</button>
       <button onclick={(_) => launchApp("calc")}>calcoolator</button>
+      <button onclick={(_) => launchApp("browser")}>internet exploder</button>
       <button onclick={(_) => launchApp("hydra")}>hydra.exe</button>
 
       {#if gameState.isTrail}
