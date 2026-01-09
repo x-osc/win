@@ -2,20 +2,32 @@
   import type { AppApi } from "@core/app/api";
   import { FsError, resolvePath } from "@core/fs/filesystem";
   import type { WindowApi } from "@core/wm/wm.svelte";
+  import { onMount } from "svelte";
   import { slide } from "svelte/transition";
+  import mlStyles from "../../lang/ml/ml.css?inline";
   import { formatError, processDocument } from "../../lang/ml/mlparser";
 
   let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 
   let urlInput: HTMLInputElement;
+  let pageContainer: HTMLElement;
+  let pageSDom: ShadowRoot;
 
   let url = $state("");
 
-  let input: string | null = $state(null);
-  let html: string | null = $state(null);
+  let input: string | null = null;
+  let html: string | null = null;
   let errors: string[] = $state([]);
 
   let showConsole = $state(false);
+
+  onMount(() => {
+    pageSDom = pageContainer.attachShadow({ mode: "open" });
+
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(mlStyles);
+    pageSDom.adoptedStyleSheets = [sheet];
+  });
 
   async function reload() {
     input = null;
@@ -59,6 +71,10 @@
         errors.push(formatError(input, error));
       }
     }
+
+    if (html) {
+      pageSDom.innerHTML = html;
+    }
   }
 
   function handleInputKeyDown(e: KeyboardEvent) {
@@ -84,11 +100,7 @@
   </div>
 
   <div class="maincontent">
-    <div class="page">
-      {#if html}
-        {@html html}
-      {/if}
-    </div>
+    <div class="page" bind:this={pageContainer}></div>
 
     {#if showConsole}
       <div class="console-sidebar" transition:slide={{ axis: "x" }}>
@@ -130,6 +142,7 @@
   }
 
   .page {
+    display: flex;
     flex: 1;
     overflow: auto;
   }

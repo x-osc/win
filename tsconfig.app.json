@@ -27,5 +27,6 @@
     "src/**/*.ts",
     "src/**/*.js",
     "src/**/*.svelte",
+    "vite-env.d.ts"
   ]
 }

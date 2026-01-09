@@ -386,18 +386,23 @@ type RefinedNode = RefinedTagNode | TextNode;
 const SCHEMA: Record<string, TagDefinition> = {
   box: {
     attrs: {
+      center: { type: "boolean" },
       color: { type: "string" },
       width: { type: "number" },
       height: { type: "number" },
     },
     render: (attrs, children) => {
       const styles = styleString({
-        display: "flex",
         width: attrs.width + "px",
         height: attrs.height + "px",
         "background-color": attrs.color,
       });
-      return `<div style="${styles}">${children}</div>`;
+
+      let el = `<div style="${styles}">${children}</div>`;
+
+      if (attrs.center) el = `<div class="center-container">${el}</div>`;
+
+      return el;
     },
   },
   main: {
@@ -545,8 +550,9 @@ function checkType(
 
 // generator
 
+/// pls attach ml.css to wherever ur rendering this aswell thx
 export function renderToHtml(nodes: Located<RefinedNode>[]): string {
-  return nodes
+  let html = nodes
     .map((locnode) => {
       const node = locnode.value;
 
@@ -568,6 +574,8 @@ export function renderToHtml(nodes: Located<RefinedNode>[]): string {
       return "";
     })
     .join("");
+
+  return `<div style="width: 100%; height: 100%">${html}</div>`;
 }
 
 export function processDocument(input: string): [string | null, MlError[]] {
