@@ -7,6 +7,8 @@
 
   let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 
+  let urlInput: HTMLInputElement;
+
   let url = $state("");
 
   let input: string | null = $state(null);
@@ -58,12 +60,24 @@
       }
     }
   }
+
+  function handleInputKeyDown(e: KeyboardEvent) {
+    if (e.key === "Enter") {
+      urlInput.blur();
+      reload();
+    }
+  }
 </script>
 
 <div class="browser">
   <div class="titlebar">
     <button onclick={reload}>reload</button>
-    <input class="urlbar" bind:value={url} />
+    <input
+      class="urlbar"
+      bind:this={urlInput}
+      bind:value={url}
+      onkeydown={handleInputKeyDown}
+    />
     <button class="togglebtn" onclick={() => (showConsole = !showConsole)}>
       {showConsole ? "hide" : "show"} ({errors.length})
     </button>
