@@ -464,6 +464,25 @@ const SCHEMA: Record<string, TagDefinition> = {
       return el;
     },
   },
+  input: {
+    attrs: {
+      center: { type: "boolean" },
+      expand: { type: "boolean" },
+      width: { type: "number" },
+    },
+    render: (attrs, children) => {
+      const styles = styleString({
+        width: attrs.width ? attrs.width + "px" : null,
+      });
+      let el = `<input style="${styles}" />`;
+
+      const centerStyles = styleString({
+        flex: attrs.expand && "1",
+      });
+      if (attrs.center) el = center(el, centerStyles);
+      return el;
+    },
+  },
 } as const;
 
 export function refineAst(

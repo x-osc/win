@@ -1,1 +1,3 @@
-<box width=200 height=200 color="red"></box>
+<heading>WELCOME 2 GOGGLE DOT NET</heading>
+<text>search ur heart out</text>
+<input center expand width=400></input>
