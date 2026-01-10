@@ -13,6 +13,7 @@ const siteindex = siteindexraw as {
 
 export function generateGoggleNet(query: string): string {
   let results = getResults(query);
+  let isResults = !(results.length === 0);
 
   console.log(results);
 
@@ -27,11 +28,17 @@ export function generateGoggleNet(query: string): string {
     `;
   }
 
+  let resultsString = isResults
+    ? mlresults
+    : `<text>THERE ARE NO RESULTS FOR ${query} :(((((</text>`;
+
+  console.log(resultsString);
+
   let html = `
     <text><link to="goggle.net">BACK TO GOGGLE DOT NET HOMEPAGE</link></text>
     <heading>goggle dot net results for "${query}"</heading>
-    <box height=40></box>
-    ${mlresults}
+    <box height=20></box>
+    ${resultsString}
   `;
   return html;
 }
