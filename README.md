@@ -17,6 +17,9 @@ pls use tests:
 npm run test
 ```
 
+btw idk why github thinks im using standard ml and ocaml
+i just chose random extensions lmao
+
 ## license
 dual licensed under gplv3 and proprietary 
 by contributing u assign all ur copyright to me
