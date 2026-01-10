@@ -35,7 +35,7 @@ export function parseUrl(input: string): ParsedUrl {
     // includes params aswell
     urlfull: normalized,
     host,
-    path: path ?? "/",
+    path: path === "" ? "/" : path,
     params,
   };
 }
