@@ -74,11 +74,17 @@
         }
         input = generateGoggleNet(params.q);
       } else {
-        const resp = await fetch(`web/${host + path}/index.ml`);
-        if (!resp.ok) {
+        const resp = await fetch(`web/${host + path}.ml`);
+        const resp2 = await fetch(`web/${host + path}/index.ml`);
+        console.log(resp);
+        console.log(resp2);
+        if (resp.ok) {
+          input = await resp.text();
+        } else if (resp2.ok) {
+          input = await resp2.text();
+        } else {
           return;
         }
-        input = await resp.text();
       }
 
       let [resHtml, resErrors] = processDocument(input);

@@ -27,4 +27,5 @@ export default defineConfig(({}) => ({
       "@core": path.resolve(__dirname, "./src/core"),
     },
   },
+  appType: "mpa",
 }));
