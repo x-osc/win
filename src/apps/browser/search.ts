@@ -32,8 +32,6 @@ export function generateGoggleNet(query: string): string {
     ? mlresults
     : `<text>THERE ARE NO RESULTS FOR ${query} :(((((</text>`;
 
-  console.log(resultsString);
-
   let html = `
     <text><link to="goggle.net">BACK TO GOGGLE DOT NET HOMEPAGE</link></text>
     <heading>goggle dot net results for "${query}"</heading>
