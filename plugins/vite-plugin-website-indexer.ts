@@ -102,8 +102,14 @@ async function generateIndexData(sourceDir: string) {
 
     if (await fs.pathExists(metaPath)) {
       const metaContent = await fs.readFile(metaPath, "utf-8");
-      const meta = JSON5.parse(metaContent);
-      tags = meta.tags || [];
+      try {
+        const meta = JSON5.parse(metaContent);
+        tags = meta.tags || [];
+      } catch (err) {
+        console.error("error parsing " + metaPath);
+        console.error(err);
+        continue;
+      }
     }
 
     const url = filename === "index" ? `${dir}` : `${dir}/${filename}.ml`;
