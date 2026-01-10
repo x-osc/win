@@ -48,6 +48,8 @@
     publicUrl = null;
     errors.length = 0;
 
+    pageSDomDiv.innerHTML = "";
+
     if (url.startsWith("/")) {
       // its a path
 
