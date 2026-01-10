@@ -40,12 +40,14 @@
     pageSDomDiv.addEventListener("click", handleSDomClick);
   });
 
-  async function reload() {
+  async function reload(humanTriggered = false) {
     input = null;
     html = null;
     errors.length = 0;
 
     if (url.startsWith("/")) {
+      // its a path
+
       let path = api.fs.resolvePath(["/"], url);
       if (path === null) return;
       url = joinPath(path, false);
@@ -63,43 +65,59 @@
       }
 
       input = await content.data.text();
-      let [resHtml, resErrors] = processDocument(input);
-      html = resHtml;
-
-      for (const error of resErrors) {
-        errors.push(formatError(input, error));
-      }
     } else {
-      const { url: newUrl, urlfull, host, path, params } = parseUrl(url);
-      url = urlfull;
+      // its either a url or a search
 
-      // TODO: registry for js websites?
-      if (newUrl === "goggle.net/search") {
-        if (!params.q) {
-          return;
-        }
-        input = generateGoggleNet(params.q);
-      } else {
-        const site = siteindex.sites[newUrl as keyof typeof siteindex.sites];
+      if (/[./]/.test(url)) {
+        // its a url (it has a . or /)
 
-        if (!site) {
-          return;
-        }
+        const { url: newUrl, urlfull, host, path, params } = parseUrl(url);
+        url = urlfull;
 
-        const resp = await fetch(site.url);
-        if (resp.ok) {
-          input = await resp.text();
+        // TODO: registry for js websites?
+        if (newUrl === "goggle.net/search") {
+          // its a js website
+
+          if (!params.q) {
+            return;
+          }
+          input = generateGoggleNet(params.q);
         } else {
+          // its a normal website
+
+          const site = siteindex.sites[newUrl as keyof typeof siteindex.sites];
+
+          if (!site) {
+            return;
+          }
+
+          const resp = await fetch(site.url);
+          if (resp.ok) {
+            input = await resp.text();
+          } else {
+            return;
+          }
+        }
+      } else {
+        // its a search
+
+        // only search if human triggered
+        if (!humanTriggered) {
           return;
         }
-      }
 
-      let [resHtml, resErrors] = processDocument(input);
-      html = resHtml;
-
-      for (const error of resErrors) {
-        errors.push(formatError(input, error));
+        // search with goggle (they have a monopoly)
+        url = `goggle.net/search?q=${url}`;
+        reload();
+        return;
       }
+    }
+
+    let [resHtml, resErrors] = processDocument(input);
+    html = resHtml;
+
+    for (const error of resErrors) {
+      errors.push(formatError(input, error));
     }
 
     if (html) {
@@ -144,14 +162,14 @@
   function handleInputKeyDown(e: KeyboardEvent) {
     if (e.key === "Enter") {
       urlInput.blur();
-      reload();
+      reload(true);
     }
   }
 </script>
 
 <div class="browser">
   <div class="titlebar">
-    <button onclick={reload}>reload</button>
+    <button onclick={() => reload(true)}>reload</button>
     <input
       class="urlbar"
       bind:this={urlInput}
