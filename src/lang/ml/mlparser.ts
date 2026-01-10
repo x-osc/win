@@ -366,7 +366,11 @@ type AttrRecord = Record<string, AttrValue["value"]>;
 interface TagDefinition {
   attrs: Record<string, AttrDefinition>;
   textAllowed?: boolean;
-  validate?: (attrs: AttrRecord) => MlError[];
+  validate?: (
+    attrs: Located<MlNode>,
+    parent: Located<TagNode> | null,
+  ) => MlError[];
+  // TODO: parent
   render: (
     attrs: Record<string, AttrValue["value"] | undefined>,
     children: string,
@@ -464,6 +468,26 @@ const SCHEMA: Record<string, TagDefinition> = {
       return el;
     },
   },
+  link: {
+    attrs: {
+      to: { type: "string", required: true },
+    },
+    textAllowed: true,
+    validate: (node, parent) => {
+      if (parent == null || !(parent.value.tag.value in ["text", "heading"])) {
+        return [
+          makeMlError("text-not-allowed", node.loc, {
+            tag: parent?.value.tag.value ?? "ROOT",
+          }),
+        ];
+      }
+      return [];
+    },
+    render: (attrs, children) => {
+      let el = `<span class="link" data-ml-link data-ml-link-to=${attrs.to}>${children}</span>`;
+      return el;
+    },
+  },
   input: {
     attrs: {
       id: { type: "string", required: true },
@@ -476,7 +500,7 @@ const SCHEMA: Record<string, TagDefinition> = {
       const styles = styleString({
         width: attrs.width ? attrs.width + "px" : null,
       });
-      let el = `<input ${attrs["outputurl"] ? `data-output-url=${attrs["outputurl"]}` : ""} name=${attrs.id} style="${styles}" />`;
+      let el = `<input ${attrs["outputurl"] ? `data-ml-output-url=${attrs["outputurl"]}` : ""} name=${attrs.id} style="${styles}" />`;
 
       const centerStyles = styleString({
         flex: attrs.expand && "1",
@@ -532,8 +556,15 @@ export function refineAst(
         continue;
       }
 
-      const [attrs, attrerrors] = getAttrsWithSchema(node);
+      const definition = SCHEMA[node.tag.value];
+
+      const [attrs, attrerrors] = getAttrsWithSchema(node, definition);
       errors = errors.concat(attrerrors);
+
+      if (definition.validate) {
+        const validationErrors = definition.validate(locnode, locParentNode);
+        errors = errors.concat(validationErrors);
+      }
 
       const [refinedChildren, childerrs] = refineAst(
         node.children,
@@ -559,15 +590,13 @@ export function refineAst(
   return [refined, errors];
 }
 
-function getAttrsWithSchema(node: TagNode): [AttrRecord | null, MlError[]] {
+function getAttrsWithSchema(
+  node: TagNode,
+  definition: TagDefinition,
+): [AttrRecord, MlError[]] {
   let errors: MlError[] = [];
 
   const tagName = node.tag.value;
-  const definition = SCHEMA[tagName];
-
-  if (!definition) {
-    return [null, errors];
-  }
 
   const refinedAttrs: AttrRecord = {};
   const seenAttrs = new Set<string>();
@@ -611,13 +640,6 @@ function getAttrsWithSchema(node: TagNode): [AttrRecord | null, MlError[]] {
           key,
         }),
       );
-    }
-  }
-
-  if (definition.validate) {
-    const validationErrors = definition.validate(refinedAttrs);
-    for (const error of validationErrors) {
-      errors.push(error);
     }
   }
 

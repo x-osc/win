@@ -2,7 +2,6 @@ import siteindexraw from "@generated/siteindex.json";
 
 export interface SearchResult {
   url: string;
-  webUrl: string;
   tags: string[];
   score: number; // Used for ranking
 }
@@ -14,7 +13,26 @@ const siteindex = siteindexraw as {
 
 export function generateGoggleNet(query: string): string {
   let results = getResults(query);
-  let html = `<text>${JSON.stringify(results)}</text>`;
+
+  console.log(results);
+
+  let mlresults = "";
+  for (const result of results) {
+    mlresults += `
+      <box>
+        <text>
+          <link to="${result.url}">${result.url}</link>
+        </text>
+      </box>
+    `;
+  }
+
+  let html = `
+    <text><link to="goggle.net">BACK TO GOGGLE DOT NET HOMEPAGE</link></text>
+    <heading>goggle dot net results for "${query}"</heading>
+    <box height=40></box>
+    ${mlresults}
+  `;
   return html;
 }
 
@@ -55,11 +73,10 @@ export function getResults(query: string): SearchResult[] {
 
     return {
       url: result,
-      webUrl: site.url,
       tags: resultData.tags,
       score: resultData.score,
     };
   });
 
-  return results.sort((a, b) => a.score - b.score);
+  return results.sort((a, b) => b.score - a.score);
 }

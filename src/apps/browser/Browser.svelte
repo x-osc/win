@@ -35,6 +35,9 @@
     pageSDomDiv = document.createElement("div");
     pageSDomDiv.style = "width: 100%; height: 100%";
     pageSDom.appendChild(pageSDomDiv);
+
+    pageSDomDiv.addEventListener("keydown", handleSDomKeyDown);
+    pageSDomDiv.addEventListener("click", handleSDomClick);
   });
 
   async function reload() {
@@ -101,7 +104,6 @@
 
     if (html) {
       pageSDomDiv.innerHTML = html;
-      pageSDomDiv.addEventListener("keydown", handleSDomKeyDown);
     }
   }
 
@@ -111,18 +113,30 @@
     if (
       e.key === "Enter" &&
       target instanceof HTMLInputElement &&
-      target.hasAttribute("data-output-url")
+      target.hasAttribute("data-ml-output-url")
     ) {
       target.blur();
 
       const domain = parseUrl(url).host;
-      const outputUrl = target.getAttribute("data-output-url");
+      const outputUrl = target.getAttribute("data-ml-output-url");
       const id = target.name;
       if (!outputUrl) return;
       if (!id) return;
 
       let queryString = `?${id}=${target.value}`;
       url = domain + outputUrl + queryString;
+      reload();
+    }
+  }
+
+  function handleSDomClick(e: MouseEvent) {
+    const target = e.composedPath()[0] as HTMLElement;
+
+    if (target.hasAttribute("data-ml-link")) {
+      const linkUrl = target.getAttribute("data-ml-link-to");
+      if (!linkUrl) return;
+
+      url = linkUrl;
       reload();
     }
   }

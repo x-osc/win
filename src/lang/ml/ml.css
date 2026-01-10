@@ -26,3 +26,9 @@ div.center-container {
   justify-content: center;
   align-items: center;
 }
+
+.link {
+  color: blue;
+  text-decoration: underline;
+  cursor: pointer;
+}
