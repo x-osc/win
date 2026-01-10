@@ -474,7 +474,10 @@ const SCHEMA: Record<string, TagDefinition> = {
     },
     textAllowed: true,
     validate: (node, parent) => {
-      if (parent == null || !(parent.value.tag.value in ["text", "heading"])) {
+      if (
+        parent == null ||
+        !["text", "heading"].includes(parent.value.tag.value)
+      ) {
         return [
           makeMlError("text-not-allowed", node.loc, {
             tag: parent?.value.tag.value ?? "ROOT",
