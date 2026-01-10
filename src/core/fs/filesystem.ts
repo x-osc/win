@@ -135,27 +135,27 @@ export function resolvePath(
   relativeTo: string[],
   path: string,
 ): string[] | null {
-  let relTo = [...relativeTo];
+  let stack = [...relativeTo];
   let parts = splitPath(path);
 
   if (path.startsWith("/")) {
     // absolute path
-    relTo = [];
+    stack = [];
   }
 
   for (const part of parts) {
     if (part === "" || part === ".") {
       continue;
     } else if (part === "..") {
-      if (relTo.pop() === undefined) {
+      if (stack.pop() === undefined) {
         return null;
       }
     } else {
-      relTo.push(part);
+      stack.push(part);
     }
   }
 
-  return relTo;
+  return stack;
 }
 
 export async function getEntry(path: string[]): Promise<FsEntry | null> {

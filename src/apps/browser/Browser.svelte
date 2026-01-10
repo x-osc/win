@@ -8,7 +8,7 @@
   import mlStyles from "../../lang/ml/ml.css?inline";
   import { formatError, processDocument } from "../../lang/ml/mlparser";
   import { generateGoggleNet } from "./search";
-  import { isLikelyUrl, parseUrl } from "./url";
+  import { isLikelyUrl, parseUrl, resolveURLPath } from "./url";
 
   let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 
@@ -18,6 +18,8 @@
   let pageSDomDiv: HTMLElement;
 
   let url = $state("");
+  // TODO: jank
+  let publicUrl: string | null = "";
 
   let input: string | null = null;
   let html: string | null = null;
@@ -43,6 +45,7 @@
   async function reload(humanTriggered = false) {
     input = null;
     html = null;
+    publicUrl = null;
     errors.length = 0;
 
     if (url.startsWith("/")) {
@@ -73,6 +76,7 @@
 
         const { url: newUrl, urlfull, host, path, params } = parseUrl(url);
         url = urlfull;
+        publicUrl = "/web/" + newUrl;
 
         // TODO: registry for js websites?
         if (newUrl === "goggle.net/search") {
@@ -91,6 +95,7 @@
             return;
           }
 
+          publicUrl = site.url;
           const resp = await fetch(site.url);
           if (resp.ok) {
             input = await resp.text();
@@ -122,6 +127,19 @@
 
     if (html) {
       pageSDomDiv.innerHTML = html;
+      postProcessPageSDom();
+    }
+  }
+
+  function postProcessPageSDom() {
+    let images = pageSDom.querySelectorAll("img[data-ml-img]");
+    for (const img of images) {
+      let imgel = img as HTMLImageElement;
+      let relpath = img.getAttribute("data-ml-img-url");
+      if (!relpath) return;
+      // TODO: buildtime const for web
+      let webPath = resolveURLPath(publicUrl ?? "/web/", relpath);
+      imgel.src = webPath;
     }
   }
 

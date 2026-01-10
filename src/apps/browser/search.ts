@@ -32,13 +32,13 @@ export function generateGoggleNet(query: string): string {
     ? mlresults
     : `<text>THERE ARE NO RESULTS FOR ${query} :(((((</text>`;
 
-  let html = `
+  let mlfinal = `
     <text><link to="goggle.net">BACK TO GOGGLE DOT NET HOMEPAGE</link></text>
     <heading>goggle dot net results for "${query}"</heading>
     <box height=20></box>
     ${resultsString}
   `;
-  return html;
+  return mlfinal;
 }
 
 export function getResults(query: string): SearchResult[] {

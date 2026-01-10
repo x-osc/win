@@ -32,6 +32,7 @@ export function parseUrl(input: string): ParsedUrl {
 
   return {
     url: host + (path ?? ""),
+    // includes params aswell
     urlfull: normalized,
     host,
     path: path ?? "/",
@@ -47,10 +48,39 @@ export function normalizeUrl(input: string): string {
 
   const pathNormalized = pathPart
     .replace(/\/+/g, "/") // replace multiple slashes with single
-    .replace(/\/$/, "") // remove trailing slash
-    .toLowerCase();
+    .replace(/\/$/, ""); // remove trailing slash
 
   return pathNormalized + queryPart;
+}
+
+export function resolveURLPath(basePath: string, relative: string) {
+  let base = parseUrl(basePath);
+
+  // root relative
+  if (relative.startsWith("/")) {
+    return normalizeUrl(base.host + relative);
+  }
+
+  const pathSegments = base.path.split("/").filter((s) => s !== "");
+
+  if (!basePath.trim().endsWith("/") && pathSegments.length > 0) {
+    pathSegments.pop();
+  }
+
+  const relativeSegments = relative.split("/");
+  for (const segment of relativeSegments) {
+    if (segment === "." || segment === "") {
+      continue;
+    }
+    if (segment === "..") {
+      pathSegments.pop(); // go up
+    } else {
+      pathSegments.push(segment); // go down
+    }
+  }
+
+  const finalPath = "/" + pathSegments.join("/");
+  return normalizeUrl(base.host + finalPath);
 }
 
 export function isLikelyUrl(input: string): boolean {

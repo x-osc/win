@@ -39,9 +39,13 @@ export default function websiteIndexer(): Plugin {
             .split("?")[0];
           const filePath = path.join(sourceDir, relativePath);
 
-          if (filePath.endsWith(".ml") && (await fs.pathExists(filePath))) {
-            const content = await fs.readFile(filePath, "utf-8");
-            res.setHeader("Content-Type", "text/plain");
+          if (
+            !filePath.endsWith(".mlmeta") &&
+            (await fs.pathExists(filePath)) &&
+            (await fs.stat(filePath)).isFile()
+          ) {
+            const content = await fs.readFile(filePath);
+            // res.setHeader("Content-Type", "text/plain");
             res.end(content);
             return;
           }
@@ -53,14 +57,19 @@ export default function websiteIndexer(): Plugin {
     async generateBundle() {
       const sourceDir = path.resolve(config.root, LOCAL_WEB_DIR);
 
-      const mlFiles = await glob("**/*.ml", { cwd: sourceDir });
+      const mlFiles = await glob("**/*", {
+        cwd: sourceDir,
+        ignore: "**/*.mlmeta",
+        nodir: true,
+        posix: true,
+      });
 
       for (const file of mlFiles) {
-        const content = await fs.readFile(path.join(sourceDir, file), "utf-8");
+        const content = await fs.readFile(path.join(sourceDir, file));
 
         this.emitFile({
           type: "asset",
-          fileName: `${PUBLIC_WEB_DIR}/${file}`,
+          fileName: path.posix.join(PUBLIC_WEB_DIR, file),
           source: content,
         });
       }
@@ -80,7 +89,7 @@ async function runIndexer(config: ResolvedConfig) {
 async function generateIndexData(sourceDir: string) {
   const index: any = { sites: {}, tags: {} };
 
-  const mlFiles = await glob("**/*.mlmeta", { cwd: sourceDir });
+  const mlFiles = await glob("**/*.mlmeta", { cwd: sourceDir, posix: true });
 
   for (const relativePath of mlFiles) {
     const dir = path.dirname(relativePath);

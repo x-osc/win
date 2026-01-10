@@ -68,6 +68,7 @@ export const ERROR_CODES = {
     "Attribute '{key}' expects a {expected}, got {actual}",
   "missing-required-attribute": "<{tag}> is missing required attribute '{key}'",
   "text-not-allowed": "Text is not allowed directly inside <{tag}>",
+  "children-not-allowed": "Children are not allowed inside <{tag}>",
 } as const;
 
 export type ErrorCode = keyof typeof ERROR_CODES;
@@ -365,6 +366,9 @@ type AttrRecord = Record<string, AttrValue["value"]>;
 
 interface TagDefinition {
   attrs: Record<string, AttrDefinition>;
+  // default true
+  childrenAllowed?: boolean;
+  // default false
   textAllowed?: boolean;
   validate?: (
     attrs: Located<MlNode>,
@@ -491,6 +495,16 @@ const SCHEMA: Record<string, TagDefinition> = {
       return el;
     },
   },
+  image: {
+    attrs: {
+      url: { type: "string", required: true },
+    },
+    childrenAllowed: false,
+    render: (attrs, children) => {
+      let el = `<img data-ml-img data-ml-img-url=${attrs.url} />`;
+      return el;
+    },
+  },
   input: {
     attrs: {
       id: { type: "string", required: true },
@@ -569,11 +583,23 @@ export function refineAst(
         errors = errors.concat(validationErrors);
       }
 
-      const [refinedChildren, childerrs] = refineAst(
-        node.children,
-        locnode as Located<TagNode>,
-      );
-      errors = errors.concat(childerrs);
+      let children: Located<RefinedNode>[] = [];
+      if (definition.childrenAllowed ?? true) {
+        const [refinedChildren, childerrs] = refineAst(
+          node.children,
+          locnode as Located<TagNode>,
+        );
+        errors = errors.concat(childerrs);
+        children = refinedChildren;
+      } else {
+        if (node.children.length > 0) {
+          errors.push(
+            makeMlError("children-not-allowed", node.children[0].loc, {
+              tag: node.tag.value,
+            }),
+          );
+        }
+      }
 
       refined.push({
         loc: locnode.loc,
@@ -582,7 +608,7 @@ export function refineAst(
           refinedType: node.tag.value,
           tag: node.tag,
           attrs: attrs ?? {},
-          children: refinedChildren,
+          children: children,
         },
       });
 

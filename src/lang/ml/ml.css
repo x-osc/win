@@ -32,3 +32,7 @@ div.center-container {
   text-decoration: underline;
   cursor: pointer;
 }
+
+img {
+  align-self: baseline;
+}
