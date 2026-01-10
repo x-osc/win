@@ -196,6 +196,7 @@
       bind:this={urlInput}
       bind:value={url}
       onkeydown={handleInputKeyDown}
+      onfocus={() => urlInput.select()}
     />
     <button class="togglebtn" onclick={() => (showConsole = !showConsole)}>
       {showConsole ? "hide" : "show"} ({errors.length})
