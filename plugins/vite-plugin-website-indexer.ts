@@ -1,4 +1,4 @@
-import fs from "fs-extra";
+import fs, { ensureFile } from "fs-extra";
 import { glob } from "glob";
 import JSON5 from "json5";
 import path from "path";
@@ -80,6 +80,8 @@ export default function websiteIndexer(): Plugin {
 async function runIndexer(config: ResolvedConfig) {
   const sourceDir = path.resolve(config.root, LOCAL_WEB_DIR);
   const filePath = path.resolve(config.root, "generated/siteindex.json");
+
+  await ensureFile(filePath);
 
   let index = await generateIndexData(sourceDir);
 
