@@ -98,7 +98,7 @@ async function generateIndexData(sourceDir: string) {
     const url = filename === "index" ? `${dir}` : `${dir}/${filename}.ml`;
 
     for (const tag of tags) {
-      if (index[tag] == undefined) {
+      if (index.tags[tag] == undefined) {
         index.tags[tag] = [url];
       } else {
         index.tags[tag].push(url);

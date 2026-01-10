@@ -1,5 +1,6 @@
 export interface ParsedUrl {
   url: string;
+  urlfull: string;
   host: string;
   path: string;
   params: Record<string, string>;
@@ -31,6 +32,7 @@ export function parseUrl(input: string): ParsedUrl {
 
   return {
     url: host + (path ?? ""),
+    urlfull: normalized,
     host,
     path: path ?? "/",
     params,
@@ -41,7 +43,7 @@ export function normalizeUrl(input: string): string {
   const firstQuestion = input.indexOf("?");
 
   let pathPart = firstQuestion === -1 ? input : input.slice(0, firstQuestion);
-  let queryPart = firstQuestion === -1 ? "" : input.slice(firstQuestion + 1);
+  let queryPart = firstQuestion === -1 ? "" : input.slice(firstQuestion);
 
   const pathNormalized = pathPart
     .replace(/\/+/g, "/") // replace multiple slashes with single

@@ -67,8 +67,8 @@
         errors.push(formatError(input, error));
       }
     } else {
-      const { url: newUrl, host, path, params } = parseUrl(url);
-      url = newUrl;
+      const { url: newUrl, urlfull, host, path, params } = parseUrl(url);
+      url = urlfull;
 
       // TODO: registry for js websites?
       if (newUrl === "goggle.net/search") {
