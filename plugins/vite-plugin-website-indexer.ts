@@ -118,7 +118,7 @@ async function generateIndexData(sourceDir: string) {
 
     index.sites[url] = {
       host: dir,
-      url: `/${PUBLIC_WEB_DIR}${dir}/${filename}.ml`,
+      url: `${PUBLIC_WEB_DIR}${dir}/${filename}.ml`,
       tags: tags,
     };
   }

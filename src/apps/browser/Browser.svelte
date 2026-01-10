@@ -76,7 +76,7 @@
 
         const { url: newUrl, urlfull, host, path, params } = parseUrl(url);
         url = urlfull;
-        publicUrl = "/web/" + newUrl;
+        publicUrl = "web/" + newUrl;
 
         // TODO: registry for js websites?
         if (newUrl === "goggle.net/search") {
@@ -100,6 +100,9 @@
           if (resp.ok) {
             input = await resp.text();
           } else {
+            console.error(
+              "uhuhuhoh tried to request : " + site.url + " and failed :((",
+            );
             return;
           }
         }
@@ -138,7 +141,7 @@
       let relpath = img.getAttribute("data-ml-img-url");
       if (!relpath) return;
       // TODO: buildtime const for web
-      let webPath = resolveURLPath(publicUrl ?? "/web/", relpath);
+      let webPath = resolveURLPath(publicUrl ?? "web/", relpath);
       imgel.src = webPath;
     }
   }
