@@ -467,6 +467,7 @@ const SCHEMA: Record<string, TagDefinition> = {
   input: {
     attrs: {
       id: { type: "string", required: true },
+      outputurl: { type: "string", required: true },
       center: { type: "boolean" },
       expand: { type: "boolean" },
       width: { type: "number" },
@@ -475,7 +476,7 @@ const SCHEMA: Record<string, TagDefinition> = {
       const styles = styleString({
         width: attrs.width ? attrs.width + "px" : null,
       });
-      let el = `<input name=${attrs.id} style="${styles}" />`;
+      let el = `<input ${attrs["outputurl"] ? `data-output-url=${attrs["outputurl"]}` : ""} name=${attrs.id} style="${styles}" />`;
 
       const centerStyles = styleString({
         flex: attrs.expand && "1",

@@ -6,12 +6,15 @@
   import { slide } from "svelte/transition";
   import mlStyles from "../../lang/ml/ml.css?inline";
   import { formatError, processDocument } from "../../lang/ml/mlparser";
+  import { generateGoggleNet } from "./search";
+  import { parseUrl } from "./url";
 
   let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 
   let urlInput: HTMLInputElement;
   let pageContainer: HTMLElement;
   let pageSDom: ShadowRoot;
+  let pageSDomDiv: HTMLElement;
 
   let url = $state("");
 
@@ -27,6 +30,10 @@
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(mlStyles);
     pageSDom.adoptedStyleSheets = [sheet];
+
+    pageSDomDiv = document.createElement("div");
+    pageSDomDiv.style = "width: 100%; height: 100%";
+    pageSDom.appendChild(pageSDomDiv);
   });
 
   async function reload() {
@@ -58,12 +65,22 @@
         errors.push(formatError(input, error));
       }
     } else {
-      const resp = await fetch(`web/${url}/index.ml`);
-      if (!resp.ok) {
-        return;
+      const { host, path, params } = parseUrl(url);
+
+      // TODO: registry for js websites?
+      if (host + path === "goggle.net/search") {
+        if (!params.q) {
+          return;
+        }
+        input = generateGoggleNet(params.q);
+      } else {
+        const resp = await fetch(`web/${host + path}/index.ml`);
+        if (!resp.ok) {
+          return;
+        }
+        input = await resp.text();
       }
 
-      input = await resp.text();
       let [resHtml, resErrors] = processDocument(input);
       html = resHtml;
 
@@ -73,7 +90,30 @@
     }
 
     if (html) {
-      pageSDom.innerHTML = html;
+      pageSDomDiv.innerHTML = html;
+      pageSDomDiv.addEventListener("keydown", handleSDomKeyDown);
+    }
+  }
+
+  function handleSDomKeyDown(e: KeyboardEvent) {
+    const target = e.target as HTMLElement;
+
+    if (
+      e.key === "Enter" &&
+      target instanceof HTMLInputElement &&
+      target.hasAttribute("data-output-url")
+    ) {
+      target.blur();
+
+      const domain = parseUrl(url).host;
+      const outputUrl = target.getAttribute("data-output-url");
+      const id = target.name;
+      if (!outputUrl) return;
+      if (!id) return;
+
+      let queryString = `?${id}=${target.value}`;
+      url = domain + outputUrl + queryString;
+      reload();
     }
   }
 
