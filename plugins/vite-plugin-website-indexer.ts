@@ -78,7 +78,7 @@ async function runIndexer(config: ResolvedConfig) {
 }
 
 async function generateIndexData(sourceDir: string) {
-  const index = [];
+  const index: any = { sites: {}, tags: {} };
 
   const mlFiles = await glob("**/*.mlmeta", { cwd: sourceDir });
 
@@ -95,14 +95,24 @@ async function generateIndexData(sourceDir: string) {
       tags = meta.tags || [];
     }
 
-    index.push({
+    const url = filename === "index" ? `${dir}` : `${dir}/${filename}.ml`;
+
+    for (const tag of tags) {
+      if (index[tag] == undefined) {
+        index.tags[tag] = [url];
+      } else {
+        index.tags[tag].push(url);
+      }
+    }
+
+    index.sites[url] = {
       host: dir,
       url: `/${PUBLIC_WEB_DIR}${dir}/${filename}.ml`,
       tags: tags,
-    });
+    };
   }
 
-  console.log(`indexed ${index.length} websites`);
+  console.log(`indexed ${Object.keys(index.sites).length} websites`);
 
   return index;
 }

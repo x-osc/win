@@ -25,6 +25,7 @@ export default defineConfig(({}) => ({
   resolve: {
     alias: {
       "@core": path.resolve(__dirname, "./src/core"),
+      "@generated": path.resolve(__dirname, "./generated"),
     },
   },
   appType: "mpa",

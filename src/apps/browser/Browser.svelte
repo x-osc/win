@@ -1,7 +1,8 @@
 <script lang="ts">
   import type { AppApi } from "@core/app/api";
-  import { FsError, resolvePath } from "@core/fs/filesystem";
+  import { FsError, joinPath } from "@core/fs/filesystem";
   import type { WindowApi } from "@core/wm/wm.svelte";
+  import siteindex from "@generated/siteindex.json";
   import { onMount } from "svelte";
   import { slide } from "svelte/transition";
   import mlStyles from "../../lang/ml/ml.css?inline";
@@ -42,8 +43,9 @@
     errors.length = 0;
 
     if (url.startsWith("/")) {
-      let path = resolvePath(["/"], url);
+      let path = api.fs.resolvePath(["/"], url);
       if (path === null) return;
+      url = joinPath(path, false);
 
       let content;
       try {
@@ -65,23 +67,25 @@
         errors.push(formatError(input, error));
       }
     } else {
-      const { host, path, params } = parseUrl(url);
+      const { url: newUrl, host, path, params } = parseUrl(url);
+      url = newUrl;
 
       // TODO: registry for js websites?
-      if (host + path === "goggle.net/search") {
+      if (newUrl === "goggle.net/search") {
         if (!params.q) {
           return;
         }
         input = generateGoggleNet(params.q);
       } else {
-        const resp = await fetch(`web/${host + path}.ml`);
-        const resp2 = await fetch(`web/${host + path}/index.ml`);
-        console.log(resp);
-        console.log(resp2);
+        const site = siteindex.sites[newUrl as keyof typeof siteindex.sites];
+
+        if (!site) {
+          return;
+        }
+
+        const resp = await fetch(site.url);
         if (resp.ok) {
           input = await resp.text();
-        } else if (resp2.ok) {
-          input = await resp2.text();
         } else {
           return;
         }

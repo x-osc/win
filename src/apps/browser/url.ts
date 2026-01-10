@@ -1,4 +1,5 @@
 export interface ParsedUrl {
+  url: string;
   host: string;
   path: string;
   params: Record<string, string>;
@@ -6,11 +7,11 @@ export interface ParsedUrl {
 
 /// parse url like goggle.net/search?q=blabla?q2=blabla2
 export function parseUrl(input: string): ParsedUrl {
-  let remaining = input.trim();
+  let normalized = normalizeUrl(input.trim());
 
-  const firstSlash = remaining.indexOf("/");
-  let host = firstSlash === -1 ? remaining : remaining.slice(0, firstSlash);
-  let pathAndQuery = firstSlash === -1 ? "" : remaining.slice(firstSlash);
+  const firstSlash = normalized.indexOf("/");
+  let host = firstSlash === -1 ? normalized : normalized.slice(0, firstSlash);
+  let pathAndQuery = firstSlash === -1 ? "" : normalized.slice(firstSlash);
 
   const firstQuestion = pathAndQuery.indexOf("?");
   let path =
@@ -29,8 +30,23 @@ export function parseUrl(input: string): ParsedUrl {
   });
 
   return {
+    url: host + (path ?? ""),
     host,
-    path: path || "/",
+    path: path ?? "/",
     params,
   };
+}
+
+export function normalizeUrl(input: string): string {
+  const firstQuestion = input.indexOf("?");
+
+  let pathPart = firstQuestion === -1 ? input : input.slice(0, firstQuestion);
+  let queryPart = firstQuestion === -1 ? "" : input.slice(firstQuestion + 1);
+
+  const pathNormalized = pathPart
+    .replace(/\/+/g, "/") // replace multiple slashes with single
+    .replace(/\/$/, "") // remove trailing slash
+    .toLowerCase();
+
+  return pathNormalized + queryPart;
 }
