@@ -20,7 +20,10 @@
     "paths": {
       "@core/*": [
         "./core/*"
-      ]
+      ],
+      "@generated/*": [
+        "./../generated/*"
+      ],
     }
   },
   "include": [

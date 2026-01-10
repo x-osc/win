@@ -13,8 +13,12 @@
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^6.1.0",
     "@tsconfig/svelte": "^5.0.4",
+    "@types/fs-extra": "^11.0.4",
     "@types/node": "^25.0.0",
     "fake-indexeddb": "^6.2.5",
+    "fs-extra": "^11.3.3",
+    "glob": "^13.0.0",
+    "json5": "^2.2.3",
     "prettier": "^3.6.2",
     "prettier-plugin-svelte": "^3.4.0",
     "rollup-plugin-visualizer": "^6.0.5",
