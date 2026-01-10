@@ -52,3 +52,19 @@ export function normalizeUrl(input: string): string {
 
   return pathNormalized + queryPart;
 }
+
+export function isLikelyUrl(input: string): boolean {
+  const text = input.trim();
+
+  if (text.includes("/") && text.indexOf("/") > 0) return true;
+
+  // matches anyth1ng.wh4t3ver.blahblah.bla/literallyanythingnotincludingspaces-!@#$%^
+  //                                     ^
+  //                                 2-6 letter tld
+  // im sorry for the horrors
+  const regex = /^[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,6}(\/\S*)?$/i;
+
+  if (regex.test(text)) return true;
+
+  return false;
+}

@@ -8,7 +8,7 @@
   import mlStyles from "../../lang/ml/ml.css?inline";
   import { formatError, processDocument } from "../../lang/ml/mlparser";
   import { generateGoggleNet } from "./search";
-  import { parseUrl } from "./url";
+  import { isLikelyUrl, parseUrl } from "./url";
 
   let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 
@@ -68,8 +68,8 @@
     } else {
       // its either a url or a search
 
-      if (/[./]/.test(url)) {
-        // its a url (it has a . or /)
+      if (isLikelyUrl(url)) {
+        // its probably a url
 
         const { url: newUrl, urlfull, host, path, params } = parseUrl(url);
         url = urlfull;
