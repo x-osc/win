@@ -9,6 +9,7 @@
   import { calcManifest } from "./core/apps/calc/calc";
   import { dialogManifest } from "./core/apps/dialog/dialog";
   import { explorerManifest } from "./core/apps/explorer/explorer";
+  import { minesweeperManifest } from "./core/apps/minesweeper/minesweeper";
   import { notepadManifest } from "./core/apps/notepad/notepad";
   import { paintManifest } from "./core/apps/paint/paint";
   import { terminalManifest } from "./core/apps/terminal/terminal";
@@ -45,6 +46,7 @@
   registerApp(dialogManifest);
   registerApp(browserManifest);
   registerApp(hydraManifest);
+  registerApp(minesweeperManifest);
 
   registerCmd(helpManifest);
   registerCmd(asdfManifest);
@@ -97,6 +99,7 @@
       <button onclick={(_) => launchApp("explorer")}>file explorer</button>
       <button onclick={(_) => launchApp("calc")}>calcoolator</button>
       <button onclick={(_) => launchApp("browser")}>internet exploder</button>
+      <button onclick={(_) => launchApp("minesweeper")}>mine craft</button>
       <button onclick={(_) => launchApp("hydra")}>hydra.exe</button>
 
       {#if gameState.isTrail}

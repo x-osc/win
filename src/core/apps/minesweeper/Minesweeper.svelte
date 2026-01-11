@@ -1,0 +1,260 @@
+<script lang="ts">
+  import type { AppApi } from "@os/app/api";
+  import { randint } from "@os/utils";
+  import type { WindowApi } from "@os/wm/wm.svelte";
+  import { onMount } from "svelte";
+
+  let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
+
+  let size: number = 10;
+  let mineCount: number = 15;
+  let grid: Grid = $state([]);
+  let lose: boolean = $state(false);
+  // say that again
+  let win: boolean = $state(false);
+
+  interface Cell {
+    r: number;
+    c: number;
+    mine: boolean;
+    revealed: boolean;
+    flagged: boolean;
+    neighbors: number;
+  }
+
+  type Grid = Cell[][];
+
+  onMount(() => {
+    createGrid();
+  });
+
+  const createGrid = (): void => {
+    let newGrid: Grid = Array.from({ length: size }, (_, r) =>
+      Array.from({ length: size }, (_, c) => ({
+        r,
+        c,
+        mine: false,
+        revealed: false,
+        flagged: false,
+        neighbors: 0,
+      })),
+    );
+
+    let placed = 0;
+    while (placed < mineCount) {
+      const r = randint(1, size) - 1;
+      const c = randint(1, size) - 1;
+      if (!newGrid[r][c].mine) {
+        newGrid[r][c].mine = true;
+        placed++;
+      }
+    }
+
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        if (newGrid[r][c].mine) continue;
+
+        let count = 0;
+        for (let dr = -1; dr <= 1; dr++) {
+          for (let dc = -1; dc <= 1; dc++) {
+            if (newGrid[r + dr]?.[c + dc]?.mine) {
+              count++;
+            }
+          }
+        }
+        newGrid[r][c].neighbors = count;
+      }
+    }
+
+    grid = newGrid;
+    lose = false;
+  };
+
+  const reveal = (r: number, c: number): void => {
+    const cell = grid[r]?.[c];
+    if (!cell || lose || win || cell.revealed || cell.flagged) return;
+
+    cell.revealed = true;
+
+    if (cell.mine) {
+      lose = true;
+      revealAllMines();
+      return;
+    }
+
+    if (cell.neighbors === 0) {
+      for (let dr = -1; dr <= 1; dr++) {
+        for (let dc = -1; dc <= 1; dc++) {
+          reveal(r + dr, c + dc);
+        }
+      }
+    }
+
+    const hiddenCells = grid.flat().filter((c) => !c.revealed).length;
+    if (hiddenCells === mineCount && !lose && grid.length > 0) {
+      win = true;
+    }
+  };
+
+  function reset() {
+    lose = false;
+    win = false;
+    createGrid();
+  }
+
+  const revealAllMines = (): void => {
+    grid.forEach((row) =>
+      row.forEach((c) => {
+        if (c.mine) {
+          c.revealed = true;
+        }
+      }),
+    );
+  };
+
+  function getNumberColor(n: number): string {
+    const colors = [
+      "",
+      "blue",
+      "green",
+      "red",
+      "purple",
+      "maroon",
+      "turquoise",
+      "black",
+      "gray",
+    ];
+    return colors[n] || "";
+  }
+</script>
+
+<div class="minesweeper">
+  <div class="bar" style="max-width: calc({size} * 30px);">
+    <div class="counter">
+      {mineCount - grid.flat().filter((c) => c.flagged).length}
+    </div>
+
+    <button class="reset" onclick={reset}>
+      {#if win}
+        ＼(≧▽≦)／
+      {:else if lose}
+        ☆⌒(#＋_＋)
+      {:else}
+        (* ^ ω ^)
+      {/if}
+    </button>
+
+    <div class="status-text">
+      {#if win}
+        YOU WIN !!!!
+      {/if}
+      {#if lose}
+        YOU DIDNT WIN !!!!!
+      {/if}
+    </div>
+  </div>
+
+  <div
+    class="board"
+    style="grid-template-columns: repeat({size}, 30px); grid-template-rows: repeat({size}, 30px);"
+  >
+    {#each grid as row}
+      <div class="row">
+        {#each row as cell}
+          <button
+            class="cell"
+            class:revealed={cell.revealed}
+            class:mine={cell.mine && cell.revealed}
+            style="color: {getNumberColor(cell.neighbors)}"
+            onclick={() => reveal(cell.r, cell.c)}
+            oncontextmenu={(e) => {
+              e.preventDefault();
+              cell.flagged = !cell.flagged;
+              grid = grid;
+            }}
+          >
+            {#if cell.revealed}
+              {cell.mine ? "💣" : cell.neighbors || ""}
+            {:else if cell.flagged}
+              🚩
+            {/if}
+          </button>
+        {/each}
+      </div>
+    {/each}
+  </div>
+</div>
+
+<style>
+  .board {
+    display: grid;
+    gap: 0;
+  }
+
+  .bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+    height: 70px;
+  }
+
+  button.reset {
+    height: 34px;
+
+    border-top: 3px solid #ffffff;
+    border-left: 3px solid #ffffff;
+    border-right: 3px solid #7b7b7b;
+    border-bottom: 3px solid #7b7b7b;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  button.reset:active {
+    border: 1px solid #7b7b7b;
+  }
+
+  .status-text {
+    font-weight: bold;
+    width: 80px;
+    text-align: right;
+  }
+
+  .cell {
+    width: 30px;
+    height: 30px;
+    aspect-ratio: 1 / 1;
+
+    padding: 0;
+    margin: 0;
+    font-size: 18px;
+
+    border-top: 3px solid #ffffff;
+    border-left: 3px solid #ffffff;
+    border-right: 3px solid #7b7b7b;
+    border-bottom: 3px solid #7b7b7b;
+    background-color: #bdbdbd;
+
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cell:active:not(.revealed) {
+    border: none;
+    background-color: #bdbdbd;
+  }
+
+  .cell.revealed {
+    border: 1px solid #7b7b7b;
+    background-color: #bdbdbd;
+    cursor: default;
+  }
+
+  .cell.mine {
+    background-color: red;
+  }
+</style>
