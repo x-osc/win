@@ -1,6 +1,6 @@
 <script lang="ts">
+  import { playClickDown, playClickUp } from "@lib/core/audio/click";
   import { launchApp, registerApp } from "@os/app/appregistry";
-  import { playClickDown, playClickUp } from "@os/audio/click";
   import { registerCmd } from "@os/cmd/cmdregistry";
   import Taskbar from "@os/wm/Taskbar.svelte";
   import Window from "@os/wm/Window.svelte";

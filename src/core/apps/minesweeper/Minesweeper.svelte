@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { sadTromboneSfx, winSfx, youWinSfx } from "@lib/core/audio/audio";
   import { randFromArray, randint } from "@lib/core/utils";
   import type { AppApi } from "@os/app/api";
   import type { WindowApi } from "@os/wm/wm.svelte";
@@ -79,6 +80,7 @@
 
     if (cell.mine) {
       lose = true;
+      sadTromboneSfx.play();
       revealAllMines();
       return;
     }
@@ -94,6 +96,8 @@
     const hiddenCells = grid.flat().filter((c) => !c.revealed).length;
     if (hiddenCells === mineCount && !lose && grid.length > 0) {
       win = true;
+      winSfx.play();
+      setTimeout(() => youWinSfx.play(), 200);
     }
   };
 
