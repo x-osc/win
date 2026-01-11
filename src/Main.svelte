@@ -1,6 +1,6 @@
 <script lang="ts">
   import { launchApp, registerApp } from "@os/app/appregistry";
-  import { playClick } from "@os/audio/click";
+  import { playClickDown, playClickUp } from "@os/audio/click";
   import { registerCmd } from "@os/cmd/cmdregistry";
   import Taskbar from "@os/wm/Taskbar.svelte";
   import Window from "@os/wm/Window.svelte";
@@ -71,10 +71,6 @@
     mousePos.y = e.clientY;
   }
 
-  function handleMouseDown(e: MouseEvent) {
-    playClick();
-  }
-
   let trail: Trail;
 </script>
 
@@ -116,7 +112,8 @@
 
 <svelte:window
   onmousemove={handleMouseMove}
-  onmousedowncapture={handleMouseDown}
+  onmousedowncapture={playClickDown}
+  onmouseupcapture={playClickUp}
 />
 
 <style>

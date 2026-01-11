@@ -1,12 +1,23 @@
-import clickSoundFile from "@assets/mouse03.wav?url";
+import clickDownFile from "@assets/audio/mouse03_down.wav?url";
+import clickUpFile from "@assets/audio/mouse03_up.wav?url";
 import { Howl } from "howler";
 
-const clickSound = new Howl({
-  src: [clickSoundFile],
-  volume: 0.3,
+const clickDown = new Howl({
+  src: [clickDownFile],
+  volume: 0.7,
   preload: true,
 });
 
-export async function playClick() {
-  clickSound.play();
+const clickUp = new Howl({
+  src: [clickUpFile],
+  volume: 0.7,
+  preload: true,
+});
+
+export async function playClickDown() {
+  clickDown.play();
+}
+
+export async function playClickUp() {
+  clickUp.play();
 }
