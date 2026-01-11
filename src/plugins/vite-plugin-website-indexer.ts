@@ -5,9 +5,12 @@ import path from "path";
 import type { Plugin, ResolvedConfig } from "vite";
 
 const PUBLIC_WEB_DIR = "web/";
-const LOCAL_WEB_DIR = "src/websites/";
 
-export default function websiteIndexer(): Plugin {
+interface IndexerOpts {
+  websitesDir: string;
+}
+
+export default function websiteIndexer(opts: IndexerOpts): Plugin {
   let config: ResolvedConfig;
 
   return {
@@ -18,19 +21,19 @@ export default function websiteIndexer(): Plugin {
     },
 
     async buildStart() {
-      const sourceDir = path.resolve(config.root, LOCAL_WEB_DIR);
+      const sourceDir = path.resolve(config.root, opts.websitesDir);
       this.addWatchFile(sourceDir);
-      await runIndexer(config);
+      await runIndexer(config, opts);
     },
 
     async watchChange(id) {
-      if (id.includes(LOCAL_WEB_DIR)) {
-        await runIndexer(config);
+      if (id.includes(opts.websitesDir)) {
+        await runIndexer(config, opts);
       }
     },
 
     async configureServer(server) {
-      const sourceDir = path.resolve(config.root, LOCAL_WEB_DIR);
+      const sourceDir = path.resolve(config.root, opts.websitesDir);
 
       server.middlewares.use(async (req, res, next) => {
         if (req.url?.startsWith("/" + PUBLIC_WEB_DIR)) {
@@ -55,7 +58,7 @@ export default function websiteIndexer(): Plugin {
     },
 
     async generateBundle() {
-      const sourceDir = path.resolve(config.root, LOCAL_WEB_DIR);
+      const sourceDir = path.resolve(config.root, opts.websitesDir);
 
       const mlFiles = await glob("**/*", {
         cwd: sourceDir,
@@ -77,8 +80,8 @@ export default function websiteIndexer(): Plugin {
   };
 }
 
-async function runIndexer(config: ResolvedConfig) {
-  const sourceDir = path.resolve(config.root, LOCAL_WEB_DIR);
+async function runIndexer(config: ResolvedConfig, opts: IndexerOpts) {
+  const sourceDir = path.resolve(config.root, opts.websitesDir);
   const filePath = path.resolve(config.root, "generated/siteindex.json");
 
   await ensureFile(filePath);
