@@ -191,8 +191,8 @@
             onclick={() => reveal(cell.r, cell.c)}
             oncontextmenu={(e) => {
               e.preventDefault();
+              if (cell.revealed) return;
               cell.flagged = !cell.flagged;
-              grid = grid;
             }}
           >
             {#if cell.revealed}
