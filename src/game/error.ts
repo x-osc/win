@@ -1,6 +1,6 @@
-import type { AppApi } from "@core/app/api";
-import { sleep } from "@core/utils";
-import { wmApi } from "@core/wm/wm.svelte";
+import type { AppApi } from "@os/app/api";
+import { sleep } from "@os/utils";
+import { wmApi } from "@os/wm/wm.svelte";
 import { gameState } from "./gameState.svelte";
 
 // TODO: either have a root app api or a background app that has this

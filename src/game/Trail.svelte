@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { wmApi } from "@core/wm/wm.svelte";
+  import { wmApi } from "@os/wm/wm.svelte";
   import { drawHTML } from "rasterizehtml";
   import { onMount, tick } from "svelte";
 

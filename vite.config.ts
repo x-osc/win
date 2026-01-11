@@ -3,8 +3,8 @@ import { svelte } from "@sveltejs/vite-plugin-svelte";
 import path from "path";
 import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig } from "vite";
-import { injectPreload } from "./plugins/vite-plugin-inject-preload";
-import websiteIndexer from "./plugins/vite-plugin-website-indexer";
+import { injectPreload } from "./src/plugins/vite-plugin-inject-preload";
+import websiteIndexer from "./src/plugins/vite-plugin-website-indexer";
 
 // https://vite.dev/config/
 export default defineConfig(({}) => ({
@@ -34,9 +34,10 @@ export default defineConfig(({}) => ({
   ],
   resolve: {
     alias: {
-      "@core": path.resolve(__dirname, "./src/core"),
+      "@os": path.resolve(__dirname, "./src/core/os"),
+      "@lib": path.resolve(__dirname, "./src"),
       "@generated": path.resolve(__dirname, "./generated"),
-      "@assets": path.resolve(__dirname, "./assets"),
+      "@assets": path.resolve(__dirname, "./src/assets"),
     },
   },
   appType: "mpa",

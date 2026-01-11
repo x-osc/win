@@ -18,15 +18,18 @@
     "moduleDetection": "force",
     "baseUrl": "./src",
     "paths": {
-      "@core/*": [
-        "./core/*"
+      "@os/*": [
+        "./core/os/*"
+      ],
+      "@lib/*": [
+        "./*"
       ],
       "@generated/*": [
         "./../generated/*"
       ],
       "@assets/*": [
-        "./../assets/*"
-      ]
+        "./assets/*"
+      ],
     }
   },
   "include": [
