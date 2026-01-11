@@ -18,12 +18,15 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 40px;
+    min-height: 40px;
     background: #c0c0c0;
     display: flex;
     align-items: center;
     gap: 4px;
     padding: 0 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
   }
 
   #taskbar button {
