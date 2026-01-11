@@ -1,7 +1,7 @@
+import { sleep } from "@lib/core/utils";
 import type { AppApi } from "@os/app/api";
 import { COLORS } from "@os/cmd/colorcodes";
 import type { CmdApi, CmdManifest } from "@os/cmd/command";
-import { sleep } from "@os/utils";
 
 async function launch(appApi: AppApi, cmdApi: CmdApi) {
   let args = cmdApi.getArgs();

@@ -1,6 +1,6 @@
+import { randFromArray, randint } from "@lib/core/utils";
 import type { AppApi } from "@os/app/api";
 import type { AppManifest } from "@os/app/app";
-import { randFromArray, randint } from "@os/utils";
 import { hydraError } from "../error";
 
 let count = 1;

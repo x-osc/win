@@ -1,5 +1,5 @@
+import { sleep } from "@lib/core/utils";
 import type { AppApi } from "@os/app/api";
-import { sleep } from "@os/utils";
 import { wmApi } from "@os/wm/wm.svelte";
 import { gameState } from "./gameState.svelte";
 

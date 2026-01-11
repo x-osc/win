@@ -1,8 +1,8 @@
+import { randint, sleep } from "@lib/core/utils";
 import type { AppApi } from "@os/app/api";
 import { getAliasesFromCmd, getCmds } from "@os/cmd/cmdregistry";
 import { COLORS } from "@os/cmd/colorcodes";
 import type { CmdApi, CmdManifest } from "@os/cmd/command";
-import { randint, sleep } from "@os/utils";
 
 async function launch(api: AppApi, cmdApi: CmdApi) {
   cmdApi.writeLine("currently installed commands:");

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { randint, sleep } from "@lib/core/utils";
   import type { AppApi } from "@os/app/api";
   import {
     fsApi,
@@ -8,7 +9,6 @@
     type EntryType,
     type FsEntry,
   } from "@os/fs/filesystem";
-  import { randint, sleep } from "@os/utils";
   import type { WindowApi } from "@os/wm/wm.svelte";
   import { onMount, tick } from "svelte";
   import type { ExplorerArgs } from "./explorer";

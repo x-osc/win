@@ -3,7 +3,7 @@ import {
   type OffFunction,
   type OnceFunction,
   type OnFunction,
-} from "@os/callbacks";
+} from "@lib/core/callbacks";
 import { windowId, zIndex } from "@os/state.svelte";
 import { SvelteMap } from "svelte/reactivity";
 

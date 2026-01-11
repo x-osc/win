@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { CallbackManager } from "@os/callbacks";
+  import { CallbackManager } from "@lib/core/callbacks";
   import "@os/win.css";
   import { onMount } from "svelte";
   import { on } from "svelte/events";
