@@ -114,7 +114,10 @@
   {/if}
 </div>
 
-<svelte:window onmousemove={handleMouseMove} onmousedown={handleMouseDown} />
+<svelte:window
+  onmousemove={handleMouseMove}
+  onmousedowncapture={handleMouseDown}
+/>
 
 <style>
   #root {
