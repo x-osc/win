@@ -2,6 +2,8 @@ import clickDownFile from "@assets/audio/mouse03_down.wav?url";
 import clickUpFile from "@assets/audio/mouse03_up.wav?url";
 import { Howl } from "howler";
 
+Howler.autoSuspend = false;
+
 const clickDown = new Howl({
   src: [clickDownFile],
   volume: 0.7,
