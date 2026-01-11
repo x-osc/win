@@ -2,4 +2,4 @@
 <text>we hope you enjoy your stay</text>
 <text>please, enjoy some salted peanuts</text>
 <image url="peanuts.jpg"></image>
-<text><link to="fhelixcorp.net/about">about</link></text>
+<text><link to="./about">about</link></text>

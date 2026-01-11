@@ -176,8 +176,14 @@
     const target = e.composedPath()[0] as HTMLElement;
 
     if (target.hasAttribute("data-ml-link")) {
-      const linkUrl = target.getAttribute("data-ml-link-to");
+      let linkUrl = target.getAttribute("data-ml-link-to")?.trim();
       if (!linkUrl) return;
+
+      if (linkUrl.startsWith(".")) {
+        // TODO: temp fix, need to figure out alternative for protocol in links
+        // and images
+        linkUrl = resolveURLPath(url, linkUrl);
+      }
 
       url = linkUrl;
       reload();
