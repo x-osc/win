@@ -24,6 +24,9 @@
       "@generated/*": [
         "./../generated/*"
       ],
+      "@assets/*": [
+        "./../assets/*"
+      ]
     }
   },
   "include": [
