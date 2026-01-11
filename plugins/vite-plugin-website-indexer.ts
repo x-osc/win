@@ -112,7 +112,7 @@ async function generateIndexData(sourceDir: string) {
       }
     }
 
-    const url = filename === "index" ? `${dir}` : `${dir}/${filename}.ml`;
+    const url = filename === "index" ? `${dir}` : `${dir}/${filename}`;
 
     for (const tag of tags) {
       if (index.tags[tag] == undefined) {
@@ -124,7 +124,8 @@ async function generateIndexData(sourceDir: string) {
 
     index.sites[url] = {
       host: dir,
-      url: `${PUBLIC_WEB_DIR}${dir}/${filename}.ml`,
+      actualurl: `${dir}/${filename}.ml`,
+      publicurl: `${PUBLIC_WEB_DIR}${dir}/${filename}.ml`,
       tags: tags,
     };
   }

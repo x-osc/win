@@ -97,13 +97,15 @@
             return;
           }
 
-          publicUrl = site.url;
-          const resp = await fetch(site.url);
+          publicUrl = site.publicurl;
+          const resp = await fetch(site.publicurl);
           if (resp.ok) {
             input = await resp.text();
           } else {
             console.error(
-              "uhuhuhoh tried to request : " + site.url + " and failed :((",
+              "uhuhuhoh tried to request : " +
+                site.publicurl +
+                " and failed :((",
             );
             return;
           }
