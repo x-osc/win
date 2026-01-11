@@ -57,7 +57,7 @@
     wmApi.focusWindow(id);
   }
 
-  function handleTitlebarDrag(event: MouseEvent) {
+  function handleTitlebarDrag(event: MouseEvent | TouchEvent) {
     if ((event.target as HTMLElement).closest(".nodrag")) {
       return;
     }
@@ -66,12 +66,23 @@
     event.preventDefault();
     focus();
 
-    let offsetX = event.clientX - windowData.x;
-    let offsetY = event.clientY - windowData.y;
+    const clientX =
+      event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
+    const clientY =
+      event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
 
-    function onMouseMove(event: MouseEvent) {
-      let posX = event.clientX - offsetX;
-      let posY = event.clientY - offsetY;
+    let offsetX = clientX - windowData.x;
+    let offsetY = clientY - windowData.y;
+
+    function onMouseMove(event: MouseEvent | TouchEvent) {
+      const clientX =
+        event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
+      const clientY =
+        event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
+
+      let posX = clientX - offsetX;
+      let posY = clientY - offsetY;
+
       callbacks.emit("move", posX, posY);
       wmApi.moveWindow(id, posX, posY);
     }
@@ -79,10 +90,17 @@
     function onMouseUp() {
       removeMouseMove();
       removeMouseUp();
+      removeTouchMove();
+      removeTouchEnd();
     }
 
     let removeMouseMove = on(window, "mousemove", onMouseMove);
+    let removeTouchMove = on(window, "touchmove", onMouseMove, {
+      passive: false,
+    });
+
     let removeMouseUp = on(window, "mouseup", onMouseUp);
+    let removeTouchEnd = on(window, "touchend", onMouseUp);
   }
 
   function handleResize(event: MouseEvent, direction: ResizeDirection) {
@@ -177,7 +195,11 @@
   style="left: {windowData.x}px; top: {windowData.y}px; width: {windowData.width}px; height: {windowData.height}px; z-index: {windowData.z}"
   bind:this={windowElement}
 >
-  <div class="titlebar" onmousedown={handleTitlebarDrag}>
+  <div
+    class="titlebar"
+    onmousedown={handleTitlebarDrag}
+    ontouchstart={handleTitlebarDrag}
+  >
     <span class="title">{windowData.title}</span>
     <div class="window-controls">
       <button class="minimize-button win-button nodrag" onclick={handleMinimize}
