@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { AppApi } from "@os/app/api";
-  import { randint } from "@os/utils";
+  import { randFromArray, randint } from "@os/utils";
   import type { WindowApi } from "@os/wm/wm.svelte";
   import { onMount } from "svelte";
 
@@ -12,6 +12,7 @@
   let lose: boolean = $state(false);
   // say that again
   let win: boolean = $state(false);
+  let isPressing: boolean = $state(false);
 
   interface Cell {
     r: number;
@@ -112,6 +113,16 @@
     );
   };
 
+  function handleMouseDown(e: MouseEvent) {
+    if (e.button === 0 && !lose && !win) {
+      isPressing = true;
+    }
+  }
+
+  function handleMouseUp() {
+    isPressing = false;
+  }
+
   function getNumberColor(n: number): string {
     const colors = [
       "",
@@ -139,6 +150,15 @@
         ＼(≧▽≦)／
       {:else if lose}
         ☆⌒(#＋_＋)
+      {:else if isPressing}
+        {randFromArray([
+          "(・_・;)",
+          "{{ (>_<) }}",
+          "(/ω＼)",
+          "{{ (>_<) }}",
+          "〣( ºΔº )〣",
+          "▓▒░(°◡°)░▒▓",
+        ])}
       {:else}
         (* ^ ω ^)
       {/if}
@@ -154,9 +174,11 @@
     </div>
   </div>
 
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     class="board"
     style="grid-template-columns: repeat({size}, 30px); grid-template-rows: repeat({size}, 30px);"
+    onmousedown={handleMouseDown}
   >
     {#each grid as row}
       <div class="row">
@@ -184,6 +206,8 @@
     {/each}
   </div>
 </div>
+
+<svelte:window on:mouseup={handleMouseUp} />
 
 <style>
   .board {
