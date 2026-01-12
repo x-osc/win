@@ -61,7 +61,9 @@ export function located<T>(parser: Parser<T>): Parser<Located<T>> {
 
 // basic parsers
 
-/// take expected string if available
+/**
+ * take expected string if available
+ */
 export function consume(expected: string): Parser<string> {
   return (input, offset) => {
     if (input.startsWith(expected, offset)) {
@@ -71,7 +73,9 @@ export function consume(expected: string): Parser<string> {
   };
 }
 
-/// any amount of whitespace
+/**
+ * any amount of whitespace
+ */
 export function ws(): Parser<string> {
   return (input: string, offset: number) => {
     let current = offset;
@@ -82,7 +86,9 @@ export function ws(): Parser<string> {
   };
 }
 
-/// takes until a predicate is true
+/**
+ * takes until a predicate is true
+ */
 export function takeUntil(pred: (char: string) => boolean): Parser<string> {
   return (input, offset) => {
     let current = offset;
@@ -93,7 +99,9 @@ export function takeUntil(pred: (char: string) => boolean): Parser<string> {
   };
 }
 
-/// takes 1 or more chars until a predicate is true
+/**
+ * takes 1 or more chars until a predicate is true
+ */
 export function take1Until(pred: (char: string) => boolean): Parser<string> {
   return (input, offset) => {
     if (offset >= input.length) return failure("Unexpected EOF", offset);
@@ -113,7 +121,9 @@ export function take1Until(pred: (char: string) => boolean): Parser<string> {
   };
 }
 
-/// eof
+/**
+ * eof
+ */
 export function eof(): Parser<null> {
   return (input, offset) => {
     if (offset >= input.length) return success(null, offset);
@@ -121,7 +131,9 @@ export function eof(): Parser<null> {
   };
 }
 
-/// sequence of 1 or more alphanumeric chars
+/**
+ * sequence of 1 or more alphanumeric chars
+ */
 export function alphanumeric1(): Parser<string> {
   return (input, offset) => {
     let start = offset;
@@ -135,7 +147,9 @@ export function alphanumeric1(): Parser<string> {
   };
 }
 
-/// sequence of 1 or more numbers
+/**
+ * sequence of 1 or more numbers
+ */
 export function numeric1(): Parser<string> {
   return (input, offset) => {
     let start = offset;
@@ -198,7 +212,9 @@ export function choice<T>(...parsers: Parser<T>[]): Parser<T> {
   };
 }
 
-/// transform the result of a parser
+/**
+ *  transform the result of a parser
+ */
 export function map<T, U>(parser: Parser<T>, fn: (value: T) => U): Parser<U> {
   return (input, offset) => {
     const result = parser(input, offset);
@@ -209,7 +225,9 @@ export function map<T, U>(parser: Parser<T>, fn: (value: T) => U): Parser<U> {
   };
 }
 
-/// parse if possible, otherwise return null
+/**
+ * parse if possible, otherwise return null
+ */
 export function optional<T>(parser: Parser<T>): Parser<T | null> {
   return (input, offset) => {
     const result = parser(input, offset);
@@ -220,7 +238,9 @@ export function optional<T>(parser: Parser<T>): Parser<T | null> {
   };
 }
 
-/// parse zero or more times
+/**
+ * parse zero or more times
+ */
 export function many<T>(parser: Parser<T>): Parser<T[]> {
   return (input, offset) => {
     const results: T[] = [];
@@ -241,7 +261,9 @@ export function many<T>(parser: Parser<T>): Parser<T[]> {
   };
 }
 
-/// parse one or more times
+/**
+ *  parse one or more times
+ */
 export function many1<T>(parser: Parser<T>): Parser<T[]> {
   return (input, offset) => {
     const firstResult = parser(input, offset);
@@ -259,7 +281,9 @@ export function many1<T>(parser: Parser<T>): Parser<T[]> {
   };
 }
 
-/// parse until a terminator is met
+/**
+ * parse until a terminator is met
+ */
 export function manyUntil<T>(
   parser: Parser<T>,
   terminator: Parser<any>,
@@ -294,7 +318,9 @@ export function manyUntil<T>(
   };
 }
 
-/// check if parser succeeds without consuming input
+/**
+ * check if parser succeeds without consuming input
+ */
 export function lookahead<T>(parser: Parser<T>): Parser<T> {
   return (input, offset) => {
     const result = parser(input, offset);
@@ -303,7 +329,9 @@ export function lookahead<T>(parser: Parser<T>): Parser<T> {
   };
 }
 
-/// succeed only if parser fails (negative lookahead)
+/**
+ *  succeed only if parser fails (negative lookahead)
+ */
 export function not<T>(parser: Parser<T>): Parser<null> {
   return (input, offset) => {
     const result = parser(input, offset);
@@ -312,7 +340,9 @@ export function not<T>(parser: Parser<T>): Parser<null> {
   };
 }
 
-/// uses custom error message instead of default one
+/**
+ *  uses custom error message instead of default one
+ */
 export function expect<T>(
   parser: Parser<T>,
   errorMessage: string,

@@ -9,7 +9,9 @@ export interface ResourceHintRule {
   crossorigin?: boolean;
 }
 
-/// higher rules have higher priority
+/**
+ * higher rules have higher priority
+ */
 export function injectPreload(rules: ResourceHintRule[] = []): Plugin {
   let config: ResolvedConfig;
 

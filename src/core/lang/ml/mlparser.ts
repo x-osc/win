@@ -693,7 +693,9 @@ function checkType(
 
 // generator
 
-/// pls attach ml.css to wherever ur rendering this aswell thx
+/**
+ *  pls attach ml.css to wherever ur rendering this aswell thx
+ */
 export function renderToHtml(nodes: Located<RefinedNode>[]): string {
   return nodes
     .map((locnode) => {
