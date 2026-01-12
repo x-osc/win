@@ -17,7 +17,7 @@ export default defineConfig(({}) => ({
   base: process.env.GITHUB_ACTIONS ? "/win/" : "/",
   plugins: [
     websiteIndexer({ websitesDir: "src/websites" }),
-    initFsIndexer({ initFsDir: "public/initfs" }),
+    initFsIndexer({ initFsDir: "src/initfs" }),
     injectPreload([
       {
         regex: /.*\.woff2?$/,
