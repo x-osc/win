@@ -1,3 +1,4 @@
+import initialfs from "@generated/initfs.json";
 import { type DBSchema, openDB } from "idb";
 
 export let fsApi = {
@@ -574,4 +575,31 @@ export async function clearAllStores() {
     modified: Date.now(),
   });
   await tx.done;
+}
+
+export async function writeInitialFiles() {
+  await FSDB;
+
+  for (const entry of initialfs) {
+    const fsPath = splitPath(entry.path);
+
+    if (await exists(fsPath)) continue;
+
+    if (entry.type === "dir") {
+      await mkdirp(fsPath);
+    } else {
+      const parentPath = fsPath.slice(0, -1);
+      if (parentPath.length > 0) {
+        await mkdirp(parentPath);
+      }
+
+      try {
+        const response = await fetch(`initfs/${entry.path}`);
+        const blob = await response.blob();
+        await writeFile(fsPath, { data: blob });
+      } catch (e) {
+        console.error(`Failed to sync file: ${entry.path}`, e);
+      }
+    }
+  }
 }

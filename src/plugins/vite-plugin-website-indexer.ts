@@ -1,4 +1,4 @@
-import fs, { ensureFile } from "fs-extra";
+import fs from "fs-extra";
 import { glob } from "glob";
 import JSON5 from "json5";
 import path from "path";
@@ -6,11 +6,11 @@ import type { Plugin, ResolvedConfig } from "vite";
 
 const PUBLIC_WEB_DIR = "web/";
 
-interface IndexerOpts {
+interface WebsiteIndexerOpts {
   websitesDir: string;
 }
 
-export default function websiteIndexer(opts: IndexerOpts): Plugin {
+export function websiteIndexer(opts: WebsiteIndexerOpts): Plugin {
   let config: ResolvedConfig;
 
   return {
@@ -80,13 +80,15 @@ export default function websiteIndexer(opts: IndexerOpts): Plugin {
   };
 }
 
-async function runIndexer(config: ResolvedConfig, opts: IndexerOpts) {
+async function runIndexer(config: ResolvedConfig, opts: WebsiteIndexerOpts) {
   const sourceDir = path.resolve(config.root, opts.websitesDir);
   const filePath = path.resolve(config.root, "generated/siteindex.json");
 
-  await ensureFile(filePath);
+  await fs.ensureFile(filePath);
 
   let index = await generateIndexData(sourceDir);
+
+  console.log(`indexed ${Object.keys(index.sites).length} websites`);
 
   await fs.writeFile(filePath, JSON.stringify(index, null, 2), "utf-8");
 }
@@ -132,8 +134,6 @@ async function generateIndexData(sourceDir: string) {
       tags: tags,
     };
   }
-
-  console.log(`indexed ${Object.keys(index.sites).length} websites`);
 
   return index;
 }

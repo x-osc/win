@@ -3,9 +3,11 @@
   import { launchApp, registerApp } from "@os/app/appregistry";
   import { launchAppFromManifest } from "@os/app/processes";
   import { registerCmd } from "@os/cmd/cmdregistry";
+  import { FSDB, writeInitialFiles } from "@os/fs/filesystem";
   import Taskbar from "@os/wm/Taskbar.svelte";
   import Window from "@os/wm/Window.svelte";
   import { wmApi } from "@os/wm/wm.svelte";
+  import { onMount } from "svelte";
   import { browserManifest } from "./core/apps/browser/browser";
   import { calcManifest } from "./core/apps/calc/calc";
   import { explorerManifest } from "./core/apps/explorer/explorer";
@@ -69,7 +71,10 @@
     mousePos.y = e.clientY;
   }
 
-  let trail: Trail;
+  onMount(async () => {
+    await FSDB;
+    writeInitialFiles();
+  });
 </script>
 
 <div id="root">

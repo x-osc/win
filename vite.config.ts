@@ -3,8 +3,9 @@ import { svelte } from "@sveltejs/vite-plugin-svelte";
 import path from "path";
 import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig } from "vite";
+import { initFsIndexer } from "./src/plugins/vite-plugin-initial-fs";
 import { injectPreload } from "./src/plugins/vite-plugin-inject-preload";
-import websiteIndexer from "./src/plugins/vite-plugin-website-indexer";
+import { websiteIndexer } from "./src/plugins/vite-plugin-website-indexer";
 
 // https://vite.dev/config/
 export default defineConfig(({}) => ({
@@ -16,6 +17,7 @@ export default defineConfig(({}) => ({
   base: process.env.GITHUB_ACTIONS ? "/win/" : "/",
   plugins: [
     websiteIndexer({ websitesDir: "src/websites" }),
+    initFsIndexer({ initFsDir: "public/initfs" }),
     injectPreload([
       {
         regex: /.*\.woff2?$/,
