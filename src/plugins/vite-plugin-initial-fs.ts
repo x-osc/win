@@ -60,6 +60,7 @@ export function initFsIndexer(opts: InitFsIndexerOpts): Plugin {
       const files = await glob("**/*", {
         cwd: sourceDir,
         // ignore: ["**/.gitkeep"],
+        dot: true,
         nodir: true,
         posix: true,
       });
@@ -89,7 +90,8 @@ async function runIndexer(config: ResolvedConfig, opts: InitFsIndexerOpts) {
 async function generateIndexData(sourceDir: string) {
   const entries = await glob("**/*", {
     cwd: sourceDir,
-    // ignore: ["**/.gitkeep"],
+    ignore: ["**/.gitkeep"],
+    dot: true,
     posix: true,
     mark: true,
   });
