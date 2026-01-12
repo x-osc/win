@@ -1,7 +1,13 @@
 import "fake-indexeddb/auto"; // mock for indexeddb
 import { beforeEach } from "node:test";
 import { describe, expect, it } from "vitest";
-import { clearAllStores, fsApi, FsError, ROOT_ID } from "./filesystem";
+import {
+  clearAllStores,
+  fsApi,
+  FsError,
+  ROOT_ID,
+  type FileContent,
+} from "./filesystem";
 
 // may need a mock for Blob on old versions of node
 
@@ -47,6 +53,43 @@ describe("IndexedDB Filesystem API", () => {
     it("mkdir: should throw if parent does not exist", async () => {
       const path = ["ghost", "folder"];
       await expect(fsApi.mkdir(path)).rejects.toThrow();
+    });
+
+    it("mkdir: should throw when trying to mkdir where a file already exists", async () => {
+      const parentPath = ["projects"];
+      const targetPath = ["projects", "readme.txt"];
+
+      await fsApi.mkdir(parentPath);
+      const mockFile: FileContent = {
+        data: new Blob(["blabla"], { type: "text/plain" }),
+      };
+      await fsApi.writeFile(targetPath, mockFile);
+
+      try {
+        await fsApi.mkdir(targetPath);
+        throw new Error("mkdir should have failed but succeeded");
+      } catch (err: any) {
+        expect(err.name).toBe("FsError");
+        expect(err.kind.type).toBe("alreadyexists");
+      }
+    });
+
+    it("mkdirp: should create multiple nested directories", async () => {
+      const path = ["a", "b", "c"];
+
+      await fsApi.mkdirp(path);
+
+      const entry = await fsApi.getEntry(path);
+      expect(entry).toBeDefined();
+      expect(entry?.type).toBe("dir");
+      expect(entry?.name).toBe("c");
+    });
+
+    it("mkdirp: should not fail if directories already exist", async () => {
+      const path = ["a", "b"];
+
+      await fsApi.mkdirp(path);
+      await expect(fsApi.mkdirp(path)).resolves.not.toThrow();
     });
 
     it("listDir: should return children of a directory", async () => {

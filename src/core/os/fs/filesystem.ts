@@ -10,6 +10,7 @@ export let fsApi = {
   exists,
   type,
   mkdir,
+  mkdirp,
   writeFile,
   overwriteFile,
   readFile,
@@ -260,14 +261,22 @@ export async function mkdir(path: string[]): Promise<DirEntry> {
   return entry;
 }
 
-async function mkdirIgnoreExists(path: string[]): Promise<DirEntry | null> {
-  try {
-    return await mkdir(path);
-  } catch (e) {
-    if (isFsError(e) && e.kind.type === "alreadyexists") {
-      return null;
-    } else {
-      throw e;
+export async function mkdirp(path: string[]): Promise<void> {
+  let currentPath: string[] = [];
+
+  for (const segment of path) {
+    currentPath.push(segment);
+    const entry = await getEntry(currentPath);
+
+    if (!entry) {
+      await mkdir(currentPath);
+    } else if (entry.type !== "dir") {
+      throw new FsError({
+        type: "typemismatch",
+        path: [...currentPath],
+        expected: "dir",
+        actual: "file",
+      });
     }
   }
 }
