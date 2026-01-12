@@ -1,5 +1,6 @@
 <script lang="ts">
   import siteindex from "@generated/siteindex.json";
+  import { isLikelyUrl, parseUrl, resolveURLPath } from "@lib/core/url";
   import type { AppApi } from "@os/app/api";
   import { FsError, joinPath } from "@os/fs/filesystem";
   import type { WindowApi } from "@os/wm/wm.svelte";
@@ -8,7 +9,6 @@
   import mlStyles from "../../lang/ml/ml.css?inline";
   import { formatError, processDocument } from "../../lang/ml/mlparser";
   import { generateGoggleNet } from "./search";
-  import { isLikelyUrl, parseUrl, resolveURLPath } from "./url";
 
   let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 
