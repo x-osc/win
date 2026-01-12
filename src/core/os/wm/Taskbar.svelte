@@ -85,6 +85,7 @@
     font-weight: bold;
   }
 
+  /* specificity porblem */
   button.startbutton:where(.activated) {
     background-color: #b8b8b8;
   }
