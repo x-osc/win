@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { AppApi } from "@os/app/api";
-  import { FsError } from "@os/fs/filesystem";
+  import { FsError, joinPath } from "@os/fs/filesystem";
   import type { WindowApi } from "@os/wm/wm.svelte";
 
   let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
@@ -116,7 +116,8 @@
     <button onclick={handleSaveAs}>save as</button>
   </div>
   <div class="pathbar">
-    {currentFile ?? "untitled-1 (new file)"}{isSaved ? "" : "*"}
+    {currentFile ? joinPath(currentFile, false) : "untitled-1 (new file)"}
+    {isSaved ? "" : "*"}
   </div>
   <textarea oninput={updateSaved} bind:this={textarea}></textarea>
 </div>
