@@ -7,6 +7,12 @@ Terminus: https://terminus-font.sourceforge.net/, https://files.ax86.net/terminu
 
 DOS-V_TWN16: https://int10h.org/oldschool-pc-fonts/fontlist/, copyright original creators, remakes CC BY-SA 4.0
 
+## audio
+
 mouse01: https://freesound.org/people/Pixeliota/sounds/678248/, CC0
 mouse02: https://freesound.org/people/abstraktgeneriert/sounds/213004/, CC0
-mouse03: https://freesound.org/people/Bernardo15/sounds/555796/, CC0
+mouse03, mouse03_down, mouse03_up: https://freesound.org/people/Bernardo15/sounds/555796/, CC0
+
+win: https://freesound.org/people/Fupicat/sounds/607207/, CC0
+you_win: https://freesound.org/people/dersuperanton/sounds/433707/, CC BY
+sadtrombone: https://freesound.org/people/Timbre/sounds/83916/, CC BY-NC // uhoh
