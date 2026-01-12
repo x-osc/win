@@ -15,16 +15,10 @@
 
   // svelte-ignore state_referenced_locally
   let message = args?.message ?? "\xa0"; // nbsp
+  // svelte-ignore state_referenced_locally
+  let buttons = args?.buttons ?? ["cancel", "ok"];
 
   function handleKeyPress() {}
-
-  function handleCancel() {
-    api.quit({ code: 0 });
-  }
-
-  function handleOk() {
-    api.quit({ code: 1 });
-  }
 </script>
 
 <svelte:window onkeypress={handleKeyPress} />
@@ -34,8 +28,15 @@
     <div class="message">{message}</div>
   </div>
   <div class="buttons">
-    <button onclick={handleCancel}>cancel</button>
-    <button onclick={handleOk}>ok</button>
+    {#each buttons as button, i}
+      <button
+        onclick={() => {
+          api.quit({ code: i });
+        }}
+      >
+        {button}
+      </button>
+    {/each}
   </div>
 </div>
 

@@ -9,6 +9,11 @@ async function launch(api: AppApi) {
   await api.showDialog({
     message: "hey gangalang its me the hydra",
     title: "hydra dot exe",
+    buttons: ["thanks hydra ur the best", "oh no"],
+    position: {
+      x: randint(0, window.innerWidth) - 300,
+      y: randint(0, window.innerHeight) - 100,
+    },
   });
   spawnHydras(api);
 }
@@ -24,6 +29,7 @@ function spawnHydras(api: AppApi) {
     .showDialog({
       message: randFromArray(hydraDialogs),
       title: "hydra dot exe",
+      buttons: ["thanks hydra ur the best", "oh no"],
       position: {
         x: randint(0, window.innerWidth) - 300,
         y: randint(0, window.innerHeight) - 100,
@@ -37,6 +43,7 @@ function spawnHydras(api: AppApi) {
     .showDialog({
       message: randFromArray(hydraDialogs),
       title: "hydra dot exe",
+      buttons: ["thanks hydra ur the best", "oh no"],
       position: {
         x: randint(0, window.innerWidth),
         y: randint(0, window.innerHeight),

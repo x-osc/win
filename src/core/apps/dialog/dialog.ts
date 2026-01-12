@@ -30,13 +30,14 @@ async function launch(api: AppApi, args?: DialogArgs) {
   });
 
   winApi.on("close", () => {
-    api.quit();
+    api.quit({ code: -1 });
   });
 }
 
 export type DialogArgs = {
   message?: string;
   title?: string;
+  buttons?: string[];
   position?: { x: number; y: number };
 };
 
