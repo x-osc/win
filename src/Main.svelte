@@ -1,13 +1,13 @@
 <script lang="ts">
   import { playClickDown, playClickUp } from "@lib/core/audio/click";
   import { launchApp, registerApp } from "@os/app/appregistry";
+  import { launchAppFromManifest } from "@os/app/processes";
   import { registerCmd } from "@os/cmd/cmdregistry";
   import Taskbar from "@os/wm/Taskbar.svelte";
   import Window from "@os/wm/Window.svelte";
   import { wmApi } from "@os/wm/wm.svelte";
   import { browserManifest } from "./core/apps/browser/browser";
   import { calcManifest } from "./core/apps/calc/calc";
-  import { dialogManifest } from "./core/apps/dialog/dialog";
   import { explorerManifest } from "./core/apps/explorer/explorer";
   import { minesweeperManifest } from "./core/apps/minesweeper/minesweeper";
   import { notepadManifest } from "./core/apps/notepad/notepad";
@@ -43,9 +43,7 @@
   registerApp(paintManifest);
   registerApp(explorerManifest);
   registerApp(calcManifest);
-  registerApp(dialogManifest);
   registerApp(browserManifest);
-  registerApp(hydraManifest);
   registerApp(minesweeperManifest);
 
   registerCmd(helpManifest);
@@ -96,7 +94,9 @@
       <button onclick={(_) => launchApp("calc")}>calcoolator</button>
       <button onclick={(_) => launchApp("browser")}>internet exploder</button>
       <button onclick={(_) => launchApp("minesweeper")}>mine craft</button>
-      <button onclick={(_) => launchApp("hydra")}>hydra.exe</button>
+      <button onclick={(_) => launchAppFromManifest(hydraManifest)}>
+        hydra.exe
+      </button>
 
       {#if gameState.isTrail}
         <Trail />
