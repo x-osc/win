@@ -7,25 +7,32 @@ import { gameState } from "./gameState.svelte";
 export async function calcError(api: AppApi) {
   gameState.isTrail = true;
   await sleep(100);
-  api.showDialog({ message: "an error occured. uh oh" });
+  api.showDialog({ 
+    message: "an error occured.",
+    buttons: ["oh no"],
+  });
   await sleep(120);
   api.showDialog({
-    message: "an error occured. uh oh",
+    message: "an error occured.",
+    buttons: ["oh no"],
     position: dialogpositions[0][0],
   });
   await sleep(80);
   api.showDialog({
-    message: "an error occured. uh oh",
+    message: "an error occured.",
+    buttons: ["oh no"],
     position: dialogpositions[0][1],
   });
   await sleep(60);
   api.showDialog({
-    message: "an error occured. uh oh",
+    message: "an error occured.",
+    buttons: ["oh no"],
     position: dialogpositions[0][2],
   });
   await sleep(40);
   api.showDialog({
-    message: "an error occured. uh oh",
+    message: "an error occured.",
+    buttons: ["oh no"],
     position: dialogpositions[0][3],
   });
 
