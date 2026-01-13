@@ -1,3 +1,5 @@
+some css taken from xp.css: https://github.com/botoxparty/XP.css, MIT
+
 ## fonts
 3270-Regular, 3270Condensed-Regular, 3270SemiCondensed-Regular: https://github.com/rbanffy/3270font 
 

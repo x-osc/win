@@ -59,6 +59,10 @@ select {
   font: inherit;
 }
 
+button {
+  cursor: pointer;
+}
+
 /* TODO: this stuff should prob be in the webbrower stylesheet */
 
 p,

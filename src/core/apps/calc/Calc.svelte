@@ -106,7 +106,7 @@
 <style>
   .calculator {
     max-width: 400px;
-    padding: 12px;
+    padding: 4%;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 8px;
@@ -121,6 +121,7 @@
   }
 
   button {
+    min-width: 10px;
     padding: 10px;
   }
 

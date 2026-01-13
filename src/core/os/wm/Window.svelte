@@ -202,16 +202,11 @@
     ontouchstart={handleTitlebarDrag}
   >
     <span class="title">{windowData.title}</span>
-    <div class="window-controls">
-      <button class="minimize-button win-button nodrag" onclick={handleMinimize}
-        >_</button
+    <div class="controls">
+      <button class="minimize-button nodrag" onclick={handleMinimize}>_</button>
+      <button class="maximize-button nodrag" onclick={handleMaximize}>[]</button
       >
-      <button class="maximize-button win-button nodrag" onclick={handleMaximize}
-        >[]</button
-      >
-      <button class="close-button win-button nodrag" onclick={handleClose}
-        >X</button
-      >
+      <button class="close-button nodrag" onclick={handleClose}>X</button>
     </div>
   </div>
   <div class="content" bind:this={bodyElement}></div>
@@ -256,35 +251,24 @@
     position: absolute;
     display: flex;
     flex-direction: column;
-    background: #c0c0c0;
-    border: 2px solid black;
-    box-shadow: 4px 4px black;
   }
 
   .window.minimized {
     display: none;
   }
 
-  .window.focused .titlebar {
-    background: #000080;
-  }
-
   .titlebar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #404080;
-    color: white;
-    height: 24px;
-    line-height: 24px;
-    padding-left: 4px;
-    padding-right: 4px;
-    cursor: move;
     flex-shrink: 0;
   }
 
+  .titlebar .controls {
+    display: flex;
+  }
+
   .content {
-    background: white;
     height: 100%;
     overflow: auto;
     flex: 1;

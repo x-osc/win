@@ -11,6 +11,8 @@ async function launch(api: AppApi) {
 
   let body = winApi.getBody();
   if (body !== null) {
+    body.style.margin = "0px 1px";
+
     const component = mount(Terminal, {
       target: body,
       props: {

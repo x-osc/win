@@ -77,9 +77,9 @@
   });
 </script>
 
-<div id="root">
-  <div id="desktop-container">
-    <div id="desktop">
+<div class="root">
+  <div class="desktop-container">
+    <div class="desktop">
       {#each wmApi.getWindows().entries() as [id, win] (id)}
         <Window
           {id}
@@ -122,11 +122,11 @@
 />
 
 <style>
-  #root {
+  .root {
     height: 100vh;
   }
 
-  #desktop-container {
+  .desktop-container {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -134,11 +134,10 @@
     overflow: hidden;
   }
 
-  #desktop {
+  .desktop {
     position: relative;
     width: 100%;
     height: 100%;
-    background-color: teal;
     overflow: hidden;
     isolation: isolate;
   }

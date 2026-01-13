@@ -31,7 +31,7 @@
 <style>
   .startmenu {
     position: absolute;
-    bottom: 45px;
+    bottom: calc(var(--taskbar-height) + 5px);
     left: 5px;
     width: 250px;
     height: 450px;

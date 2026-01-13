@@ -187,7 +187,8 @@
     {#each grid as row}
       <div class="row">
         {#each row as cell}
-          <button
+          <!-- svelte-ignore a11y_click_events_have_key_events -->
+          <div
             class="cell"
             class:revealed={cell.revealed}
             class:mine={cell.mine && cell.revealed}
@@ -204,7 +205,7 @@
             {:else if cell.flagged}
               🚩
             {/if}
-          </button>
+          </div>
         {/each}
       </div>
     {/each}
@@ -217,6 +218,7 @@
   .board {
     display: grid;
     gap: 0;
+    width: fit-content;
   }
 
   .bar {
@@ -229,11 +231,6 @@
 
   button.reset {
     height: 34px;
-
-    border-top: 3px solid #ffffff;
-    border-left: 3px solid #ffffff;
-    border-right: 3px solid #7b7b7b;
-    border-bottom: 3px solid #7b7b7b;
 
     display: flex;
     align-items: center;
@@ -252,7 +249,9 @@
 
   .cell {
     width: 30px;
+    min-width: 30px;
     height: 30px;
+    min-height: 30px;
     aspect-ratio: 1 / 1;
 
     padding: 0;

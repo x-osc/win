@@ -185,7 +185,7 @@
     font-smooth: never;
     line-height: 17px;
 
-    margin: 0;
+    margin: 0px;
     padding: 0.3rem;
     overflow-x: hidden;
     overflow-y: auto;

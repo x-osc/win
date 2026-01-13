@@ -199,7 +199,7 @@
 </script>
 
 <div class="browser">
-  <div class="titlebar">
+  <div class="toolbar">
     <button onclick={() => reload(true)}>reload</button>
     <input
       class="urlbar"
@@ -240,7 +240,7 @@
     flex-direction: column;
   }
 
-  .titlebar {
+  .toolbar {
     display: flex;
     gap: 8px;
     overflow: auto;

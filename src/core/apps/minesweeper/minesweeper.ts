@@ -7,8 +7,8 @@ import Minesweeper from "./Minesweeper.svelte";
 async function launch(api: AppApi) {
   let winApi = await api.window.createWindow(
     winDataBuilder()
-      .withMinSize(308, 402)
-      .withSize(308, 402)
+      .withMinSize(318, 417)
+      .withSize(318, 417)
       .withTitle("minesweeper")
       .build(),
   );
