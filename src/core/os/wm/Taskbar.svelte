@@ -1,7 +1,8 @@
 <script lang="ts">
   import StartMenu from "./StartMenu.svelte";
+  import type { WmApi } from "./wm.svelte";
 
-  let { taskbar, wmApi }: { taskbar: number[]; wmApi: any } = $props();
+  let { taskbar, wmApi }: { taskbar: number[]; wmApi: WmApi } = $props();
 
   let isStartOpen = $state(false);
 
@@ -43,8 +44,13 @@
   <div class="divider"></div>
 
   {#each taskbar as id (id)}
-    {@const w = wmApi.getWindows().get(id).data}
-    <button class="wintab" onclick={() => wmApi.focusWindow(Number(id))}>
+    {@const w = wmApi.getWindows().get(id)!.data}
+    <button
+      class="wintab {wmApi.isWindowFocused(id) && !w.isMinimized
+        ? 'active'
+        : ''}"
+      onclick={() => wmApi.focusWindow(Number(id))}
+    >
       {w.title}
     </button>
   {/each}

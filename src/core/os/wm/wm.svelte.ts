@@ -116,6 +116,7 @@ export const wmApi = {
   moveWindow,
   setWindowSize,
   focusWindow,
+  isWindowFocused,
   minimizeWindow,
   closeWindow,
   getWindows,
@@ -214,6 +215,16 @@ function focusWindow(id: number) {
   focusHistory.push(id);
 
   wmglobalCallbacks.emit("anyfocused", id);
+}
+
+function isWindowFocused(id: number) {
+  const win = windows.get(id)?.data;
+  if (!win) {
+    console.warn(`Window with id ${id} does not exist.`);
+    return false;
+  }
+
+  return id === focusHistory[focusHistory.length - 1];
 }
 
 function minimizeWindow(id: number) {
