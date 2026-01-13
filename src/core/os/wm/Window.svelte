@@ -194,6 +194,7 @@
   class={["window", { focused }, { minimized: windowData.isMinimized }]}
   style="left: {windowData.x}px; top: {windowData.y}px; width: {windowData.width}px; height: {windowData.height}px; z-index: {windowData.z}"
   bind:this={windowElement}
+  onmousedown={focus}
 >
   <div
     class="titlebar"
