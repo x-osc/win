@@ -19,8 +19,8 @@
   let startX = 0;
   let startY = 0;
 
-  let undoStack: HistoryFrame[] = [];
-  let redoStack: HistoryFrame[] = [];
+  let undoStack: HistoryAction[] = [];
+  let redoStack: HistoryAction[] = [];
 
   const MAX_UNDO = 100;
 
@@ -47,10 +47,9 @@
     visible: boolean;
   }
 
-  interface HistoryFrame {
-    layerId: string;
-    snapshot: ImageData;
-  }
+  type HistoryAction =
+    | { type: "draw"; layerId: string; snapshot: ImageData }
+    | { type: "delete_layer"; layerId: string; layer: Layer; index: number };
 
   function render() {
     viewCtx.setTransform(1, 0, 0, 1, 0, 0);
@@ -67,7 +66,7 @@
 
   function start(e: PointerEvent) {
     drawing = true;
-    saveUndoState();
+    saveDrawUndoState();
 
     const { x, y } = pointerToCanvasCoords(e);
     startX = x;
@@ -159,15 +158,28 @@
   function deleteLayer(id: string) {
     if (layers.length <= 1) return;
 
+    const layer = layers.find((l) => l.id === id);
+    const index = layers.findIndex((l) => l.id === id);
+    if (!layer) return;
+
+    undoStack.push({
+      type: "delete_layer",
+      layerId: id,
+      layer: layer,
+      index,
+    });
+    redoStack.length = 0;
+
     layers = layers.filter((l) => l.id !== id);
 
     if (activeLayerIndex >= layers.length) {
       activeLayerIndex = layers.length - 1;
     }
+
     render();
   }
 
-  function saveUndoState() {
+  function saveDrawUndoState() {
     const activeLayer = layers[activeLayerIndex];
     if (!activeLayer) return;
 
@@ -176,6 +188,7 @@
     }
 
     undoStack.push({
+      type: "draw",
       layerId: activeLayer.id,
       snapshot: activeLayer.ctx.getImageData(
         0,
@@ -189,44 +202,75 @@
   }
 
   function undo() {
-    const frame = undoStack.pop();
-    if (!frame) return;
+    const action = undoStack.pop();
+    if (!action) return;
 
-    const targetLayer = layers.find((l) => l.id === frame.layerId);
-    if (!targetLayer) return;
+    if (action.type === "draw") {
+      const targetLayer = layers.find((l) => l.id === action.layerId);
+      if (!targetLayer) return;
 
-    redoStack.push({
-      layerId: targetLayer.id,
-      snapshot: targetLayer.ctx.getImageData(
-        0,
-        0,
-        viewCanvas.width,
-        viewCanvas.height,
-      ),
-    });
+      redoStack.push({
+        type: "draw",
+        layerId: targetLayer.id,
+        snapshot: targetLayer.ctx.getImageData(
+          0,
+          0,
+          viewCanvas.width,
+          viewCanvas.height,
+        ),
+      });
 
-    targetLayer.ctx.putImageData(frame.snapshot, 0, 0);
+      targetLayer.ctx.putImageData(action.snapshot, 0, 0);
+    } else if (action.type === "delete_layer") {
+      layers.splice(action.index, 0, action.layer);
+
+      activeLayerIndex = action.index;
+
+      redoStack.push({
+        type: "delete_layer",
+        layerId: action.layerId,
+        index: action.index,
+        layer: action.layer,
+      });
+    }
+
     render();
   }
 
   function redo() {
-    const frame = redoStack.pop();
-    if (!frame) return;
+    const action = redoStack.pop();
+    if (!action) return;
 
-    const targetLayer = layers.find((l) => l.id === frame.layerId);
-    if (!targetLayer) return;
+    if (action.type === "draw") {
+      const targetLayer = layers.find((l) => l.id === action.layerId);
+      if (!targetLayer) return;
 
-    undoStack.push({
-      layerId: targetLayer.id,
-      snapshot: targetLayer.ctx.getImageData(
-        0,
-        0,
-        viewCanvas.width,
-        viewCanvas.height,
-      ),
-    });
+      undoStack.push({
+        type: "draw",
+        layerId: targetLayer.id,
+        snapshot: targetLayer.ctx.getImageData(
+          0,
+          0,
+          viewCanvas.width,
+          viewCanvas.height,
+        ),
+      });
 
-    targetLayer.ctx.putImageData(frame.snapshot, 0, 0);
+      targetLayer.ctx.putImageData(action.snapshot, 0, 0);
+    } else if (action.type === "delete_layer") {
+      const index = layers.findIndex((l) => l.id === action.layerId);
+      if (index !== -1) {
+        const removedLayer = layers[index];
+        undoStack.push({
+          type: "delete_layer",
+          layerId: removedLayer.id,
+          layer: removedLayer,
+          index: index,
+        });
+        layers = layers.filter((l) => l.id !== action.layerId);
+      }
+    }
+
     render();
   }
 
