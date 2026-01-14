@@ -42,6 +42,10 @@ export class Sound {
   }
 
   async play(overrideOptions: Partial<SoundOptions> = {}) {
+    if (this.ctx.state !== "running") {
+      return;
+    }
+
     if (!this.buffer) {
       await this.load(this.options.src);
     }

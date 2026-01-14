@@ -2,8 +2,9 @@
   import { launchApp, registerApp } from "@os/app/appregistry";
   import { launchAppFromManifest } from "@os/app/processes";
   import { playClickDown, playClickUp } from "@os/audio/click";
+  import { initAudio } from "@os/audio/sounds";
   import { registerCmd } from "@os/cmd/cmdregistry";
-  import { FSDB, writeInitialFiles } from "@os/fs/filesystem";
+  import { writeInitialFiles } from "@os/fs/filesystem";
   import Taskbar from "@os/wm/Taskbar.svelte";
   import Window from "@os/wm/Window.svelte";
   import { wmApi } from "@os/wm/wm.svelte";
@@ -74,8 +75,8 @@
   }
 
   onMount(async () => {
-    await FSDB;
     writeInitialFiles();
+    initAudio();
   });
 </script>
 
