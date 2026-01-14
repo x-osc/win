@@ -10,6 +10,7 @@
 
   let layers: Layer[] = $state([]);
   let activeLayerIndex = $state(0);
+  let activeLayer = $derived(layers[activeLayerIndex]);
   let activeCtx = $derived(layers[activeLayerIndex]?.ctx);
 
   let docWidth = 300;
@@ -45,6 +46,7 @@
     canvas: HTMLCanvasElement;
     ctx: CanvasRenderingContext2D;
     visible: boolean;
+    locked: boolean;
   }
 
   type HistoryAction =
@@ -65,6 +67,8 @@
   }
 
   function start(e: PointerEvent) {
+    if (!activeCtx || activeLayer.locked || !activeLayer.visible) return;
+
     drawing = true;
     saveDrawUndoState();
 
@@ -137,7 +141,10 @@
   }
 
   // ..its a long name so i remember not to use it..
-  function createLayerAndReturnTheLayer(name: string): Layer {
+  function createLayerAndReturnTheLayer(
+    name: string,
+    opts?: Partial<Layer>,
+  ): Layer {
     const canvas = document.createElement("canvas");
     canvas.width = docWidth;
     canvas.height = docHeight;
@@ -148,14 +155,25 @@
       canvas,
       ctx,
       visible: true,
+      locked: false,
+      ...opts,
     };
   }
 
-  function createLayer(name: string) {
-    let layer = createLayerAndReturnTheLayer(name);
+  function createLayer(name: string, opts?: Partial<Layer>) {
+    let layer = createLayerAndReturnTheLayer(name, opts);
     layers.push(layer);
     activeLayerIndex = layers.length - 1;
     return layer;
+  }
+
+  function selectLayer(id: string) {
+    const layer = layers.find((l) => l.id === id);
+    const index = layers.findIndex((l) => l.id === id);
+
+    if (!layer || layer.locked) return;
+
+    activeLayerIndex = index;
   }
 
   function deleteLayer(id: string) {
@@ -163,7 +181,7 @@
 
     const layer = layers.find((l) => l.id === id);
     const index = layers.findIndex((l) => l.id === id);
-    if (!layer) return;
+    if (!layer || layer.locked) return;
 
     undoStack.push({
       type: "delete_layer",
@@ -359,7 +377,7 @@
   onMount(() => {
     viewCtx = viewCanvas.getContext("2d")!;
 
-    let backgroundCtx = createLayer("Background").ctx;
+    let backgroundCtx = createLayer("Background", { locked: true }).ctx;
     backgroundCtx.fillStyle = "#ffffff";
     backgroundCtx.fillRect(0, 0, docWidth, docHeight);
 
@@ -427,13 +445,22 @@
   <button onclick={() => createLayer("New Layer")}>+ Add Layer</button>
 
   {#each layers as layer, i}
-    <div class="layer-item {activeLayerIndex === i ? 'active' : ''}">
+    <div
+      class="layer-item
+      {activeLayerIndex === i ? 'active' : ''} 
+      {layer.locked ? 'locked' : ''}
+      "
+    >
       <input type="checkbox" bind:checked={layer.visible} onchange={render} />
+      <button onclick={() => (layer.locked = !layer.locked)}>
+        {layer.locked ? "locked" : "unlocked"}
+      </button>
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <!-- svelte-ignore a11y_no_static_element_interactions -->
-      <span class="name" onclick={() => (activeLayerIndex = i)}>
+      <span class="name" onclick={() => selectLayer(layer.id)}>
         {layer.name}
       </span>
+
       <button onclick={() => deleteLayer(layer.id)}> Delete </button>
     </div>
   {/each}
@@ -449,6 +476,11 @@
     display: flex;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
+  }
+
+  .locked span {
+    color: #888;
+    cursor: not-allowed;
   }
 
   .layer-item.active .name {
