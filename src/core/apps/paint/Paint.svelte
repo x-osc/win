@@ -3,7 +3,7 @@
   import type { WindowApi } from "@os/wm/wm.svelte";
   import { onMount } from "svelte";
 
-  let { appApi, winApi }: { appApi: AppApi; winApi: WindowApi } = $props();
+  let { api: api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 
   let viewCanvas: HTMLCanvasElement;
   let viewCtx: CanvasRenderingContext2D;

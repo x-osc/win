@@ -8,10 +8,10 @@
   } from "@os/cmd/command";
   import { splitArgs } from "@os/cmd/parser";
   import { joinPath } from "@os/fs/filesystem";
-  import type { WindowApi } from "@os/wm/wm.svelte";
+  import { type WindowApi } from "@os/wm/wm.svelte";
   import { onMount, tick } from "svelte";
 
-  let { appApi, winApi }: { appApi: AppApi; winApi: WindowApi } = $props();
+  let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 
   let lines: [string, TextOptions][][] = $state([]);
   let workingDir: string[] = $state([]);
@@ -39,10 +39,10 @@
       getArgs: () => splitArgs(args),
       getWorkingDir: () => workingDir,
       setWorkingDir: async (path: string[]) => {
-        if (!(await appApi.fs.exists(path))) {
+        if (!(await api.fs.exists(path))) {
           return;
         }
-        if ((await appApi.fs.type(path)) !== "dir") {
+        if ((await api.fs.type(path)) !== "dir") {
           return;
         }
         workingDir = path;
@@ -60,7 +60,7 @@
       },
     };
 
-    let procApi = appApi.launchCmd(cmd, cmdApi);
+    let procApi = api.launchCmd(cmd, cmdApi);
     if (procApi === null) {
       addLine(`Command not found: ${cmd}`);
       return;

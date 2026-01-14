@@ -4,13 +4,27 @@ import {
   type OnceFunction,
   type OnFunction,
 } from "@lib/core/callbacks";
+import type { AppApi } from "@os/app/api";
 import { windowId, zIndex } from "@os/state.svelte";
+import type { Component } from "svelte";
 import { SvelteMap } from "svelte/reactivity";
 
 export type Win = {
   data: WinData;
   api: WindowApi | null;
   callbacks: CallbackManager<WindowEvents>;
+};
+
+type ChildComponent = Component<{
+  api: AppApi;
+  winApi: WindowApi;
+  args?: Record<string, any>;
+}>;
+
+type ChildComponentData = {
+  component: ChildComponent;
+  api: AppApi;
+  args?: Record<string, any>;
 };
 
 export type WinData = {
@@ -25,6 +39,7 @@ export type WinData = {
   isMinimized: boolean;
   // TODO: make non-data (runtime only) stuff part of a different type
   owner: number | null;
+  componentData?: ChildComponentData;
 };
 
 export interface WindowApi {
@@ -94,6 +109,14 @@ export function winDataBuilder() {
     withMinSize(width: number, height: number) {
       data.minWidth = width;
       data.minHeight = height;
+      return this;
+    },
+    withComponent(
+      component: ChildComponent,
+      api: AppApi,
+      args?: Record<string, any>,
+    ) {
+      data.componentData = { component, api, args };
       return this;
     },
     build(): WinData {

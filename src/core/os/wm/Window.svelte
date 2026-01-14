@@ -30,7 +30,7 @@
     getData: () => windowData,
     setTitle: (title: string) => wmApi.setWindowTitle(id, title),
     focus: () => focus(),
-    isFocused: () => wmApi.isWindowFocused(id),
+    isFocused: () => id in wmApi.getWindows() && wmApi.isWindowFocused(id),
     move: (x: number, y: number) => wmApi.moveWindow(id, x, y),
     resize: (width: number, height: number) =>
       wmApi.setWindowSize(id, width, height),
@@ -208,7 +208,16 @@
       <button class="close-button nodrag" onclick={handleClose}>X</button>
     </div>
   </div>
-  <div class="content" bind:this={bodyElement}></div>
+
+  <div class="content" bind:this={bodyElement}>
+    {#if windowData.componentData}
+      <windowData.componentData.component
+        winApi={windowApi}
+        api={windowData.componentData.api}
+        args={windowData.componentData.args}
+      />
+    {/if}
+  </div>
 
   <div
     class="resize-handle resize-n"

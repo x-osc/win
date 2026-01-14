@@ -9,7 +9,7 @@
   import type { WindowApi } from "@os/wm/wm.svelte";
   import { onMount } from "svelte";
 
-  let { api: api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
+  let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 
   let settings: MainSettings = $state(DEFAULT_SETTINGS);
   let isLoading = $state(true);

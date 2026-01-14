@@ -1,7 +1,6 @@
 import type { AppApi } from "@os/app/api";
 import type { AppManifest } from "@os/app/app";
 import { winDataBuilder } from "@os/wm/wm.svelte";
-import { mount } from "svelte";
 import Explorer from "./Explorer.svelte";
 
 async function launch(api: AppApi, args?: ExplorerArgs) {
@@ -10,18 +9,9 @@ async function launch(api: AppApi, args?: ExplorerArgs) {
       .withMinSize(290, 161)
       .withSize(410, 237)
       .withTitle("file explorerer")
+      .withComponent(Explorer, api, args)
       .build(),
   );
-
-  let body = winApi.getBody();
-  const component = mount(Explorer, {
-    target: body,
-    props: {
-      api,
-      winApi,
-      args,
-    },
-  });
 
   winApi.on("close", () => {
     api.quit();

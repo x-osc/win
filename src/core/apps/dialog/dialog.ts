@@ -3,7 +3,6 @@ import type { AppManifest } from "@os/app/app";
 import { launchAppFromManifest } from "@os/app/processes";
 import { mousePos } from "@os/state.svelte";
 import { winDataBuilder } from "@os/wm/wm.svelte";
-import { mount } from "svelte";
 import Dialog from "./Dialog.svelte";
 
 async function launch(api: AppApi, args?: DialogArgs) {
@@ -16,18 +15,9 @@ async function launch(api: AppApi, args?: DialogArgs) {
         args?.position?.x ?? mousePos.x - 120,
         args?.position?.y ?? mousePos.y - 40,
       )
+      .withComponent(Dialog, api, args)
       .build(),
   );
-
-  let body = winApi.getBody();
-  const component = mount(Dialog, {
-    target: body,
-    props: {
-      api,
-      winApi,
-      args,
-    },
-  });
 
   winApi.on("close", () => {
     api.quit({ code: -1 });

@@ -1,7 +1,6 @@
 import type { AppApi } from "@os/app/api";
 import type { AppManifest } from "@os/app/app";
 import { winDataBuilder } from "@os/wm/wm.svelte";
-import { mount } from "svelte";
 import Notepad from "./Notepad.svelte";
 
 async function launch(api: AppApi) {
@@ -10,17 +9,9 @@ async function launch(api: AppApi) {
       .withMinSize(290, 161)
       .withSize(300, 420)
       .withTitle("notepad")
+      .withComponent(Notepad, api)
       .build(),
   );
-
-  let body = winApi.getBody();
-  const component = mount(Notepad, {
-    target: body,
-    props: {
-      api,
-      winApi,
-    },
-  });
 
   winApi.on("close", () => {
     api.quit();
