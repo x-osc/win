@@ -9,14 +9,18 @@ export type OffFunction<
   TEventMap extends Record<string, (...args: any[]) => void>,
 > = CallbackManager<TEventMap>["off"];
 
-// extract parameter values as array from method signatures
+/**
+ * extract parameter values as array from method signatures
+ */
 type EventMap<T> = {
   [K in keyof T]: T[K] extends (...args: infer P) => void ? P : never;
 };
 
-// you must use type and not interface for the generic param
-// typescript jank
-// https://github.com/microsoft/TypeScript/issues/15300
+/**
+ * you must use type and not interface for the generic param
+ * typescript jank
+ * https://github.com/microsoft/TypeScript/issues/15300
+ */
 export class CallbackManager<
   TEventMap extends Record<string, (...args: any[]) => void> = Record<
     string,

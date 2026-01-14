@@ -31,7 +31,6 @@
   },
   "dependencies": {
     "idb": "^8.0.3",
-    "rasterizehtml": "^1.4.0",
-    "howler": "^2.2.4"
+    "rasterizehtml": "^1.4.0"
   }
 }

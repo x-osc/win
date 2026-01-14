@@ -22,6 +22,8 @@ export let fsApi = {
   move,
   remove,
   removeRecursive,
+  ensureDir,
+  ensureFile,
 };
 
 export type FileContent = {
@@ -557,6 +559,44 @@ export async function removeRecursive(path: string[]) {
   }
 
   await removeEntryRec(entry);
+}
+
+export async function ensureDir(path: string[]): Promise<FsEntry> {
+  await mkdirp(path);
+  const entry = await getEntry(path);
+  if (!entry || entry.type !== "dir") {
+    throw new FsError({
+      type: "typemismatch",
+      path,
+      expected: "dir",
+      actual: entry?.type ?? "file",
+    });
+  }
+  return entry;
+}
+
+export async function ensureFile(path: string[]): Promise<FsEntry> {
+  const entry = await getEntry(path);
+
+  if (entry) {
+    if (entry.type === "file") {
+      return entry;
+    } else {
+      throw new FsError({
+        type: "typemismatch",
+        path,
+        expected: "file",
+        actual: "dir",
+      });
+    }
+  }
+
+  const parentPath = path.slice(0, -1);
+  if (parentPath.length > 0) {
+    await mkdirp(parentPath);
+  }
+
+  return await writeFile(path, { data: new Blob([]) });
 }
 
 export async function clearAllStores() {

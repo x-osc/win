@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { sadTromboneSfx, winSfx, youWinSfx } from "@lib/core/audio/audio";
   import { randFromArray, randint } from "@lib/core/utils";
   import type { AppApi } from "@os/app/api";
+  import { sadTromboneSfx, winSfx, youWinSfx } from "@os/audio/sounds";
   import type { WindowApi } from "@os/wm/wm.svelte";
   import { onMount } from "svelte";
 

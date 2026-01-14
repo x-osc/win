@@ -83,6 +83,22 @@ body {
     inset 2px -2px #89ade4;
 }
 
+.field-row {
+  display: flex;
+  align-items: center;
+}
+
+.field-row-stacked {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  display: inline-flex;
+  align-items: center;
+  margin: 5px;
+}
+
 .window input[type="text"],
 .window input[type="password"],
 .window input[type="email"] {
@@ -98,6 +114,7 @@ body {
 }
 
 input[type="range"] {
+  margin: 0 5px;
   appearance: none;
   background: transparent;
   min-height: 21px;

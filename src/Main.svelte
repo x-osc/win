@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { playClickDown, playClickUp } from "@lib/core/audio/click";
   import { launchApp, registerApp } from "@os/app/appregistry";
   import { launchAppFromManifest } from "@os/app/processes";
+  import { playClickDown, playClickUp } from "@os/audio/click";
   import { registerCmd } from "@os/cmd/cmdregistry";
   import { FSDB, writeInitialFiles } from "@os/fs/filesystem";
   import Taskbar from "@os/wm/Taskbar.svelte";

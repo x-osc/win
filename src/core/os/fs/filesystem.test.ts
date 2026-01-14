@@ -100,6 +100,38 @@ describe("IndexedDB Filesystem API", () => {
       expect(list.length).toBe(1);
       expect(list[0].name).toBe("subdir");
     });
+
+    it("ensureDir: should create a directory if it does not exist", async () => {
+      const path = ["home", "documents"];
+      const dir = await fsApi.ensureDir(path);
+
+      const entry = await fsApi.getEntry(path);
+      expect(dir.name).toBe("documents");
+      expect(dir.type).toBe("dir");
+    });
+
+    it("ensureDir: should return existing directory if it already exists", async () => {
+      const path = ["home"];
+      const first = await fsApi.ensureDir(path);
+      const second = await fsApi.ensureDir(path);
+
+      expect(first.id).toBe(second.id);
+    });
+
+    it("ensureDir: should throw a typemismatch if a file exists at that path", async () => {
+      const path = ["test.txt"];
+      await fsApi.writeFile(path, { data: new Blob(["hello"]) });
+
+      try {
+        await fsApi.ensureDir(path);
+      } catch (err) {
+        if (err instanceof FsError) {
+          expect(err.kind.type).toBe("typemismatch");
+        } else {
+          throw err;
+        }
+      }
+    });
   });
 
   describe("File Operations", () => {
@@ -138,6 +170,42 @@ describe("IndexedDB Filesystem API", () => {
       } catch (e) {
         const err = e as FsError;
         expect(err.kind.type).toBe("alreadyexists");
+      }
+    });
+
+    it("ensureFile: should create an empty file and its parents if they don't exist", async () => {
+      const path = ["logs", "2024", "app.log"];
+      const file = await fsApi.ensureFile(path);
+
+      expect(file.name).toBe("app.log");
+
+      const content = await fsApi.readFile(path);
+      expect(content.data.size).toBe(0);
+    });
+
+    it("ensureFile: should not overwrite an existing file", async () => {
+      const path = ["config.json"];
+      const originalBlob = new Blob(["bababa"]);
+      await fsApi.writeFile(path, { data: originalBlob });
+
+      const file = await fsApi.ensureFile(path);
+      const content = await fsApi.readFile(path);
+      const text = await content.data.text();
+      expect(text).toBe("bababa");
+    });
+
+    it("ensureFile: should throw if the path is occupied by a directory", async () => {
+      const path = ["folder"];
+      await fsApi.mkdir(path);
+
+      try {
+        await fsApi.ensureFile(path);
+      } catch (err) {
+        if (err instanceof FsError) {
+          expect(err.kind.type).toBe("typemismatch");
+        } else {
+          throw err;
+        }
       }
     });
   });
