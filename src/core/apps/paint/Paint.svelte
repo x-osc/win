@@ -46,7 +46,9 @@
 
   let color = $state("#000000");
   let size = $state(6);
-  let tool: "brush" | "eraser" = $state("brush");
+  let tool: Tool = $state("brush");
+
+  type Tool = "brush" | "pencil" | "eraser";
 
   interface Layer {
     id: string;
@@ -177,20 +179,35 @@
     if (!drawing) return;
 
     const { x, y } = pointerToCanvasCoords(e);
+    const px = Math.floor(x);
+    const py = Math.floor(y);
 
-    activeCtx.lineWidth = size;
-    activeCtx.lineCap = "round";
+    activeCtx.save();
 
-    if (tool === "eraser") {
+    if (tool === "pencil") {
+      activeCtx.imageSmoothingEnabled = false;
+      activeCtx.fillStyle = color;
+
+      const offset = Math.floor(size / 2);
+      activeCtx.fillRect(px - offset, py - offset, size, size);
+    } else if (tool === "brush") {
+      activeCtx.imageSmoothingEnabled = true;
+
+      activeCtx.lineWidth = size;
+      activeCtx.lineCap = "round";
+
+      activeCtx.strokeStyle = color;
+
+      activeCtx.lineTo(x, y);
+      activeCtx.stroke();
+    } else if (tool === "eraser") {
       activeCtx.globalCompositeOperation = "destination-out";
       activeCtx.strokeStyle = "rgba(0,0,0,1)";
-    } else {
-      activeCtx.globalCompositeOperation = "source-over";
-      activeCtx.strokeStyle = color;
+
+      activeCtx.lineTo(x, y);
+      activeCtx.stroke();
     }
 
-    activeCtx.lineTo(x, y);
-    activeCtx.stroke();
     activeCtx.beginPath();
     activeCtx.moveTo(x, y);
 
@@ -202,31 +219,8 @@
     drawing = false;
     viewCanvas.releasePointerCapture(e.pointerId);
 
-    const { x, y } = pointerToCanvasCoords(e);
-
-    if (x === startX && y === startY) {
-      drawDot(x, y);
-    }
-
     activeCtx.beginPath();
     render();
-  }
-
-  function drawDot(x: number, y: number) {
-    activeCtx.save();
-
-    if (tool === "eraser") {
-      activeCtx.globalCompositeOperation = "destination-out";
-    } else {
-      activeCtx.globalCompositeOperation = "source-over";
-      activeCtx.fillStyle = color;
-    }
-
-    activeCtx.beginPath();
-    activeCtx.arc(x, y, size / 2, 0, Math.PI * 2);
-    activeCtx.fill();
-
-    activeCtx.restore();
   }
 
   // ..its a long name so i remember not to use it..
@@ -523,6 +517,7 @@
     <select bind:value={tool}>
       <option value="brush">Brush</option>
       <option value="eraser">Eraser</option>
+      <option value="pencil">Pencil</option>
     </select>
 
     <input type="color" bind:value={color} style="min-width: 65px" />
