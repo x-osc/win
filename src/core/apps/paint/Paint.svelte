@@ -16,6 +16,10 @@
   let docWidth = 300;
   let docHeight = 300;
 
+  let canvasContainer: HTMLElement | null = null;
+  let canvasWidth = 300;
+  let canvasHeight = 300;
+
   let cursorX = 0;
   let cursorY = 0;
   let showCursor = false;
@@ -131,6 +135,24 @@
     viewCtx.stroke();
 
     viewCtx.restore();
+  }
+
+  function resize() {
+    if (!canvasContainer || !viewCanvas) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvasContainer.getBoundingClientRect();
+
+    canvasWidth = rect.width;
+    canvasHeight = rect.height;
+
+    viewCanvas.width = canvasWidth * dpr;
+    viewCanvas.height = canvasHeight * dpr;
+
+    viewCanvas.style.width = `${canvasWidth}px`;
+    viewCanvas.style.height = `${canvasHeight}px`;
+
+    render();
   }
 
   function start(e: PointerEvent) {
@@ -485,68 +507,90 @@
     createLayer("Layer 1");
     activeLayerIndex = 1;
 
+    winApi.on("resize", () => {
+      resize();
+    });
+
     render();
   });
 </script>
 
-<div class="toolbar">
-  <select bind:value={tool}>
-    <option value="brush">Brush</option>
-    <option value="eraser">Eraser</option>
-  </select>
-
-  <input type="color" bind:value={color} style="min-width: 65px" />
-  <button onclick={undo}>Undo</button>
-  <button onclick={redo}>Redo</button>
-  <input
-    class="has-box-indicator"
-    type="range"
-    min="1"
-    max="50"
-    bind:value={size}
-  />
-  <button onclick={resetView}>Reset View</button>
-</div>
-
 <svelte:window onkeydown={handleKeyDown} />
 
-<canvas
-  bind:this={viewCanvas}
-  width={500}
-  height={500}
-  onwheel={handleWheel}
-  onpointerdown={handlePointerDown}
-  onpointermove={handlePointerMove}
-  onpointerup={handlePointerUp}
-  onpointerleave={handlePointerLeave}
-></canvas>
+<div class="paint">
+  <div class="toolbar">
+    <select bind:value={tool}>
+      <option value="brush">Brush</option>
+      <option value="eraser">Eraser</option>
+    </select>
 
-<div class="layers-panel">
-  <button onclick={() => createLayer("New Layer")}>+ Add Layer</button>
+    <input type="color" bind:value={color} style="min-width: 65px" />
+    <button onclick={undo}>Undo</button>
+    <button onclick={redo}>Redo</button>
+    <input
+      class="has-box-indicator"
+      type="range"
+      min="1"
+      max="50"
+      bind:value={size}
+    />
+    <button onclick={resetView}>Reset View</button>
+  </div>
 
-  {#each layers as layer, i}
-    <div
-      class="layer-item
+  <div class="container" bind:this={canvasContainer}>
+    <canvas
+      bind:this={viewCanvas}
+      width={500}
+      height={500}
+      onwheel={handleWheel}
+      onpointerdown={handlePointerDown}
+      onpointermove={handlePointerMove}
+      onpointerup={handlePointerUp}
+      onpointerleave={handlePointerLeave}
+    ></canvas>
+  </div>
+
+  <div class="layers-panel">
+    <button onclick={() => createLayer("New Layer")}>+ Add Layer</button>
+
+    {#each layers as layer, i}
+      <div
+        class="layer-item
       {activeLayerIndex === i ? 'active' : ''} 
       {layer.locked ? 'locked' : ''}
       "
-    >
-      <input type="checkbox" bind:checked={layer.visible} onchange={render} />
-      <button onclick={() => (layer.locked = !layer.locked)}>
-        {layer.locked ? "locked" : "unlocked"}
-      </button>
-      <!-- svelte-ignore a11y_click_events_have_key_events -->
-      <!-- svelte-ignore a11y_no_static_element_interactions -->
-      <span class="name" onclick={() => selectLayer(layer.id)}>
-        {layer.name}
-      </span>
+      >
+        <input type="checkbox" bind:checked={layer.visible} onchange={render} />
+        <button onclick={() => (layer.locked = !layer.locked)}>
+          {layer.locked ? "locked" : "unlocked"}
+        </button>
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <span class="name" onclick={() => selectLayer(layer.id)}>
+          {layer.name}
+        </span>
 
-      <button onclick={() => deleteLayer(layer.id)}> Delete </button>
-    </div>
-  {/each}
+        <button onclick={() => deleteLayer(layer.id)}> Delete </button>
+      </div>
+    {/each}
+  </div>
 </div>
 
 <style>
+  .paint {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .container {
+    flex-grow: 1;
+    overflow: hidden;
+    position: relative;
+    background: transparent;
+    margin: 0.5rem;
+  }
+
   canvas {
     border: 1px solid #444;
     touch-action: none;
@@ -556,6 +600,12 @@
     display: flex;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  .toolbar > * {
+    flex-shrink: 0;
   }
 
   .locked span {
