@@ -136,7 +136,8 @@
     activeCtx.restore();
   }
 
-  function createLayer(name: string): Layer {
+  // ..its a long name so i remember not to use it..
+  function createLayerAndReturnTheLayer(name: string): Layer {
     const canvas = document.createElement("canvas");
     canvas.width = docWidth;
     canvas.height = docHeight;
@@ -150,9 +151,11 @@
     };
   }
 
-  function addLayer(name: string) {
-    layers.push(createLayer("New Layer"));
+  function createLayer(name: string) {
+    let layer = createLayerAndReturnTheLayer(name);
+    layers.push(layer);
     activeLayerIndex = layers.length - 1;
+    return layer;
   }
 
   function deleteLayer(id: string) {
@@ -355,7 +358,14 @@
 
   onMount(() => {
     viewCtx = viewCanvas.getContext("2d")!;
-    layers.push(createLayer("Layer 1"));
+
+    let backgroundCtx = createLayer("Background").ctx;
+    backgroundCtx.fillStyle = "#ffffff";
+    backgroundCtx.fillRect(0, 0, docWidth, docHeight);
+
+    createLayer("Layer 1");
+    activeLayerIndex = 1;
+
     render();
   });
 </script>
@@ -414,7 +424,7 @@
 ></canvas>
 
 <div class="layers-panel">
-  <button onclick={() => addLayer("New Layer")}>+ Add Layer</button>
+  <button onclick={() => createLayer("New Layer")}>+ Add Layer</button>
 
   {#each layers as layer, i}
     <div class="layer-item {activeLayerIndex === i ? 'active' : ''}">
