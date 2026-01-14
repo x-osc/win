@@ -8,15 +8,19 @@
   let viewCanvas: HTMLCanvasElement;
   let viewCtx: CanvasRenderingContext2D;
 
-  let bufferCanvas: HTMLCanvasElement;
-  let bufferCtx: CanvasRenderingContext2D;
+  let layers: Layer[] = $state([]);
+  let activeLayerIndex = $state(0);
+  let activeCtx = $derived(layers[activeLayerIndex]?.ctx);
+
+  let docWidth = 300;
+  let docHeight = 300;
 
   let drawing = false;
   let startX = 0;
   let startY = 0;
 
-  let undoStack: ImageData[] = [];
-  let redoStack: ImageData[] = [];
+  let undoStack: HistoryFrame[] = [];
+  let redoStack: HistoryFrame[] = [];
 
   const MAX_UNDO = 100;
 
@@ -35,13 +39,30 @@
   let size = $state(6);
   let tool: "brush" | "eraser" = $state("brush");
 
+  interface Layer {
+    id: string;
+    name: string;
+    canvas: HTMLCanvasElement;
+    ctx: CanvasRenderingContext2D;
+    visible: boolean;
+  }
+
+  interface HistoryFrame {
+    layerId: string;
+    snapshot: ImageData;
+  }
+
   function render() {
     viewCtx.setTransform(1, 0, 0, 1, 0, 0);
     viewCtx.clearRect(0, 0, viewCanvas.width, viewCanvas.height);
 
     viewCtx.setTransform(zoom, 0, 0, zoom, panX, panY);
-    // TODO: no more exclamation mark
-    viewCtx.drawImage(bufferCanvas!, 0, 0);
+
+    for (const layer of layers) {
+      if (layer.visible) {
+        viewCtx.drawImage(layer.canvas, 0, 0);
+      }
+    }
   }
 
   function start(e: PointerEvent) {
@@ -52,8 +73,8 @@
     startX = x;
     startY = y;
 
-    bufferCtx.beginPath();
-    bufferCtx.moveTo(x, y);
+    activeCtx.beginPath();
+    activeCtx.moveTo(x, y);
 
     viewCanvas.setPointerCapture(e.pointerId);
 
@@ -65,21 +86,21 @@
 
     const { x, y } = pointerToCanvasCoords(e);
 
-    bufferCtx.lineWidth = size;
-    bufferCtx.lineCap = "round";
+    activeCtx.lineWidth = size;
+    activeCtx.lineCap = "round";
 
     if (tool === "eraser") {
-      bufferCtx.globalCompositeOperation = "destination-out";
-      bufferCtx.strokeStyle = "rgba(0,0,0,1)";
+      activeCtx.globalCompositeOperation = "destination-out";
+      activeCtx.strokeStyle = "rgba(0,0,0,1)";
     } else {
-      bufferCtx.globalCompositeOperation = "source-over";
-      bufferCtx.strokeStyle = color;
+      activeCtx.globalCompositeOperation = "source-over";
+      activeCtx.strokeStyle = color;
     }
 
-    bufferCtx.lineTo(x, y);
-    bufferCtx.stroke();
-    bufferCtx.beginPath();
-    bufferCtx.moveTo(x, y);
+    activeCtx.lineTo(x, y);
+    activeCtx.stroke();
+    activeCtx.beginPath();
+    activeCtx.moveTo(x, y);
 
     render();
   }
@@ -95,63 +116,117 @@
       drawDot(x, y);
     }
 
-    bufferCtx.beginPath();
+    activeCtx.beginPath();
     render();
   }
 
   function drawDot(x: number, y: number) {
-    bufferCtx.save();
+    activeCtx.save();
 
     if (tool === "eraser") {
-      bufferCtx.globalCompositeOperation = "destination-out";
+      activeCtx.globalCompositeOperation = "destination-out";
     } else {
-      bufferCtx.globalCompositeOperation = "source-over";
-      bufferCtx.fillStyle = color;
+      activeCtx.globalCompositeOperation = "source-over";
+      activeCtx.fillStyle = color;
     }
 
-    bufferCtx.beginPath();
-    bufferCtx.arc(x, y, size / 2, 0, Math.PI * 2);
-    bufferCtx.fill();
+    activeCtx.beginPath();
+    activeCtx.arc(x, y, size / 2, 0, Math.PI * 2);
+    activeCtx.fill();
 
-    bufferCtx.restore();
+    activeCtx.restore();
+  }
+
+  function createLayer(name: string): Layer {
+    const canvas = document.createElement("canvas");
+    canvas.width = docWidth;
+    canvas.height = docHeight;
+    const ctx = canvas.getContext("2d")!;
+    return {
+      id: crypto.randomUUID(),
+      name,
+      canvas,
+      ctx,
+      visible: true,
+    };
+  }
+
+  function addLayer(name: string) {
+    layers.push(createLayer("New Layer"));
+    activeLayerIndex = layers.length - 1;
+  }
+
+  function deleteLayer(id: string) {
+    if (layers.length <= 1) return;
+
+    layers = layers.filter((l) => l.id !== id);
+
+    if (activeLayerIndex >= layers.length) {
+      activeLayerIndex = layers.length - 1;
+    }
+    render();
   }
 
   function saveUndoState() {
+    const activeLayer = layers[activeLayerIndex];
+    if (!activeLayer) return;
+
     while (undoStack.length >= MAX_UNDO) {
       undoStack.shift();
     }
 
-    undoStack.push(
-      bufferCtx.getImageData(0, 0, viewCanvas.width, viewCanvas.height),
-    );
+    undoStack.push({
+      layerId: activeLayer.id,
+      snapshot: activeLayer.ctx.getImageData(
+        0,
+        0,
+        viewCanvas.width,
+        viewCanvas.height,
+      ),
+    });
+
     redoStack.length = 0; // clear in js lmao
   }
 
   function undo() {
-    if (undoStack.length === 0) {
-      return;
-    }
+    const frame = undoStack.pop();
+    if (!frame) return;
 
-    redoStack.push(
-      bufferCtx.getImageData(0, 0, viewCanvas.width, viewCanvas.height),
-    );
+    const targetLayer = layers.find((l) => l.id === frame.layerId);
+    if (!targetLayer) return;
 
-    bufferCtx.putImageData(undoStack.pop()!, 0, 0);
+    redoStack.push({
+      layerId: targetLayer.id,
+      snapshot: targetLayer.ctx.getImageData(
+        0,
+        0,
+        viewCanvas.width,
+        viewCanvas.height,
+      ),
+    });
 
+    targetLayer.ctx.putImageData(frame.snapshot, 0, 0);
     render();
   }
 
   function redo() {
-    if (redoStack.length === 0) {
-      return;
-    }
+    const frame = redoStack.pop();
+    if (!frame) return;
 
-    undoStack.push(
-      bufferCtx.getImageData(0, 0, viewCanvas.width, viewCanvas.height),
-    );
+    const targetLayer = layers.find((l) => l.id === frame.layerId);
+    if (!targetLayer) return;
 
-    bufferCtx.putImageData(redoStack.pop()!, 0, 0);
+    undoStack.push({
+      layerId: targetLayer.id,
+      snapshot: targetLayer.ctx.getImageData(
+        0,
+        0,
+        viewCanvas.width,
+        viewCanvas.height,
+      ),
+    });
 
+    targetLayer.ctx.putImageData(frame.snapshot, 0, 0);
     render();
   }
 
@@ -236,12 +311,7 @@
 
   onMount(() => {
     viewCtx = viewCanvas.getContext("2d")!;
-
-    bufferCanvas = document.createElement("canvas");
-    bufferCanvas.width = viewCanvas.width;
-    bufferCanvas.height = viewCanvas.height;
-    bufferCtx = bufferCanvas.getContext("2d")!;
-
+    layers.push(createLayer("Layer 1"));
     render();
   });
 </script>
@@ -269,8 +339,8 @@
 
 <canvas
   bind:this={viewCanvas}
-  width={1000}
-  height={1000}
+  width={500}
+  height={500}
   onwheel={handleWheel}
   onpointerdown={(e) => {
     if (e.button === 0) {
@@ -299,6 +369,22 @@
   }}
 ></canvas>
 
+<div class="layers-panel">
+  <button onclick={() => addLayer("New Layer")}>+ Add Layer</button>
+
+  {#each layers as layer, i}
+    <div class="layer-item {activeLayerIndex === i ? 'active' : ''}">
+      <input type="checkbox" bind:checked={layer.visible} onchange={render} />
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <span class="name" onclick={() => (activeLayerIndex = i)}>
+        {layer.name}
+      </span>
+      <button onclick={() => deleteLayer(layer.id)}> Delete </button>
+    </div>
+  {/each}
+</div>
+
 <style>
   canvas {
     border: 1px solid #444;
@@ -309,5 +395,9 @@
     display: flex;
     gap: 0.5rem;
     margin-bottom: 0.5rem;
+  }
+
+  .layer-item.active .name {
+    font-weight: bold;
   }
 </style>
