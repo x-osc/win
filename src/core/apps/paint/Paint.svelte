@@ -238,6 +238,7 @@
     canvas.width = docWidth;
     canvas.height = docHeight;
     const ctx = canvas.getContext("2d")!;
+    // ctx.imageSmoothingEnabled = false;
     return {
       id: crypto.randomUUID(),
       name,
