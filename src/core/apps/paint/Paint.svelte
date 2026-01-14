@@ -27,6 +27,8 @@
   let drawing = false;
   let startX = 0;
   let startY = 0;
+  let lastX = 0;
+  let lastY = 0;
 
   let undoStack: HistoryAction[] = [];
   let redoStack: HistoryAction[] = [];
@@ -129,8 +131,19 @@
     viewCtx.save();
     viewCtx.globalCompositeOperation = "difference";
 
-    viewCtx.beginPath();
-    viewCtx.arc(cursorX, cursorY, size / 2, 0, Math.PI * 2);
+    if (tool === "pencil") {
+      const radius = Math.floor(size / 2);
+      viewCtx.beginPath();
+      viewCtx.rect(
+        Math.floor(cursorX - radius),
+        Math.floor(cursorY - radius),
+        Math.floor(size),
+        Math.floor(size),
+      );
+    } else {
+      viewCtx.beginPath();
+      viewCtx.arc(cursorX, cursorY, size / 2, 0, Math.PI * 2);
+    }
 
     viewCtx.strokeStyle = "white";
     viewCtx.lineWidth = 0.66 / Math.pow(zoom, 0.8);
@@ -166,9 +179,10 @@
     const { x, y } = pointerToCanvasCoords(e);
     startX = x;
     startY = y;
+    lastX = x;
+    lastY = y;
 
-    activeCtx.beginPath();
-    activeCtx.moveTo(x, y);
+    activeCtx.save();
 
     viewCanvas.setPointerCapture(e.pointerId);
 
@@ -182,15 +196,23 @@
     const px = Math.floor(x);
     const py = Math.floor(y);
 
-    activeCtx.save();
-
     if (tool === "pencil") {
       activeCtx.imageSmoothingEnabled = false;
       activeCtx.fillStyle = color;
 
-      const offset = Math.floor(size / 2);
-      activeCtx.fillRect(px - offset, py - offset, size, size);
+      rectLineBetween(
+        Math.floor(lastX),
+        Math.floor(lastY),
+        px,
+        py,
+        size,
+        color,
+        activeCtx,
+      );
     } else if (tool === "brush") {
+      activeCtx.beginPath();
+      activeCtx.moveTo(lastX, lastY);
+
       activeCtx.imageSmoothingEnabled = true;
 
       activeCtx.lineWidth = size;
@@ -201,15 +223,21 @@
       activeCtx.lineTo(x, y);
       activeCtx.stroke();
     } else if (tool === "eraser") {
+      activeCtx.beginPath();
+      activeCtx.moveTo(lastX, lastY);
+
       activeCtx.globalCompositeOperation = "destination-out";
       activeCtx.strokeStyle = "rgba(0,0,0,1)";
+
+      activeCtx.lineWidth = size;
+      activeCtx.lineCap = "round";
 
       activeCtx.lineTo(x, y);
       activeCtx.stroke();
     }
 
-    activeCtx.beginPath();
-    activeCtx.moveTo(x, y);
+    lastX = x;
+    lastY = y;
 
     render();
   }
@@ -217,10 +245,43 @@
   function end(e: PointerEvent) {
     if (!drawing) return;
     drawing = false;
+    activeCtx.restore();
     viewCanvas.releasePointerCapture(e.pointerId);
 
-    activeCtx.beginPath();
     render();
+  }
+
+  function rectLineBetween(
+    x0: number,
+    y0: number,
+    x1: number,
+    y1: number,
+    size: number,
+    color: string,
+    ctx: CanvasRenderingContext2D,
+  ) {
+    const dx = Math.abs(x1 - x0);
+    const dy = Math.abs(y1 - y0);
+    const sx = x0 < x1 ? 1 : -1;
+    const sy = y0 < y1 ? 1 : -1;
+    let err = dx - dy;
+
+    while (true) {
+      ctx.fillStyle = color;
+      const radius = Math.floor(size / 2);
+      ctx.fillRect(x0 - radius, y0 - radius, size, size);
+
+      if (x0 === x1 && y0 === y1) break;
+      const e2 = 2 * err;
+      if (e2 > -dy) {
+        err -= dy;
+        x0 += sx;
+      }
+      if (e2 < dx) {
+        err += dx;
+        y0 += sy;
+      }
+    }
   }
 
   // ..its a long name so i remember not to use it..
