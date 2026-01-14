@@ -16,6 +16,10 @@
   let docWidth = 300;
   let docHeight = 300;
 
+  let cursorX = 0;
+  let cursorY = 0;
+  let showCursor = false;
+
   let drawing = false;
   let startX = 0;
   let startY = 0;
@@ -64,6 +68,24 @@
         viewCtx.drawImage(layer.canvas, 0, 0);
       }
     }
+
+    if (showCursor && !panning) {
+      drawCursorCircle();
+    }
+  }
+
+  function drawCursorCircle() {
+    viewCtx.save();
+    viewCtx.globalCompositeOperation = "difference";
+
+    viewCtx.beginPath();
+    viewCtx.arc(cursorX, cursorY, size / 2, 0, Math.PI * 2);
+
+    viewCtx.strokeStyle = "white";
+    viewCtx.lineWidth = 0.66 / Math.pow(zoom, 0.8);
+    viewCtx.stroke();
+
+    viewCtx.restore();
   }
 
   function start(e: PointerEvent) {
@@ -362,6 +384,40 @@
     render();
   }
 
+  function handlePointerDown(e: PointerEvent) {
+    if (e.button === 0) {
+      start(e);
+    } else if (e.button === 1) {
+      panStart(e);
+    }
+  }
+
+  function handlePointerMove(e: PointerEvent) {
+    const { x, y } = pointerToCanvasCoords(e);
+    cursorX = x;
+    cursorY = y;
+    showCursor = true;
+
+    draw(e);
+    panMove(e);
+    render();
+  }
+
+  function handlePointerUp(e: PointerEvent) {
+    if (e.button === 0) {
+      end(e);
+    } else if (e.button === 1) {
+      panEnd(e);
+    }
+  }
+
+  function handlePointerLeave(e: PointerEvent) {
+    showCursor = false;
+    // TODO: idk why not working
+    end(e);
+    render();
+  }
+
   function handleKeyDown(e: KeyboardEvent) {
     if (!winApi.isFocused()) {
       return;
@@ -414,31 +470,10 @@
   width={500}
   height={500}
   onwheel={handleWheel}
-  onpointerdown={(e) => {
-    if (e.button === 0) {
-      start(e);
-    } else if (e.button === 1) {
-      panStart(e);
-    }
-  }}
-  onpointermove={(e) => {
-    draw(e);
-    panMove(e);
-  }}
-  onpointerup={(e) => {
-    if (e.button === 0) {
-      end(e);
-    } else if (e.button === 1) {
-      panEnd(e);
-    }
-  }}
-  onpointerleave={(e) => {
-    if (e.button === 0) {
-      end(e);
-    } else if (e.button === 1) {
-      panEnd(e);
-    }
-  }}
+  onpointerdown={handlePointerDown}
+  onpointermove={handlePointerMove}
+  onpointerup={handlePointerUp}
+  onpointerleave={handlePointerLeave}
 ></canvas>
 
 <div class="layers-panel">
