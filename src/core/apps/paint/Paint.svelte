@@ -37,8 +37,8 @@
   let panStartX = 0;
   let panStartY = 0;
 
-  const MIN_ZOOM = 0.1;
-  const MAX_ZOOM = 8;
+  const MIN_ZOOM = 0.15;
+  const MAX_ZOOM = 100;
 
   let color = $state("#000000");
   let size = $state(6);
@@ -61,6 +61,13 @@
     viewCtx.setTransform(1, 0, 0, 1, 0, 0);
     viewCtx.clearRect(0, 0, viewCanvas.width, viewCanvas.height);
 
+    // dont smooth if zoomed in
+    if (zoom > 12) {
+      viewCtx.imageSmoothingEnabled = false;
+    } else {
+      viewCtx.imageSmoothingEnabled = true;
+    }
+
     viewCtx.setTransform(zoom, 0, 0, zoom, panX, panY);
 
     for (const layer of layers) {
@@ -69,9 +76,47 @@
       }
     }
 
+    if (zoom > 12) {
+      drawPixelGrid();
+    }
+
     if (showCursor && !panning) {
       drawCursorCircle();
     }
+  }
+
+  function drawPixelGrid() {
+    viewCtx.save();
+
+    viewCtx.lineWidth = 1 / zoom;
+    viewCtx.strokeStyle = "rgba(128, 128, 128, 0.3)";
+
+    viewCtx.beginPath();
+
+    const startX = Math.max(0, Math.floor(-panX / zoom));
+    const endX = Math.min(
+      docWidth,
+      Math.ceil((viewCanvas.width - panX) / zoom),
+    );
+
+    const startY = Math.max(0, Math.floor(-panY / zoom));
+    const endY = Math.min(
+      docHeight,
+      Math.ceil((viewCanvas.height - panY) / zoom),
+    );
+
+    for (let x = startX; x <= endX; x++) {
+      viewCtx.moveTo(x, 0);
+      viewCtx.lineTo(x, viewCanvas.height);
+    }
+
+    for (let y = startY; y <= endY; y++) {
+      viewCtx.moveTo(0, y);
+      viewCtx.lineTo(viewCanvas.width, y);
+    }
+
+    viewCtx.stroke();
+    viewCtx.restore();
   }
 
   function drawCursorCircle() {
