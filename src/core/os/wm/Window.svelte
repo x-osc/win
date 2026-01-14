@@ -30,14 +30,15 @@
     getData: () => windowData,
     setTitle: (title: string) => wmApi.setWindowTitle(id, title),
     focus: () => focus(),
-    isFocused: () => id in wmApi.getWindows() && wmApi.isWindowFocused(id),
+    isFocused: () =>
+      id in Array.from(wmApi.getWindows().keys()) && wmApi.isWindowFocused(id),
     move: (x: number, y: number) => wmApi.moveWindow(id, x, y),
     resize: (width: number, height: number) =>
       wmApi.setWindowSize(id, width, height),
     close: () => wmApi.closeWindow(id),
     getWindowElement: () => windowElement,
     getBody: () => bodyElement,
-    isOpen: () => id in wmApi.getWindows(),
+    isOpen: () => id in Array.from(wmApi.getWindows().keys()),
 
     // svelte-ignore state_referenced_locally
     on: callbacks.on.bind(callbacks),
