@@ -203,6 +203,7 @@
     <button onclick={() => reload(true)}>reload</button>
     <input
       class="urlbar"
+      type="text"
       bind:this={urlInput}
       bind:value={url}
       onkeydown={handleInputKeyDown}

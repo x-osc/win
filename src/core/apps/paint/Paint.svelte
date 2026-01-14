@@ -255,7 +255,13 @@
   <input type="color" bind:value={color} style="min-width: 65px" />
   <button onclick={undo}>Undo</button>
   <button onclick={redo}>Redo</button>
-  <input type="range" min="1" max="50" bind:value={size} />
+  <input
+    class="has-box-indicator"
+    type="range"
+    min="1"
+    max="50"
+    bind:value={size}
+  />
   <button onclick={resetView}>Reset View</button>
 </div>
 

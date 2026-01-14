@@ -14,6 +14,7 @@
   import { minesweeperManifest } from "./core/apps/minesweeper/minesweeper";
   import { notepadManifest } from "./core/apps/notepad/notepad";
   import { paintManifest } from "./core/apps/paint/paint";
+  import { settingsManifest } from "./core/apps/settings/settings";
   import { terminalManifest } from "./core/apps/terminal/terminal";
   import { testAppManifest } from "./core/apps/testApp";
   import { asdfManifest } from "./core/cmds/asdf";
@@ -47,6 +48,7 @@
   registerApp(calcManifest);
   registerApp(browserManifest);
   registerApp(minesweeperManifest);
+  registerApp(settingsManifest);
 
   registerCmd(helpManifest);
   registerCmd(asdfManifest);
@@ -102,6 +104,7 @@
       <button onclick={(_) => launchAppFromManifest(hydraManifest)}>
         hydra.exe
       </button>
+      <button onclick={(_) => launchApp("settings")}>settings</button>
 
       {#if gameState.isTrail}
         <Trail />

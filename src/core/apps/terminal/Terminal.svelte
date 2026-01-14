@@ -165,6 +165,7 @@
     </span>
     <input
       bind:this={textInput}
+      type="text"
       style="display: {!isCmdRunning || isInputRunning ? 'inline' : 'none'}"
       onkeydown={handleKeyDown}
       onblur={handleBlur}
@@ -209,8 +210,9 @@
     padding: 0;
   }
 
-  .input {
+  input.input {
     background-color: rgba(0, 0, 0, 0);
+
     color: #f5f5f5;
     margin: 0;
     padding: 0;
@@ -220,6 +222,7 @@
 
     outline: none;
     border: none;
+    border-radius: 0;
     word-wrap: break-word;
     word-break: break-all;
   }
