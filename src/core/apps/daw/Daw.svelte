@@ -9,9 +9,11 @@
   const steps = 16;
   const tracks = ["C4", "A3", "F3", "C3"];
 
-  let grid: boolean[][] = Array(tracks.length)
-    .fill(null)
-    .map(() => Array(steps).fill(false));
+  let grid: boolean[][] = $state(
+    Array(tracks.length)
+      .fill(null)
+      .map(() => Array(steps).fill(false)),
+  );
 
   let currentStep = $state(0);
   let isPlaying = $state(false);
