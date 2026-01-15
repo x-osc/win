@@ -19,6 +19,8 @@
     lastCaptureTime: number;
   };
 
+  let isDoneMountWindows = false;
+
   const captureInterval = 10;
   const refreshInterval = 3200;
 
@@ -52,6 +54,8 @@
     for (const data of trails.values()) {
       await screenshot(data);
     }
+
+    isDoneMountWindows = true;
   });
 
   async function screenshot(
@@ -151,6 +155,8 @@
   }
 
   function handleMove(id: number, x: number, y: number) {
+    if (!isDoneMountWindows) return;
+
     let data = trails.get(id);
     if (data == undefined) {
       return;

@@ -1,6 +1,7 @@
  - rework terminal to be like lok.computer's (prompt on bottom, logs on top)
  - full ui css stuff
  - make generic idb stores and set flag on store when files are already generated
+ - trail has list of allowed windows to prevent lagagagagaga (also requestanimationframe loop)
  - focusing with taskbar doesnt trigger focus callback 
  - decide on how saving works in explorer..
  - depressed clippy
