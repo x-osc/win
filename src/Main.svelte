@@ -5,6 +5,7 @@
   import { initAudio } from "@os/audio/sounds";
   import { registerCmd } from "@os/cmd/cmdregistry";
   import { writeInitialFiles } from "@os/fs/filesystem";
+  import DebugPhysicsOverlay from "@os/physics/DebugPhysicsOverlay.svelte";
   import { initPhysics } from "@os/physics/physics";
   import { startWindowPhysics } from "@os/physics/windows";
   import Taskbar from "@os/wm/Taskbar.svelte";
@@ -123,6 +124,13 @@
       >
         fysiks
       </button>
+      <button
+        onclick={(_) => {
+          debugPhysicsOverlay = !debugPhysicsOverlay;
+        }}
+      >
+        toggle hitboxes
+      </button>
 
       {#if gameState.isTrail}
         <Trail />
@@ -130,6 +138,8 @@
     </div>
     <Taskbar taskbar={wmApi.getTaskbar()} {wmApi} />
   </div>
+
+  <DebugPhysicsOverlay show={debugPhysicsOverlay} />
 
   {#if gameState.isBsod}
     <Bsod />

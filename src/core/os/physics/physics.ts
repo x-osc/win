@@ -1,7 +1,7 @@
-import { Bodies, Body, Composite, Engine } from "matter-js";
+import { Bodies, Body, Composite, Engine, Render } from "matter-js";
 
 export let engine = Engine.create();
-let render;
+let render: Render;
 let prevTime = 0;
 let walls: Body[] = [];
 
@@ -43,4 +43,26 @@ function createWalls() {
   ];
 
   Composite.add(engine.world, walls);
+}
+
+export function setupDebugRender(container: HTMLElement) {
+  render = Render.create({
+    element: container,
+    engine: engine,
+    options: {
+      width: window.innerWidth,
+      height: window.innerHeight,
+      wireframes: true,
+      background: "transparent",
+      hasBounds: true,
+    },
+  });
+}
+
+export function startDebugRender() {
+  Render.run(render);
+}
+
+export function stopDebugRender() {
+  Render.stop(render);
 }
