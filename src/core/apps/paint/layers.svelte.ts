@@ -30,10 +30,7 @@ export class LayerManager {
     return this.layers;
   }
 
-  private createLayerAndReturnTheLayer(
-    name: string,
-    opts?: Partial<Layer>,
-  ): Layer {
+  makeLayer(name: string, opts?: Partial<Layer>): Layer {
     const canvas = document.createElement("canvas");
     canvas.width = this.docWidth;
     canvas.height = this.docHeight;
@@ -50,8 +47,8 @@ export class LayerManager {
     };
   }
 
-  createLayer(name: string, opts?: Partial<Layer>) {
-    let layer = this.createLayerAndReturnTheLayer(name, opts);
+  addLayer(name: string, opts?: Partial<Layer>) {
+    let layer = this.makeLayer(name, opts);
     this.layers.push(layer);
     this.activeIndex = this.layers.length - 1;
     return layer;

@@ -322,6 +322,22 @@
     });
   }
 
+  function addLayer(name: string) {
+    let newLayer = layerm.makeLayer(name);
+
+    history.execute({
+      name: "Add Layer",
+      do: () => {
+        layerm.layers.push(newLayer);
+        layerm.activeIndex = layerm.layers.length - 1;
+      },
+      undo: () => {
+        layerm.layers = layerm.layers.filter((l) => l.id !== newLayer.id);
+        layerm.activeIndex = Math.max(0, layerm.layers.length - 1);
+      },
+    });
+  }
+
   function resetView() {
     zoom = 1;
     panX = 0;
@@ -438,13 +454,13 @@
   onMount(() => {
     viewCtx = viewCanvas.getContext("2d")!;
 
-    let backgroundCtx = layerm.createLayer("Background", {
+    let backgroundCtx = layerm.addLayer("Background", {
       locked: true,
     }).ctx;
     backgroundCtx.fillStyle = "#ffffff";
     backgroundCtx.fillRect(0, 0, docWidth, docHeight);
 
-    layerm.createLayer("Layer 1");
+    layerm.addLayer("Layer 1");
     layerm.activeIndex = 1;
 
     winApi.on("resize", () => {
@@ -492,7 +508,7 @@
   </div>
 
   <div class="layers-panel">
-    <button onclick={() => layerm.createLayer("New Layer")}>+ Add Layer</button>
+    <button onclick={() => addLayer("New Layer")}>+ Add Layer</button>
 
     {#each layerm.layers as layer, i}
       <div
