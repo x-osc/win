@@ -137,6 +137,7 @@ export const wmApi = {
   createWindow: createWindowAsync,
   setWindowTitle,
   moveWindow,
+  moveWindowForce,
   setWindowSize,
   focusWindow,
   isWindowFocused,
@@ -207,6 +208,17 @@ function moveWindow(id: number, x: number, y: number) {
   win.y = y;
 
   wmglobalCallbacks.emit("anymoved", id, x, y);
+}
+
+function moveWindowForce(id: number, x: number, y: number) {
+  const win = windows.get(id)?.data;
+  if (!win) {
+    console.warn(`Window with id ${id} does not exist.`);
+    return;
+  }
+
+  win.x = x;
+  win.y = y;
 }
 
 // window's responsibility to ensure minwidth and minheight

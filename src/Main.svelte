@@ -5,6 +5,8 @@
   import { initAudio } from "@os/audio/sounds";
   import { registerCmd } from "@os/cmd/cmdregistry";
   import { writeInitialFiles } from "@os/fs/filesystem";
+  import { initPhysics } from "@os/physics/physics";
+  import { startWindowPhysics } from "@os/physics/windows";
   import Taskbar from "@os/wm/Taskbar.svelte";
   import Window from "@os/wm/Window.svelte";
   import { wmApi } from "@os/wm/wm.svelte";
@@ -71,6 +73,8 @@
   registerCmd(explorerCmdManifest);
   registerCmd(dialogCmdManifest);
 
+  let debugPhysicsOverlay = $state(false);
+
   function handleMouseMove(e: MouseEvent) {
     mousePos.x = e.clientX;
     mousePos.y = e.clientY;
@@ -111,6 +115,14 @@
         hydra.exe
       </button>
       <button onclick={(_) => launchApp("settings")}>settings</button>
+      <button
+        onclick={(_) => {
+          initPhysics();
+          startWindowPhysics();
+        }}
+      >
+        fysiks
+      </button>
 
       {#if gameState.isTrail}
         <Trail />
