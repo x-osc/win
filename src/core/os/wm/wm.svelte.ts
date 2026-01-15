@@ -224,6 +224,8 @@ function moveWindowForce(id: number, x: number, y: number) {
 
   win.x = x;
   win.y = y;
+
+  wmglobalCallbacks.emit("anymoved", id, x, y);
 }
 
 function setWindowRotation(id: number, rot: number) {

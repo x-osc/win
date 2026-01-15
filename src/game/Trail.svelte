@@ -11,6 +11,7 @@
   let trails: Map<number, TrailData> = new Map();
 
   type TrailData = {
+    id: number;
     element: HTMLElement;
     currentCapture: HTMLCanvasElement | null;
     isCapturing: boolean;
@@ -39,6 +40,7 @@
       if (win.api === null) return;
 
       trails.set(id, {
+        id,
         element: win.api.getWindowElement(),
         currentCapture: null,
         isCapturing: false,
@@ -83,6 +85,7 @@
     clone.style.position = "absolute";
     clone.style.left = "0px";
     clone.style.top = "0px";
+    clone.style.transform = "";
     clone.style.right = "auto";
     clone.style.bottom = "auto";
 
@@ -103,30 +106,38 @@
   }
 
   export async function drawImage(data: TrailData) {
-    let rect = data.element.getBoundingClientRect();
+    let win = wmApi.getWindows().get(data.id);
+    if (!win) return;
 
+    const { x, y, width, height, rotation } = win.data;
     const capture = data.currentCapture ?? (await screenshot(data));
-    if (capture === null) {
-      return;
-    }
+    if (capture === null) return;
+
+    ctx.save();
+
+    ctx.translate(x + width / 2, y + height / 2);
+    ctx.rotate(rotation);
 
     ctx.drawImage(
       capture,
       0,
       0,
-      rect.width,
-      rect.height,
-      rect.x,
-      rect.y,
-      rect.width,
-      rect.height,
+      width,
+      height,
+      -width / 2,
+      -height / 2,
+      width,
+      height,
     );
+
+    ctx.restore();
   }
 
   function handleMount(id: number) {
     let win = wmApi.getWindows().get(id)!;
 
     let data = {
+      id,
       element: win.api!.getWindowElement(),
       currentCapture: null,
       isCapturing: false,
