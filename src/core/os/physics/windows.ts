@@ -7,11 +7,15 @@ let activeConstraint: Constraint | null = null;
 let isUpdating = false;
 
 export function startWindowPhysics() {
-  wmApi.on("anymounted", (id) => {
-    addWindow(id, wmApi.getWindows().get(id)!.data);
-  });
+  wmApi.on("anymounted", (id) =>
+    addWindow(id, wmApi.getWindows().get(id)!.data),
+  );
 
   wmApi.on("anyclosed", (id) => removeWindow(id));
+
+  wmApi.on("anyresized", (id, width, height) => {
+    resizeWindow(id, width, height);
+  });
 
   for (const [id, win] of wmApi.getWindows().entries()) {
     addWindow(id, win.data);
@@ -57,6 +61,29 @@ function removeWindow(id: number) {
     Composite.remove(engine.world, body);
     windowBodies.delete(id);
   }
+}
+
+function resizeWindow(id: number, newWidth: number, newHeight: number) {
+  const body = windowBodies.get(id);
+  const win = wmApi.getWindows().get(id);
+  if (!body || !win) return;
+
+  const currentAngle = body.angle;
+  console.log(currentAngle);
+
+  const halfW = newWidth / 2;
+  const halfH = newHeight / 2;
+
+  const newVertices = [
+    { x: -halfW, y: -halfH },
+    { x: halfW, y: -halfH },
+    { x: halfW, y: halfH },
+    { x: -halfW, y: halfH },
+  ];
+
+  Body.setAngle(body, 0);
+  Body.setVertices(body, newVertices);
+  Body.setAngle(body, currentAngle);
 }
 
 export function grabWindow(id: number, x: number, y: number) {
