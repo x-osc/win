@@ -1,6 +1,11 @@
 import { wmApi, type WinData } from "@os/wm/wm.svelte";
 import { Bodies, Body, Composite, Constraint, Events } from "matter-js";
-import { engine } from "./physics";
+import {
+  CATEGORY_MINIMIZED_WINDOW,
+  CATEGORY_WALL,
+  CATEGORY_WINDOW,
+  engine,
+} from "./physics";
 
 let windowBodies: Map<number, Body> = new Map();
 let activeConstraint: Constraint | null = null;
@@ -13,9 +18,12 @@ export function startWindowPhysics() {
 
   wmApi.on("anyclosed", (id) => removeWindow(id));
 
-  wmApi.on("anyresized", (id, width, height) => {
-    resizeWindow(id, width, height);
-  });
+  wmApi.on("anyresized", (id, width, height) =>
+    resizeWindow(id, width, height),
+  );
+
+  wmApi.on("anyminimized", (id) => removeCollision(id));
+  wmApi.on("anyrestored", (id) => restoreCollision(id));
 
   for (const [id, win] of wmApi.getWindows().entries()) {
     addWindow(id, win.data);
@@ -48,6 +56,10 @@ function addWindow(id: number, data: WinData) {
     density: 0.005,
     frictionAir: 0.01,
     restitution: 0.1,
+    collisionFilter: {
+      category: CATEGORY_WINDOW,
+      mask: CATEGORY_WALL | CATEGORY_WINDOW,
+    },
     label: id.toString(),
   });
 
@@ -84,6 +96,20 @@ function resizeWindow(id: number, newWidth: number, newHeight: number) {
   Body.setAngle(body, 0);
   Body.setVertices(body, newVertices);
   Body.setAngle(body, currentAngle);
+}
+
+function removeCollision(id: number) {
+  const body = windowBodies.get(id);
+  if (!body) return;
+
+  body.collisionFilter.category = CATEGORY_MINIMIZED_WINDOW;
+}
+
+function restoreCollision(id: number) {
+  const body = windowBodies.get(id);
+  if (!body) return;
+
+  body.collisionFilter.category = CATEGORY_WINDOW;
 }
 
 export function grabWindow(id: number, x: number, y: number) {

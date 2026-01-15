@@ -10,6 +10,11 @@ const frameRate = 1000 / 60;
 
 let walls: Body[] = [];
 
+export const CATEGORY_WALL = 0x0004;
+export const CATEGORY_MINIMIZED_WINDOW = 0x0002;
+export const CATEGORY_WINDOW = 0x0001;
+export const CATEGORY_NONE = 0x0000;
+
 export function initPhysics() {
   createWalls();
   engine.gravity.y = 5;

@@ -75,6 +75,8 @@ export type WmEvents = {
   anyresized(id: number, width: number, height: number): void;
   anyclosed(id: number): void;
   anymounted(id: number): void;
+  anyminimized(id: number): void;
+  anyrestored(id: number): void;
 };
 
 let wmglobalCallbacks = new CallbackManager<WmEvents>();
@@ -261,12 +263,17 @@ function focusWindow(id: number) {
 
   windows.get(id)?.callbacks.emit("focus");
 
+  const wasMinimized = win.isMinimized;
+
   win.isMinimized = false;
   win.z = zIndex.value++;
   focusHistory = focusHistory.filter((winId) => winId !== id);
   focusHistory.push(id);
 
   wmglobalCallbacks.emit("anyfocused", id);
+  if (wasMinimized) {
+    wmglobalCallbacks.emit("anyrestored", id);
+  }
 }
 
 function isWindowFocused(id: number) {
@@ -289,6 +296,8 @@ function minimizeWindow(id: number) {
   win.isMinimized = true;
 
   focusPrevWindow();
+
+  wmglobalCallbacks.emit("anyminimized", id);
 }
 
 function closeWindow(id: number) {
