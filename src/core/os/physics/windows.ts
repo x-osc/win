@@ -1,8 +1,9 @@
 import { wmApi, type WinData } from "@os/wm/wm.svelte";
-import { Bodies, Composite, Events, type Body } from "matter-js";
+import { Bodies, Composite, Constraint, Events, type Body } from "matter-js";
 import { engine } from "./physics";
 
 let windowBodies: Map<number, Body> = new Map();
+let activeConstraint: Constraint | null = null;
 let isUpdating = false;
 
 export function startWindowPhysics() {
@@ -33,6 +34,8 @@ export function startWindowPhysics() {
 }
 
 function addWindow(id: number, data: WinData) {
+  wmApi.getWindows().get(id)!.data.physicsEnabled = true;
+
   const centerX = data.x + data.width / 2;
   const centerY = data.y + data.height / 2;
 
@@ -51,5 +54,40 @@ function removeWindow(id: number) {
   if (body) {
     Composite.remove(engine.world, body);
     windowBodies.delete(id);
+  }
+}
+
+export function grabWindow(id: number, x: number, y: number) {
+  const body = windowBodies.get(id);
+  if (!body) return;
+
+  const localOffset = {
+    x: x - body.position.x,
+    y: y - body.position.y,
+  };
+
+  activeConstraint = Constraint.create({
+    pointA: { x, y },
+    bodyB: body,
+    pointB: localOffset,
+    stiffness: 0.2,
+    length: 0,
+    damping: 0.1,
+  });
+
+  Composite.add(engine.world, activeConstraint);
+}
+
+export function updateGrab(x: number, y: number) {
+  if (activeConstraint) {
+    activeConstraint.pointA.x = x;
+    activeConstraint.pointA.y = y;
+  }
+}
+
+export function releaseWindow() {
+  if (activeConstraint) {
+    Composite.remove(engine.world, activeConstraint);
+    activeConstraint = null;
   }
 }

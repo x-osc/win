@@ -1,5 +1,6 @@
 <script lang="ts">
   import { CallbackManager } from "@lib/core/callbacks";
+  import { grabWindow, releaseWindow, updateGrab } from "@os/physics/windows";
   import "@os/win.css";
   import { onMount } from "svelte";
   import { on } from "svelte/events";
@@ -59,9 +60,7 @@
   }
 
   function handleTitlebarDrag(event: MouseEvent | TouchEvent) {
-    if ((event.target as HTMLElement).closest(".nodrag")) {
-      return;
-    }
+    if ((event.target as HTMLElement).closest(".nodrag")) return;
 
     event.stopPropagation();
     event.preventDefault();
@@ -89,6 +88,47 @@
     }
 
     function onMouseUp() {
+      removeMouseMove();
+      removeMouseUp();
+      removeTouchMove();
+      removeTouchEnd();
+    }
+
+    let removeMouseMove = on(window, "mousemove", onMouseMove);
+    let removeTouchMove = on(window, "touchmove", onMouseMove, {
+      passive: false,
+    });
+
+    let removeMouseUp = on(window, "mouseup", onMouseUp);
+    let removeTouchEnd = on(window, "touchend", onMouseUp);
+  }
+
+  function handlePhysicsTitlebarDrag(event: MouseEvent | TouchEvent) {
+    if ((event.target as HTMLElement).closest(".nodrag")) return;
+
+    event.stopPropagation();
+    event.preventDefault();
+    focus();
+
+    const clientX =
+      event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
+    const clientY =
+      event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
+
+    grabWindow(id, clientX, clientY);
+
+    function onMouseMove(event: MouseEvent | TouchEvent) {
+      const clientX =
+        event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
+      const clientY =
+        event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
+
+      updateGrab(clientX, clientY);
+    }
+
+    function onMouseUp() {
+      releaseWindow();
+
       removeMouseMove();
       removeMouseUp();
       removeTouchMove();
@@ -206,8 +246,14 @@
 >
   <div
     class="titlebar"
-    onmousedown={handleTitlebarDrag}
-    ontouchstart={handleTitlebarDrag}
+    onmousedown={(e) =>
+      windowData.physicsEnabled
+        ? handlePhysicsTitlebarDrag(e)
+        : handleTitlebarDrag(e)}
+    ontouchstart={(e) =>
+      windowData.physicsEnabled
+        ? handlePhysicsTitlebarDrag(e)
+        : handleTitlebarDrag(e)}
   >
     <span class="title">{windowData.title}</span>
     <div class="controls">

@@ -38,6 +38,7 @@ export type WinData = {
   minWidth: number;
   minHeight: number;
   isMinimized: boolean;
+  physicsEnabled: boolean;
   // TODO: make non-data (runtime only) stuff part of a different type
   owner: number | null;
   componentData?: ChildComponentData;
@@ -90,6 +91,7 @@ export function winDataBuilder() {
     minHeight: 50,
     minWidth: 120,
     isMinimized: false,
+    physicsEnabled: false,
     owner: null,
   };
 
