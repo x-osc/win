@@ -241,7 +241,7 @@
       const newData = activeCtx.getImageData(0, 0, docWidth, docHeight);
       const layerId = activeLayer.id;
 
-      history.execute({
+      history.push({
         name: "Brush Stroke",
         do: () => {
           const layer = layerm.layers.find((l) => l.id === layerId);
