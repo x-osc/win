@@ -2,19 +2,22 @@
   import type { AppApi } from "@os/app/api";
   import type { WindowApi } from "@os/wm/wm.svelte";
   import { onMount } from "svelte";
+  import { HistoryManager } from "./history";
+  import { LayerManager } from "./layers.svelte";
 
   let { api: api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 
   let viewCanvas: HTMLCanvasElement;
   let viewCtx: CanvasRenderingContext2D;
 
-  let layers: Layer[] = $state([]);
-  let activeLayerIndex = $state(0);
-  let activeLayer = $derived(layers[activeLayerIndex]);
-  let activeCtx = $derived(layers[activeLayerIndex]?.ctx);
-
   let docWidth = 300;
   let docHeight = 300;
+
+  let layerManager = new LayerManager(docWidth, docHeight, render);
+  let activeLayer = $derived(layerManager.getActiveLayer());
+  let activeCtx = $derived(layerManager.getActiveLayer().ctx);
+
+  let historyManager = new HistoryManager(render, 50);
 
   let canvasContainer: HTMLElement | null = null;
   let canvasWidth = 300;
@@ -29,9 +32,6 @@
   let startY = 0;
   let lastX = 0;
   let lastY = 0;
-
-  let undoStack: HistoryAction[] = [];
-  let redoStack: HistoryAction[] = [];
 
   const MAX_UNDO = 100;
 
@@ -52,19 +52,6 @@
 
   type Tool = "brush" | "pencil" | "eraser";
 
-  interface Layer {
-    id: string;
-    name: string;
-    canvas: HTMLCanvasElement;
-    ctx: CanvasRenderingContext2D;
-    visible: boolean;
-    locked: boolean;
-  }
-
-  type HistoryAction =
-    | { type: "draw"; layerId: string; snapshot: ImageData }
-    | { type: "delete_layer"; layerId: string; layer: Layer; index: number };
-
   function render() {
     viewCtx.setTransform(1, 0, 0, 1, 0, 0);
     viewCtx.clearRect(0, 0, viewCanvas.width, viewCanvas.height);
@@ -78,7 +65,7 @@
 
     viewCtx.setTransform(zoom, 0, 0, zoom, panX, panY);
 
-    for (const layer of layers) {
+    for (const layer of layerManager.getLayers()) {
       if (layer.visible) {
         viewCtx.drawImage(layer.canvas, 0, 0);
       }
@@ -284,76 +271,10 @@
     }
   }
 
-  // ..its a long name so i remember not to use it..
-  function createLayerAndReturnTheLayer(
-    name: string,
-    opts?: Partial<Layer>,
-  ): Layer {
-    const canvas = document.createElement("canvas");
-    canvas.width = docWidth;
-    canvas.height = docHeight;
-    const ctx = canvas.getContext("2d")!;
-    // ctx.imageSmoothingEnabled = false;
-    return {
-      id: crypto.randomUUID(),
-      name,
-      canvas,
-      ctx,
-      visible: true,
-      locked: false,
-      ...opts,
-    };
-  }
-
-  function createLayer(name: string, opts?: Partial<Layer>) {
-    let layer = createLayerAndReturnTheLayer(name, opts);
-    layers.push(layer);
-    activeLayerIndex = layers.length - 1;
-    return layer;
-  }
-
-  function selectLayer(id: string) {
-    const layer = layers.find((l) => l.id === id);
-    const index = layers.findIndex((l) => l.id === id);
-
-    if (!layer || layer.locked) return;
-
-    activeLayerIndex = index;
-  }
-
-  function deleteLayer(id: string) {
-    if (layers.length <= 1) return;
-
-    const layer = layers.find((l) => l.id === id);
-    const index = layers.findIndex((l) => l.id === id);
-    if (!layer || layer.locked) return;
-
-    undoStack.push({
-      type: "delete_layer",
-      layerId: id,
-      layer: layer,
-      index,
-    });
-    redoStack.length = 0;
-
-    layers = layers.filter((l) => l.id !== id);
-
-    if (activeLayerIndex >= layers.length) {
-      activeLayerIndex = layers.length - 1;
-    }
-
-    render();
-  }
-
   function saveDrawUndoState() {
-    const activeLayer = layers[activeLayerIndex];
     if (!activeLayer) return;
 
-    while (undoStack.length >= MAX_UNDO) {
-      undoStack.shift();
-    }
-
-    undoStack.push({
+    historyManager.saveState({
       type: "draw",
       layerId: activeLayer.id,
       snapshot: activeLayer.ctx.getImageData(
@@ -363,81 +284,26 @@
         viewCanvas.height,
       ),
     });
-
-    redoStack.length = 0; // clear in js lmao
   }
 
   function undo() {
-    const action = undoStack.pop();
-    if (!action) return;
-
-    if (action.type === "draw") {
-      const targetLayer = layers.find((l) => l.id === action.layerId);
-      if (!targetLayer) return;
-
-      redoStack.push({
-        type: "draw",
-        layerId: targetLayer.id,
-        snapshot: targetLayer.ctx.getImageData(
-          0,
-          0,
-          viewCanvas.width,
-          viewCanvas.height,
-        ),
-      });
-
-      targetLayer.ctx.putImageData(action.snapshot, 0, 0);
-    } else if (action.type === "delete_layer") {
-      layers.splice(action.index, 0, action.layer);
-
-      activeLayerIndex = action.index;
-
-      redoStack.push({
-        type: "delete_layer",
-        layerId: action.layerId,
-        index: action.index,
-        layer: action.layer,
-      });
-    }
-
-    render();
+    historyManager.undo(layerManager);
   }
 
   function redo() {
-    const action = redoStack.pop();
-    if (!action) return;
+    historyManager.redo(layerManager);
+  }
 
-    if (action.type === "draw") {
-      const targetLayer = layers.find((l) => l.id === action.layerId);
-      if (!targetLayer) return;
+  function deleteLayer(id: string) {
+    let deleted = layerManager.deleteLayer(id);
+    if (!deleted) return;
 
-      undoStack.push({
-        type: "draw",
-        layerId: targetLayer.id,
-        snapshot: targetLayer.ctx.getImageData(
-          0,
-          0,
-          viewCanvas.width,
-          viewCanvas.height,
-        ),
-      });
-
-      targetLayer.ctx.putImageData(action.snapshot, 0, 0);
-    } else if (action.type === "delete_layer") {
-      const index = layers.findIndex((l) => l.id === action.layerId);
-      if (index !== -1) {
-        const removedLayer = layers[index];
-        undoStack.push({
-          type: "delete_layer",
-          layerId: removedLayer.id,
-          layer: removedLayer,
-          index: index,
-        });
-        layers = layers.filter((l) => l.id !== action.layerId);
-      }
-    }
-
-    render();
+    historyManager.saveState({
+      type: "delete_layer",
+      layerId: id,
+      layer: deleted.layer,
+      index: deleted.index,
+    });
   }
 
   function resetView() {
@@ -556,12 +422,14 @@
   onMount(() => {
     viewCtx = viewCanvas.getContext("2d")!;
 
-    let backgroundCtx = createLayer("Background", { locked: true }).ctx;
+    let backgroundCtx = layerManager.createLayer("Background", {
+      locked: true,
+    }).ctx;
     backgroundCtx.fillStyle = "#ffffff";
     backgroundCtx.fillRect(0, 0, docWidth, docHeight);
 
-    createLayer("Layer 1");
-    activeLayerIndex = 1;
+    layerManager.createLayer("Layer 1");
+    layerManager.activeIndex = 1;
 
     winApi.on("resize", () => {
       resize();
@@ -608,12 +476,14 @@
   </div>
 
   <div class="layers-panel">
-    <button onclick={() => createLayer("New Layer")}>+ Add Layer</button>
+    <button onclick={() => layerManager.createLayer("New Layer")}
+      >+ Add Layer</button
+    >
 
-    {#each layers as layer, i}
+    {#each layerManager.layers as layer, i}
       <div
         class="layer-item
-      {activeLayerIndex === i ? 'active' : ''} 
+      {layerManager.activeIndex === i ? 'active' : ''} 
       {layer.locked ? 'locked' : ''}
       "
       >
@@ -623,7 +493,7 @@
         </button>
         <!-- svelte-ignore a11y_click_events_have_key_events -->
         <!-- svelte-ignore a11y_no_static_element_interactions -->
-        <span class="name" onclick={() => selectLayer(layer.id)}>
+        <span class="name" onclick={() => layerManager.selectLayer(layer.id)}>
           {layer.name}
         </span>
 
