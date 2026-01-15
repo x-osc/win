@@ -22,7 +22,7 @@
   let isDoneMountWindows = false;
 
   const captureInterval = 10;
-  const refreshInterval = 3200;
+  const refreshInterval = 2600 * wmApi.getWindows().size;
 
   onMount(async () => {
     ctx = canvas.getContext("2d")!;
@@ -46,8 +46,8 @@
         element: win.api.getWindowElement(),
         currentCapture: null,
         isCapturing: false,
-        lastRefreshTime: 0,
-        lastCaptureTime: 0,
+        lastRefreshTime: Date.now(),
+        lastCaptureTime: Date.now(),
       });
     }
 
@@ -145,8 +145,8 @@
       element: win.api!.getWindowElement(),
       currentCapture: null,
       isCapturing: false,
-      lastRefreshTime: 0,
-      lastCaptureTime: 0,
+      lastRefreshTime: Date.now(),
+      lastCaptureTime: Date.now(),
     };
 
     trails.set(id, data);
