@@ -25,19 +25,58 @@ function createWalls() {
     Composite.remove(engine.world, walls);
   }
 
-  // taskbar height
-  const thickness = 35;
-  const width = window.innerWidth;
-  const height = window.innerHeight;
+  const taskbarHeight = 35;
+
+  const thickness = 100;
+
+  const extraWidth = 1000;
+  const winWidth = window.innerWidth;
+  const fullWidth = winWidth + extraWidth;
+
+  const extraHeight = 1000;
+  const winHeight = window.innerHeight;
+  const fullHeight = winHeight + extraHeight;
 
   walls = [
+    // top
     Bodies.rectangle(
-      width / 2,
-      height - thickness / 2,
-      width + 5000,
+      winWidth / 2,
+      -extraHeight - thickness / 2,
+      fullWidth,
       thickness,
       {
         isStatic: true,
+      },
+    ),
+    // left
+    Bodies.rectangle(
+      -extraWidth / 2 - thickness / 2,
+      winHeight / 2,
+      thickness,
+      fullHeight,
+      {
+        isStatic: true,
+      },
+    ),
+    // right
+    Bodies.rectangle(
+      winWidth + thickness / 2 + extraWidth / 2,
+      winHeight / 2,
+      thickness,
+      fullHeight,
+      {
+        isStatic: true,
+      },
+    ),
+    // bottom
+    Bodies.rectangle(
+      winWidth / 2,
+      winHeight + thickness / 2 - taskbarHeight,
+      fullWidth,
+      thickness,
+      {
+        isStatic: true,
+        friction: 0.8,
       },
     ),
   ];
