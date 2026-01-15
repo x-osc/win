@@ -1,5 +1,5 @@
 import { wmApi, type WinData } from "@os/wm/wm.svelte";
-import { Bodies, Composite, Constraint, Events, type Body } from "matter-js";
+import { Bodies, Body, Composite, Constraint, Events } from "matter-js";
 import { engine } from "./physics";
 
 let windowBodies: Map<number, Body> = new Map();
@@ -40,8 +40,10 @@ function addWindow(id: number, data: WinData) {
   const centerY = data.y + data.height / 2;
 
   const body = Bodies.rectangle(centerX, centerY, data.width, data.height, {
-    frictionAir: 0.05,
-    restitution: 0.6,
+    friction: 0.9,
+    density: 0.005,
+    frictionAir: 0.01,
+    restitution: 0.1,
     label: id.toString(),
   });
 
@@ -70,7 +72,7 @@ export function grabWindow(id: number, x: number, y: number) {
     pointA: { x, y },
     bodyB: body,
     pointB: localOffset,
-    stiffness: 0.2,
+    stiffness: 0.5,
     length: 0,
     damping: 0.1,
   });
