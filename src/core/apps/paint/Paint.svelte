@@ -13,11 +13,12 @@
   let docWidth = 300;
   let docHeight = 300;
 
-  let layerManager = new LayerManager(docWidth, docHeight, render);
-  let activeLayer = $derived(layerManager.getActiveLayer());
-  let activeCtx = $derived(layerManager.getActiveLayer().ctx);
+  let layerm = new LayerManager(docWidth, docHeight, render);
+  let activeLayer = $derived(layerm.getActiveLayer());
+  let activeCtx = $derived(layerm.getActiveLayer().ctx);
 
-  let historyManager = new HistoryManager(render, 50);
+  let history = new HistoryManager(50);
+  let snapshotBeforeDraw: ImageData | null = null;
 
   let canvasContainer: HTMLElement | null = null;
   let canvasWidth = 300;
@@ -65,7 +66,7 @@
 
     viewCtx.setTransform(zoom, 0, 0, zoom, panX, panY);
 
-    for (const layer of layerManager.getLayers()) {
+    for (const layer of layerm.getLayers()) {
       if (layer.visible) {
         viewCtx.drawImage(layer.canvas, 0, 0);
       }
@@ -161,7 +162,7 @@
     if (!activeCtx || activeLayer.locked || !activeLayer.visible) return;
 
     drawing = true;
-    saveDrawUndoState();
+    snapshotBeforeDraw = activeCtx.getImageData(0, 0, docWidth, docHeight);
 
     const { x, y } = pointerToCanvasCoords(e);
     startX = x;
@@ -235,6 +236,26 @@
     activeCtx.restore();
     viewCanvas.releasePointerCapture(e.pointerId);
 
+    if (snapshotBeforeDraw) {
+      const oldData = snapshotBeforeDraw;
+      const newData = activeCtx.getImageData(0, 0, docWidth, docHeight);
+      const layerId = activeLayer.id;
+
+      history.execute({
+        name: "Brush Stroke",
+        do: () => {
+          const layer = layerm.layers.find((l) => l.id === layerId);
+          layer?.ctx.putImageData(newData, 0, 0);
+          render();
+        },
+        undo: () => {
+          const layer = layerm.layers.find((l) => l.id === layerId);
+          layer?.ctx.putImageData(oldData, 0, 0);
+          render();
+        },
+      });
+    }
+
     render();
   }
 
@@ -271,38 +292,33 @@
     }
   }
 
-  function saveDrawUndoState() {
-    if (!activeLayer) return;
-
-    historyManager.saveState({
-      type: "draw",
-      layerId: activeLayer.id,
-      snapshot: activeLayer.ctx.getImageData(
-        0,
-        0,
-        viewCanvas.width,
-        viewCanvas.height,
-      ),
-    });
-  }
-
   function undo() {
-    historyManager.undo(layerManager);
+    history.undo();
   }
 
   function redo() {
-    historyManager.redo(layerManager);
+    history.redo();
   }
 
   function deleteLayer(id: string) {
-    let deleted = layerManager.deleteLayer(id);
-    if (!deleted) return;
+    const index = layerm.layers.findIndex((l) => l.id === id);
+    const layer = layerm.layers[index];
+    if (!layer || layer.locked) return;
 
-    historyManager.saveState({
-      type: "delete_layer",
-      layerId: id,
-      layer: deleted.layer,
-      index: deleted.index,
+    history.execute({
+      name: `Delete ${layer.name}`,
+      do: () => {
+        layerm.layers = layerm.layers.filter((l) => l.id !== id);
+        if (layerm.activeIndex >= layerm.layers.length) {
+          layerm.activeIndex = layerm.layers.length - 1;
+        }
+        render();
+      },
+      undo: () => {
+        layerm.layers.splice(index, 0, layer);
+        layerm.activeIndex = index;
+        render();
+      },
     });
   }
 
@@ -422,14 +438,14 @@
   onMount(() => {
     viewCtx = viewCanvas.getContext("2d")!;
 
-    let backgroundCtx = layerManager.createLayer("Background", {
+    let backgroundCtx = layerm.createLayer("Background", {
       locked: true,
     }).ctx;
     backgroundCtx.fillStyle = "#ffffff";
     backgroundCtx.fillRect(0, 0, docWidth, docHeight);
 
-    layerManager.createLayer("Layer 1");
-    layerManager.activeIndex = 1;
+    layerm.createLayer("Layer 1");
+    layerm.activeIndex = 1;
 
     winApi.on("resize", () => {
       resize();
@@ -476,14 +492,12 @@
   </div>
 
   <div class="layers-panel">
-    <button onclick={() => layerManager.createLayer("New Layer")}
-      >+ Add Layer</button
-    >
+    <button onclick={() => layerm.createLayer("New Layer")}>+ Add Layer</button>
 
-    {#each layerManager.layers as layer, i}
+    {#each layerm.layers as layer, i}
       <div
         class="layer-item
-      {layerManager.activeIndex === i ? 'active' : ''} 
+      {layerm.activeIndex === i ? 'active' : ''} 
       {layer.locked ? 'locked' : ''}
       "
       >
@@ -493,7 +507,7 @@
         </button>
         <!-- svelte-ignore a11y_click_events_have_key_events -->
         <!-- svelte-ignore a11y_no_static_element_interactions -->
-        <span class="name" onclick={() => layerManager.selectLayer(layer.id)}>
+        <span class="name" onclick={() => layerm.selectLayer(layer.id)}>
           {layer.name}
         </span>
 
