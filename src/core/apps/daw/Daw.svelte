@@ -1,6 +1,10 @@
 <script lang="ts">
+  import type { AppApi } from "@os/app/api";
+  import type { WindowApi } from "@os/wm/wm.svelte";
   import { onDestroy, onMount } from "svelte";
   import * as Tone from "tone";
+
+  let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 
   const steps = 16;
   const tracks = ["C4", "A3", "F3", "C3"];
@@ -9,8 +13,8 @@
     .fill(null)
     .map(() => Array(steps).fill(false));
 
-  let currentStep = 0;
-  let isPlaying = false;
+  let currentStep = $state(0);
+  let isPlaying = $state(false);
   let synth: Tone.PolySynth;
 
   onMount(() => {
