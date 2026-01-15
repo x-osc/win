@@ -1,23 +1,39 @@
 import { Bodies, Body, Composite, Engine, Render } from "matter-js";
+import { savePreviousStates, updateVisuals } from "./windows";
 
 export let engine = Engine.create();
 let render: Render;
-let prevTime = 0;
+
+let prevTime = performance.now();
+let accumulator = 0;
+const frameRate = 1000 / 60;
+
 let walls: Body[] = [];
 
 export function initPhysics() {
-  requestAnimationFrame(loop);
   createWalls();
+  engine.gravity.y = 5;
 
   window.addEventListener("resize", createWalls);
+
+  requestAnimationFrame(loop);
 }
 
 function loop(time: number) {
   const deltaTime = time - prevTime;
   prevTime = time;
 
-  // idk why but putting deltatime here doesnt work
-  Engine.update(engine, 1000 / 60);
+  accumulator += Math.min(deltaTime, 250);
+
+  while (accumulator >= frameRate) {
+    savePreviousStates();
+
+    Engine.update(engine, frameRate);
+    accumulator -= frameRate;
+  }
+
+  const alpha = accumulator / frameRate;
+  updateVisuals(alpha);
 
   requestAnimationFrame(loop);
 }

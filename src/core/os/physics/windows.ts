@@ -120,3 +120,37 @@ export function releaseWindow() {
     activeConstraint = null;
   }
 }
+
+// smoothly interpolate window positions faster than 60hz
+
+let previousStates = new Map<number, { x: number; y: number; angle: number }>();
+
+export function savePreviousStates() {
+  for (const [id, body] of windowBodies) {
+    previousStates.set(id, {
+      x: body.position.x,
+      y: body.position.y,
+      angle: body.angle,
+    });
+  }
+}
+
+export function updateVisuals(alpha: number) {
+  for (const [id, body] of windowBodies) {
+    const prev = previousStates.get(id);
+    if (!prev) continue;
+
+    const interX = prev.x + (body.position.x - prev.x) * alpha;
+    const interY = prev.y + (body.position.y - prev.y) * alpha;
+    const interAngle = prev.angle + (body.angle - prev.angle) * alpha;
+
+    const win = wmApi.getWindows().get(id);
+    if (!win) continue;
+
+    const topLeftX = interX - win.data.width / 2;
+    const topLeftY = interY - win.data.height / 2;
+
+    wmApi.moveWindowForce(id, topLeftX, topLeftY);
+    wmApi.setWindowRotation(id, interAngle);
+  }
+}

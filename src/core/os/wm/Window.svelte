@@ -207,7 +207,9 @@
 
       callbacks.emit("resize", newWidth, newHeight);
       wmApi.setWindowSize(id, newWidth, newHeight);
-      wmApi.moveWindow(id, newX, newY);
+      if (!windowData.physicsEnabled) {
+        wmApi.moveWindow(id, newX, newY);
+      }
     }
 
     function onMouseUp() {
