@@ -33,6 +33,7 @@ export type WinData = {
   y: number;
   width: number;
   height: number;
+  rotation: number;
   z: number;
   minWidth: number;
   minHeight: number;
@@ -84,6 +85,7 @@ export function winDataBuilder() {
     y: 100,
     width: 300,
     height: 200,
+    rotation: 0,
     z: 1,
     minHeight: 50,
     minWidth: 120,
@@ -138,6 +140,7 @@ export const wmApi = {
   setWindowTitle,
   moveWindow,
   moveWindowForce,
+  setWindowRotation,
   setWindowSize,
   focusWindow,
   isWindowFocused,
@@ -219,6 +222,16 @@ function moveWindowForce(id: number, x: number, y: number) {
 
   win.x = x;
   win.y = y;
+}
+
+function setWindowRotation(id: number, rot: number) {
+  const win = windows.get(id)?.data;
+  if (!win) {
+    console.warn(`Window with id ${id} does not exist.`);
+    return;
+  }
+
+  win.rotation = rot;
 }
 
 // window's responsibility to ensure minwidth and minheight

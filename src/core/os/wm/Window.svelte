@@ -193,7 +193,14 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   class={["window", { focused }, { minimized: windowData.isMinimized }]}
-  style="left: {windowData.x}px; top: {windowData.y}px; width: {windowData.width}px; height: {windowData.height}px; z-index: {windowData.z}"
+  style="
+    left: {windowData.x}px;
+    top: {windowData.y}px;
+    width: {windowData.width}px; 
+    height: {windowData.height}px; 
+    z-index: {windowData.z};
+    transform: rotate({windowData.rotation}rad);
+  "
   bind:this={windowElement}
   onmousedown={focus}
 >

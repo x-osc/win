@@ -26,6 +26,7 @@ export function startWindowPhysics() {
       const topLeftY = body.position.y - win.data.height / 2;
 
       wmApi.moveWindowForce(id, topLeftX, topLeftY);
+      wmApi.setWindowRotation(id, body.angle);
     }
     isUpdating = false;
   });
