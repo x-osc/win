@@ -4,6 +4,7 @@
   import { onMount } from "svelte";
   import { HistoryManager } from "./history";
   import { LayerManager } from "./layers.svelte";
+  import { toolLibrary, type ToolId } from "./tools";
 
   let { api: api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 
@@ -34,8 +35,6 @@
   let lastX = 0;
   let lastY = 0;
 
-  const MAX_UNDO = 100;
-
   let zoom = 1;
   let panX = 0;
   let panY = 0;
@@ -49,9 +48,8 @@
 
   let color = $state("#000000");
   let size = $state(6);
-  let tool: Tool = $state("brush");
-
-  type Tool = "brush" | "pencil" | "eraser";
+  let toolId: ToolId = $state("brush");
+  let tool = $derived(toolLibrary[toolId]);
 
   function render() {
     viewCtx.setTransform(1, 0, 0, 1, 0, 0);
@@ -77,7 +75,15 @@
     }
 
     if (showCursor && !panning) {
-      drawCursorCircle();
+      viewCtx.save();
+      tool.drawCursor({
+        ctx: viewCtx,
+        x: cursorX,
+        y: cursorY,
+        size,
+        zoom,
+      });
+      viewCtx.restore();
     }
   }
 
@@ -115,31 +121,6 @@
     viewCtx.restore();
   }
 
-  function drawCursorCircle() {
-    viewCtx.save();
-    viewCtx.globalCompositeOperation = "difference";
-
-    if (tool === "pencil") {
-      const radius = Math.floor(size / 2);
-      viewCtx.beginPath();
-      viewCtx.rect(
-        Math.floor(cursorX - radius),
-        Math.floor(cursorY - radius),
-        Math.floor(size),
-        Math.floor(size),
-      );
-    } else {
-      viewCtx.beginPath();
-      viewCtx.arc(cursorX, cursorY, size / 2, 0, Math.PI * 2);
-    }
-
-    viewCtx.strokeStyle = "white";
-    viewCtx.lineWidth = 0.66 / Math.pow(zoom, 0.8);
-    viewCtx.stroke();
-
-    viewCtx.restore();
-  }
-
   function resize() {
     if (!canvasContainer || !viewCanvas) return;
 
@@ -170,9 +151,9 @@
     lastX = x;
     lastY = y;
 
-    activeCtx.save();
-
     viewCanvas.setPointerCapture(e.pointerId);
+
+    activeCtx.save();
 
     draw(e);
   }
@@ -181,48 +162,19 @@
     if (!drawing) return;
 
     const { x, y } = pointerToCanvasCoords(e);
-    const px = Math.floor(x);
-    const py = Math.floor(y);
 
-    if (tool === "pencil") {
-      activeCtx.imageSmoothingEnabled = false;
-      activeCtx.fillStyle = color;
+    activeCtx.save();
+    activeCtx.restore();
 
-      rectLineBetween(
-        Math.floor(lastX),
-        Math.floor(lastY),
-        px,
-        py,
-        size,
-        color,
-        activeCtx,
-      );
-    } else if (tool === "brush") {
-      activeCtx.beginPath();
-      activeCtx.moveTo(lastX, lastY);
-
-      activeCtx.imageSmoothingEnabled = true;
-
-      activeCtx.lineWidth = size;
-      activeCtx.lineCap = "round";
-
-      activeCtx.strokeStyle = color;
-
-      activeCtx.lineTo(x, y);
-      activeCtx.stroke();
-    } else if (tool === "eraser") {
-      activeCtx.beginPath();
-      activeCtx.moveTo(lastX, lastY);
-
-      activeCtx.globalCompositeOperation = "destination-out";
-      activeCtx.strokeStyle = "rgba(0,0,0,1)";
-
-      activeCtx.lineWidth = size;
-      activeCtx.lineCap = "round";
-
-      activeCtx.lineTo(x, y);
-      activeCtx.stroke();
-    }
+    tool.draw({
+      ctx: activeCtx,
+      color,
+      size,
+      lastX,
+      lastY,
+      x,
+      y,
+    });
 
     lastX = x;
     lastY = y;
@@ -257,39 +209,6 @@
     }
 
     render();
-  }
-
-  function rectLineBetween(
-    x0: number,
-    y0: number,
-    x1: number,
-    y1: number,
-    size: number,
-    color: string,
-    ctx: CanvasRenderingContext2D,
-  ) {
-    const dx = Math.abs(x1 - x0);
-    const dy = Math.abs(y1 - y0);
-    const sx = x0 < x1 ? 1 : -1;
-    const sy = y0 < y1 ? 1 : -1;
-    let err = dx - dy;
-
-    while (true) {
-      ctx.fillStyle = color;
-      const radius = Math.floor(size / 2);
-      ctx.fillRect(x0 - radius, y0 - radius, size, size);
-
-      if (x0 === x1 && y0 === y1) break;
-      const e2 = 2 * err;
-      if (e2 > -dy) {
-        err -= dy;
-        x0 += sx;
-      }
-      if (e2 < dx) {
-        err += dx;
-        y0 += sy;
-      }
-    }
   }
 
   function undo() {
@@ -475,7 +394,7 @@
 
 <div class="paint">
   <div class="toolbar">
-    <select bind:value={tool}>
+    <select bind:value={toolId}>
       <option value="brush">Brush</option>
       <option value="eraser">Eraser</option>
       <option value="pencil">Pencil</option>
