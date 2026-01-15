@@ -8,6 +8,8 @@ let walls: Body[] = [];
 export function initPhysics() {
   requestAnimationFrame(loop);
   createWalls();
+
+  window.addEventListener("resize", createWalls);
 }
 
 function loop(time: number) {
