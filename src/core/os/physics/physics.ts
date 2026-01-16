@@ -1,8 +1,12 @@
 import { Bodies, Body, Composite, Engine, Render } from "matter-js";
-import { savePreviousStates, updateVisuals } from "./windows";
+import {
+  savePreviousStates,
+  startWindowPhysics,
+  updateVisuals,
+} from "./windows";
 
 export let engine = Engine.create({
-  enableSleeping: true,
+  enableSleeping: false,
 });
 let render: Render;
 
@@ -12,14 +16,19 @@ const frameRate = 1000 / 60;
 
 let walls: Body[] = [];
 
-export const CATEGORY_WALL = 0x0004;
-export const CATEGORY_MINIMIZED_WINDOW = 0x0002;
-export const CATEGORY_WINDOW = 0x0001;
+export const CATEGORY_WALL = 0x0008;
+export const CATEGORY_MINIMIZED_WINDOW = 0x0004;
+export const CATEGORY_STATIC_WINDOW = 0x0002;
+export const CATEGORY_ACTIVE_WINDOW = 0x0001;
 export const CATEGORY_NONE = 0x0000;
 
 export function initPhysics() {
-  createWalls();
+  engine.positionIterations = 8;
+  engine.velocityIterations = 8;
   engine.gravity.y = 5;
+
+  createWalls();
+  startWindowPhysics();
 
   window.addEventListener("resize", createWalls);
 
@@ -52,13 +61,13 @@ function createWalls() {
 
   const taskbarHeight = 35;
 
-  const thickness = 100;
+  const thickness = 500;
 
-  const extraWidth = 1000;
+  const extraWidth = 2000;
   const winWidth = window.innerWidth;
   const fullWidth = winWidth + extraWidth;
 
-  const extraHeight = 1000;
+  const extraHeight = 2000;
   const winHeight = window.innerHeight;
   const fullHeight = winHeight + extraHeight;
 

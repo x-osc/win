@@ -7,7 +7,7 @@
   import { writeInitialFiles } from "@os/fs/filesystem";
   import DebugPhysicsOverlay from "@os/physics/DebugPhysicsOverlay.svelte";
   import { initPhysics } from "@os/physics/physics";
-  import { startWindowPhysics } from "@os/physics/windows";
+  import { enablePhysics } from "@os/physics/windows";
   import Taskbar from "@os/wm/Taskbar.svelte";
   import Window from "@os/wm/Window.svelte";
   import { wmApi } from "@os/wm/wm.svelte";
@@ -86,6 +86,7 @@
   onMount(async () => {
     writeInitialFiles();
     initAudio();
+    initPhysics();
   });
 </script>
 
@@ -121,12 +122,18 @@
       <button onclick={(_) => launchApp("settings")}>settings</button>
       <button
         onclick={(_) => {
-          initPhysics();
-          startWindowPhysics();
+          wmApi.getWindows().forEach((win, id) => {
+            enablePhysics(id);
+          });
         }}
       >
         fysiks
       </button>
+      <button
+        onclick={(_) => {
+          wmApi.on("anymounted", (id) => enablePhysics(id));
+        }}>fysiks 2</button
+      >
       <button
         onclick={(_) => {
           debugPhysicsOverlay = !debugPhysicsOverlay;

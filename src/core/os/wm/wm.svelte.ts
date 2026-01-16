@@ -38,6 +38,7 @@ export type WinData = {
   minWidth: number;
   minHeight: number;
   isMinimized: boolean;
+  // !! DONT SET THIS MANUALLY
   physicsEnabled: boolean;
   // TODO: make non-data (runtime only) stuff part of a different type
   owner: number | null;

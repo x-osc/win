@@ -106,7 +106,7 @@
 
     data.currentCapture = img;
 
-    console.log(img.toDataURL());
+    // console.log(img.toDataURL());
 
     data.isCapturing = false;
 
