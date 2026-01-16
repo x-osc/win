@@ -67,11 +67,13 @@
       return null;
     }
 
+    let win = wmApi.getWindows().get(data.id);
+
     data.isCapturing = false;
 
     let img = document.createElement("canvas");
-    img.width = window.innerWidth;
-    img.height = window.innerHeight;
+    img.width = win?.data.width ?? window.innerWidth;
+    img.height = win?.data.height ?? window.innerHeight;
 
     const clone = data.element.cloneNode(true) as HTMLElement;
 
@@ -98,13 +100,13 @@
     // console.log(clone.outerHTML);
 
     await drawHTML(clone.outerHTML, img, {
-      width: window.innerWidth,
-      height: window.innerHeight,
+      width: win?.data.width ?? window.innerWidth,
+      height: win?.data.height ?? window.innerHeight,
     });
 
     data.currentCapture = img;
 
-    // console.log(img.toDataURL());
+    console.log(img.toDataURL());
 
     data.isCapturing = false;
 

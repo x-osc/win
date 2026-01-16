@@ -8,7 +8,7 @@ let render: Render;
 
 let prevTime = performance.now();
 let accumulator = 0;
-const frameRate = 1000 / 50;
+const frameRate = 1000 / 60;
 
 let walls: Body[] = [];
 

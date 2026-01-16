@@ -2,6 +2,7 @@
  - full ui css stuff
  - make generic idb stores and set flag on store when files are already generated
  - trail has list of allowed windows to prevent lagagagagaga (also requestanimationframe loop)
+ - add audio busses for windows / apps and silence when closed
  - focusing with taskbar doesnt trigger focus callback 
  - decide on how saving works in explorer..
  - depressed clippy
