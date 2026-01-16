@@ -1,4 +1,6 @@
 import sadTromboneFile from "@assets/audio/sadtrombone.wav?url";
+import thud1File from "@assets/audio/thud.wav?url";
+import thud2File from "@assets/audio/thud2.wav?url";
 import winFile from "@assets/audio/win.wav?url";
 import youWinFile from "@assets/audio/you_win.wav?url";
 import { getSettings, settingsCallbacks } from "@os/settings/settings";
@@ -32,5 +34,15 @@ export const youWinSfx = sound({
 
 export const winSfx = sound({
   src: winFile,
+  volume: 0.8,
+});
+
+export const thud1Sfx = sound({
+  src: thud1File,
+  volume: 0.6,
+});
+
+export const thud2Sfx = sound({
+  src: thud2File,
   volume: 0.8,
 });

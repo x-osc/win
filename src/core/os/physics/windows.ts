@@ -46,6 +46,7 @@ export function enablePhysics(id: number) {
 
   win.data.physicsEnabled = true;
   data.physicsActive = true;
+  data.body.getFixtureList()?.setFilterCategoryBits(CATEGORY_ACTIVE_WINDOW);
   data.body.setType("dynamic");
 }
 
@@ -56,6 +57,7 @@ export function disablePhysics(id: number) {
 
   win.data.physicsEnabled = false;
   data.physicsActive = false;
+  data.body.getFixtureList()?.setFilterCategoryBits(CATEGORY_STATIC_WINDOW);
   data.body.setType("kinematic");
 }
 

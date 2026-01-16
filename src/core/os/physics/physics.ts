@@ -1,3 +1,4 @@
+import { thud1Sfx } from "@os/audio/sounds";
 import { Body, Box, Settings, Vec2, World } from "planck";
 import {
   savePreviousStates,
@@ -14,6 +15,9 @@ let prevTime = performance.now();
 let accumulator = 0;
 const frameRate = 1000 / 60;
 
+let lastSoundTime = 0;
+const activeImpacts = new Set<string>();
+
 let walls: Body[] = [];
 
 export const CATEGORY_WALL = 0x0008;
@@ -29,6 +33,41 @@ export function initPhysics() {
   startWindowPhysics();
 
   window.addEventListener("resize", createWalls);
+
+  world.on("end-contact", (contact) => {
+    const id = getContactId(contact);
+    activeImpacts.delete(id);
+  });
+
+  world.on("post-solve", (contact, impulse) => {
+    const now = performance.now();
+    if (now - lastSoundTime < 200) return;
+
+    const id = getContactId(contact);
+    if (activeImpacts.has(id)) return;
+
+    const categoryA = contact.getFixtureA().getFilterCategoryBits();
+    const categoryB = contact.getFixtureB().getFilterCategoryBits();
+    const totalImpulse = impulse.normalImpulses[0];
+
+    const isWindowA = categoryA === CATEGORY_ACTIVE_WINDOW;
+    const isWindowB = categoryB === CATEGORY_ACTIVE_WINDOW;
+    const isWall = categoryA === CATEGORY_WALL || categoryB === CATEGORY_WALL;
+
+    console.log(totalImpulse);
+
+    if ((isWindowA || isWindowB) && isWall) {
+      if (totalImpulse > 900_000_000) {
+        thud1Sfx.play();
+        lastSoundTime = now;
+      }
+    } else if (isWindowA && isWindowB) {
+      if (totalImpulse > 800_000_000) {
+        thud1Sfx.play();
+        lastSoundTime = now;
+      }
+    }
+  });
 
   requestAnimationFrame(loop);
 }
@@ -111,4 +150,10 @@ function createWall(x: number, y: number, w: number, h: number) {
     filterCategoryBits: CATEGORY_WALL,
   });
   return body;
+}
+
+function getContactId(contact: any): string {
+  const idA = contact.getFixtureA().getBody().getUserData() || "wall";
+  const idB = contact.getFixtureB().getBody().getUserData() || "wall";
+  return [idA, idB].sort().join("-");
 }

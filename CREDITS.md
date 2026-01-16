@@ -18,3 +18,6 @@ mouse03, mouse03_down, mouse03_up: https://freesound.org/people/Bernardo15/sound
 win: https://freesound.org/people/Fupicat/sounds/607207/, CC0
 you_win: https://freesound.org/people/dersuperanton/sounds/433707/, CC BY
 sadtrombone: https://freesound.org/people/Timbre/sounds/83916/, CC BY-NC // uhoh
+
+thud: https://freesound.org/people/gianmarcogg03/sounds/339114/
+thud2: https://freesound.org/people/Breviceps/sounds/449955/
