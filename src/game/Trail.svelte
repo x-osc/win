@@ -169,7 +169,7 @@
     const now = Date.now();
     if (now - data.lastCaptureTime > captureInterval) {
       data.lastCaptureTime = now;
-      drawImage(data);
+      requestAnimationFrame(() => drawImage(data));
     }
 
     if (

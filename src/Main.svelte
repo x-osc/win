@@ -14,6 +14,7 @@
   import { onMount } from "svelte";
   import { browserManifest } from "./core/apps/browser/browser";
   import { calcManifest } from "./core/apps/calc/calc";
+  import { codeManifest } from "./core/apps/code/code";
   import { dawManifest } from "./core/apps/daw/daw";
   import { explorerManifest } from "./core/apps/explorer/explorer";
   import { minesweeperManifest } from "./core/apps/minesweeper/minesweeper";
@@ -55,6 +56,7 @@
   registerApp(minesweeperManifest);
   registerApp(settingsManifest);
   registerApp(dawManifest);
+  registerApp(codeManifest);
 
   registerCmd(helpManifest);
   registerCmd(asdfManifest);
@@ -109,6 +111,7 @@
       <button onclick={(_) => launchApp("calc")}>calcoolator</button>
       <button onclick={(_) => launchApp("browser")}>internet exploder</button>
       <button onclick={(_) => launchApp("minesweeper")}>mine craft</button>
+      <button onclick={(_) => launchApp("code")}>code</button>
       <button onclick={(_) => launchApp("firebeats")}>
         make sum fire beats
       </button>

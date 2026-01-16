@@ -31,6 +31,7 @@
     "vitest": "^4.0.16"
   },
   "dependencies": {
+    "codemirror": "^6.0.2",
     "idb": "^8.0.3",
     "matter-js": "^0.20.0",
     "rasterizehtml": "^1.4.0",
