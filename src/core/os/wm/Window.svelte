@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { CallbackManager } from "@lib/core/callbacks";
+  import { CallbackManager } from "@lib/core/utils/callbacks";
   import { grabWindow, releaseWindow, updateGrab } from "@os/physics/windows";
   import "@os/win.css";
   import { onMount } from "svelte";

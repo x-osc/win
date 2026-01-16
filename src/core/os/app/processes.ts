@@ -2,8 +2,8 @@ import type {
   OffFunction,
   OnceFunction,
   OnFunction,
-} from "@lib/core/callbacks";
-import { CallbackManager } from "@lib/core/callbacks";
+} from "@lib/core/utils/callbacks";
+import { CallbackManager } from "@lib/core/utils/callbacks";
 import type { CmdApi, CmdManifest } from "@os/cmd/command";
 import { instanceId } from "@os/state.svelte";
 import { wmApi } from "@os/wm/wm.svelte";

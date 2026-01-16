@@ -1,6 +1,6 @@
-import { randint, sleep } from "@lib/core/utils";
 import type { AppApi } from "@os/app/api";
 import type { CmdApi, CmdManifest } from "@os/cmd/command";
+import { randint, sleep } from "../utils/utils";
 
 async function launch(api: AppApi, cmdApi: CmdApi) {
   const args = cmdApi.getArgs();

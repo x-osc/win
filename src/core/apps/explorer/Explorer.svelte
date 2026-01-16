@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { randint, sleep } from "@lib/core/utils";
+  import { randint, sleep } from "@lib/core/utils/utils";
   import type { AppApi } from "@os/app/api";
   import {
     fsApi,

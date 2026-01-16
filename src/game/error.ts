@@ -1,13 +1,13 @@
-import { sleep } from "@lib/core/utils";
 import type { AppApi } from "@os/app/api";
 import { wmApi } from "@os/wm/wm.svelte";
+import { sleep } from "../core/utils/utils";
 import { gameState } from "./gameState.svelte";
 
 // TODO: either have a root app api or a background app that has this
 export async function calcError(api: AppApi) {
   gameState.isTrail = true;
   await sleep(100);
-  api.showDialog({ 
+  api.showDialog({
     message: "an error occured.",
     buttons: ["oh no"],
   });

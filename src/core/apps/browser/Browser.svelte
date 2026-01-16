@@ -1,6 +1,6 @@
 <script lang="ts">
   import siteindex from "@generated/siteindex.json";
-  import { isLikelyUrl, parseUrl, resolveURLPath } from "@lib/core/url";
+  import { isLikelyUrl, parseUrl, resolveURLPath } from "@lib/core/utils/url";
   import type { AppApi } from "@os/app/api";
   import { FsError, joinPath } from "@os/fs/filesystem";
   import type { WindowApi } from "@os/wm/wm.svelte";

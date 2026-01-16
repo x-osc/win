@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { randFromArray, randint } from "@lib/core/utils";
+  import { randFromArray, randint } from "@lib/core/utils/utils";
   import type { AppApi } from "@os/app/api";
   import { sadTromboneSfx, winSfx, youWinSfx } from "@os/audio/sounds";
   import type { WindowApi } from "@os/wm/wm.svelte";

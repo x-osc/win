@@ -1,4 +1,4 @@
-import { CallbackManager } from "@lib/core/callbacks";
+import { CallbackManager } from "@lib/core/utils/callbacks";
 import { fsApi, FsError } from "@os/fs/filesystem";
 
 export interface MainSettings {

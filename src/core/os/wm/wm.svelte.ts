@@ -3,7 +3,7 @@ import {
   type OffFunction,
   type OnceFunction,
   type OnFunction,
-} from "@lib/core/callbacks";
+} from "@lib/core/utils/callbacks";
 import type { AppApi } from "@os/app/api";
 import { windowId, zIndex } from "@os/state.svelte";
 import type { Component } from "svelte";
