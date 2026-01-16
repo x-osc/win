@@ -40,24 +40,26 @@ export function startWindowPhysics() {
 }
 
 export function enablePhysics(id: number) {
+  const data = windowBodies.get(id);
   const win = wmApi.getWindows().get(id);
-  if (!win) return;
+  if (!data || !win) return;
 
-  removeWindow(id);
   win.data.physicsEnabled = true;
-  addWindow(id);
+  data.physicsActive = true;
+  data.body.setType("dynamic");
 }
 
 export function disablePhysics(id: number) {
+  const data = windowBodies.get(id);
   const win = wmApi.getWindows().get(id);
-  if (!win) return;
+  if (!data || !win) return;
 
-  removeWindow(id);
   win.data.physicsEnabled = false;
-  addWindow(id);
+  data.physicsActive = false;
+  data.body.setType("kinematic");
 }
 
-function addWindow(id: number, opts?: Partial<WinBodyData>) {
+function addWindow(id: number) {
   const data = wmApi.getWindows().get(id)?.data;
   if (!data) return;
 
@@ -80,7 +82,7 @@ function addWindow(id: number, opts?: Partial<WinBodyData>) {
     position: new Vec2(centerX, centerY),
     angle: data.rotation,
     // linearDamping: 0.5,
-    angularDamping: 0.4,
+    angularDamping: 0.6,
   });
 
   body.createFixture({
@@ -99,7 +101,6 @@ function addWindow(id: number, opts?: Partial<WinBodyData>) {
     body,
     physicsActive: data.physicsEnabled,
     wasPhysicsActiveBeforeMinimize: data.physicsEnabled,
-    ...opts,
   });
 }
 
@@ -158,9 +159,15 @@ function removeCollision(id: number) {
   const win = wmApi.getWindows().get(id);
   if (!data || !win) return;
 
-  removeWindow(id);
-  win.data.physicsEnabled = false;
-  addWindow(id, { wasPhysicsActiveBeforeMinimize: data.physicsActive });
+  data.wasPhysicsActiveBeforeMinimize = data.physicsActive;
+
+  data.body.getFixtureList()?.setFilterCategoryBits(CATEGORY_MINIMIZED_WINDOW);
+
+  if (data.physicsActive) {
+    win.data.physicsEnabled = false;
+    data.physicsActive = false;
+    data.body.setType("kinematic");
+  }
 }
 
 function restoreCollision(id: number) {
@@ -168,14 +175,12 @@ function restoreCollision(id: number) {
   const win = wmApi.getWindows().get(id);
   if (!data || !win) return;
 
+  data.body.getFixtureList()?.setFilterCategoryBits(CATEGORY_ACTIVE_WINDOW);
+
   if (data.wasPhysicsActiveBeforeMinimize) {
-    removeWindow(id);
     win.data.physicsEnabled = true;
-    addWindow(id);
-  } else {
-    removeWindow(id);
-    win.data.physicsEnabled = false;
-    addWindow(id);
+    data.physicsActive = true;
+    data.body.setType("dynamic");
   }
 }
 

@@ -6,7 +6,7 @@ import {
 } from "./windows";
 
 export let world = new World({
-  allowSleep: false,
+  allowSleep: true,
   gravity: new Vec2(0, 5000),
 });
 
@@ -42,7 +42,7 @@ function loop(time: number) {
   while (accumulator >= frameRate) {
     savePreviousStates();
 
-    world.step(frameRate / 1000, 8, 3);
+    world.step(frameRate / 1000, 12, 4);
     accumulator -= frameRate;
   }
 
