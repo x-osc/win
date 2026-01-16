@@ -1,11 +1,13 @@
 import type { AppApi } from "@os/app/api";
-import type { AppManifest } from "@os/app/app";
-import { launchAppFromManifest } from "@os/app/processes";
 import { mousePos } from "@os/state.svelte";
 import { winDataBuilder } from "@os/wm/wm.svelte";
+import { mount, unmount } from "svelte";
 import Dialog from "./Dialog.svelte";
 
-async function launch(api: AppApi, args?: DialogArgs) {
+export async function showDialog(
+  api: AppApi,
+  args: DialogArgs,
+): Promise<number> {
   let winApi = await api.window.createWindow(
     winDataBuilder()
       .withMinSize(290, 100)
@@ -15,12 +17,26 @@ async function launch(api: AppApi, args?: DialogArgs) {
         args?.position?.x ?? mousePos.x - 120,
         args?.position?.y ?? mousePos.y - 40,
       )
-      .withComponent(Dialog, api, args)
       .build(),
   );
 
-  winApi.on("close", () => {
-    api.quit({ code: -1 });
+  return new Promise((resolve) => {
+    const component = mount(Dialog, {
+      target: winApi.getBody(),
+      props: {
+        args,
+        quit: (code: number) => {
+          winApi.close();
+          resolve(code);
+        },
+      },
+    });
+
+    winApi.on("close", () => {
+      unmount(component);
+      winApi.close();
+      resolve(-1);
+    });
   });
 }
 
@@ -30,26 +46,3 @@ export type DialogArgs = {
   buttons?: string[];
   position?: { x: number; y: number };
 };
-
-export type DialogResult = {
-  code?: number;
-};
-
-export let dialogManifest: AppManifest = {
-  appId: "dialog",
-
-  launch,
-};
-
-export async function showDialog(
-  args: DialogArgs,
-  owner: number,
-): Promise<number | null> {
-  let procApi = launchAppFromManifest(dialogManifest, args, { owner });
-
-  return new Promise((resolve) => {
-    procApi.on("exit", (result) => {
-      resolve(result?.code ?? null);
-    });
-  });
-}

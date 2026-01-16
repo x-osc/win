@@ -1,17 +1,8 @@
 <script lang="ts">
-  import type { AppApi } from "@os/app/api";
-  import type { WindowApi } from "@os/wm/wm.svelte";
   import type { DialogArgs } from "./dialog";
 
-  let {
-    api,
-    winApi,
-    args,
-  }: {
-    api: AppApi;
-    winApi: WindowApi;
-    args?: DialogArgs;
-  } = $props();
+  let { args, quit }: { args: DialogArgs; quit: (code: number) => void } =
+    $props();
 
   // svelte-ignore state_referenced_locally
   let message = args?.message ?? "\xa0"; // nbsp
@@ -31,7 +22,7 @@
     {#each buttons as button, i}
       <button
         onclick={() => {
-          api.quit({ code: i });
+          quit(i);
         }}
       >
         {button}

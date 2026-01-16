@@ -1,33 +1,20 @@
 import type { AppApi } from "@os/app/api";
 import type { AppManifest } from "@os/app/app";
+import { launchAppFromManifest } from "@os/app/processes";
 import { randFromArray, randint } from "../../core/utils/utils";
 import { hydraError } from "../error";
 
 let count = 1;
 
-async function launch(api: AppApi) {
-  await api.showDialog({
-    message: "hey gangalang its me the hydra",
-    title: "hydra dot exe",
-    buttons: ["thanks hydra ur the best", "oh no"],
-    position: {
-      x: randint(0, window.innerWidth) - 300,
-      y: randint(0, window.innerHeight) - 100,
-    },
-  });
-  spawnHydras(api);
-}
-
-function spawnHydras(api: AppApi) {
-  count++;
-
-  if (count >= 20) {
-    hydraError();
+async function launch(api: AppApi, args?: Record<string, any>) {
+  let message = "hey gangalang its me the hydra";
+  if (args?.nottheoriginalstarwalker === true) {
+    message = randFromArray(hydraDialogs);
   }
 
-  api
+  await api
     .showDialog({
-      message: randFromArray(hydraDialogs),
+      message,
       title: "hydra dot exe",
       buttons: ["thanks hydra ur the best", "oh no"],
       position: {
@@ -37,21 +24,19 @@ function spawnHydras(api: AppApi) {
     })
     .then(() => {
       spawnHydras(api);
+      api.quit();
     });
+}
 
-  api
-    .showDialog({
-      message: randFromArray(hydraDialogs),
-      title: "hydra dot exe",
-      buttons: ["thanks hydra ur the best", "oh no"],
-      position: {
-        x: randint(0, window.innerWidth),
-        y: randint(0, window.innerHeight),
-      },
-    })
-    .then(() => {
-      spawnHydras(api);
-    });
+function spawnHydras(api: AppApi) {
+  count++;
+
+  if (count >= 20) {
+    hydraError();
+  }
+
+  launchAppFromManifest(hydraManifest, { nottheoriginalstarwalker: true });
+  launchAppFromManifest(hydraManifest, { nottheoriginalstarwalker: true });
 }
 
 const hydraDialogs = [

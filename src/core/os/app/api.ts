@@ -13,7 +13,7 @@ export interface AppApi {
 
   launchApp(id: string, args?: AppArgs): ProcessApi | null;
   launchCmd(id: string, cmdApi: CmdApi): ProcessApi | null;
-  showDialog(args: DialogArgs): Promise<number | null>;
+  showDialog(args: DialogArgs): Promise<number>;
 
   window: {
     createWindow(data: WinData): Promise<WindowApi>;
@@ -29,7 +29,7 @@ export function getAppApi(instId: number): AppApi {
 
     launchApp: (id, args) => launchApp(id, args, { owner: instId }),
     launchCmd: (id, cmdApi) => launchCmd(id, cmdApi, { owner: instId }),
-    showDialog: (args) => showDialog(args, instId),
+    showDialog: (args) => showDialog(api, args),
 
     window: {
       createWindow: (data: WinData) => {
