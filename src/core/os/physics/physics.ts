@@ -1,14 +1,14 @@
-import { Bodies, Body, Composite, Engine, Render } from "matter-js";
+import { Body, Box, Settings, Vec2, World } from "planck";
 import {
   savePreviousStates,
   startWindowPhysics,
   updateVisuals,
 } from "./windows";
 
-export let engine = Engine.create({
-  enableSleeping: false,
+export let world = new World({
+  allowSleep: false,
+  gravity: new Vec2(0, 5000),
 });
-let render: Render;
 
 let prevTime = performance.now();
 let accumulator = 0;
@@ -23,9 +23,7 @@ export const CATEGORY_ACTIVE_WINDOW = 0x0001;
 export const CATEGORY_NONE = 0x0000;
 
 export function initPhysics() {
-  engine.positionIterations = 8;
-  engine.velocityIterations = 8;
-  engine.gravity.y = 5;
+  Settings.lengthUnitsPerMeter = 500;
 
   createWalls();
   startWindowPhysics();
@@ -44,7 +42,7 @@ function loop(time: number) {
   while (accumulator >= frameRate) {
     savePreviousStates();
 
-    Engine.update(engine, frameRate);
+    world.step(frameRate / 1000, 8, 3);
     accumulator -= frameRate;
   }
 
@@ -55,9 +53,8 @@ function loop(time: number) {
 }
 
 function createWalls() {
-  if (walls.length > 0) {
-    Composite.remove(engine.world, walls);
-  }
+  walls.forEach((wall) => world.destroyBody(wall));
+  walls = [];
 
   const taskbarHeight = 35;
 
@@ -73,69 +70,45 @@ function createWalls() {
 
   walls = [
     // top
-    Bodies.rectangle(
+    createWall(
       winWidth / 2,
       -extraHeight - thickness / 2,
       fullWidth,
       thickness,
-      {
-        isStatic: true,
-      },
     ),
     // left
-    Bodies.rectangle(
+    createWall(
       -extraWidth / 2 - thickness / 2,
       winHeight / 2,
       thickness,
       fullHeight,
-      {
-        isStatic: true,
-      },
     ),
     // right
-    Bodies.rectangle(
+    createWall(
       winWidth + thickness / 2 + extraWidth / 2,
       winHeight / 2,
       thickness,
       fullHeight,
-      {
-        isStatic: true,
-      },
     ),
     // bottom
-    Bodies.rectangle(
+    createWall(
       winWidth / 2,
       winHeight + thickness / 2 - taskbarHeight,
       fullWidth,
       thickness,
-      {
-        isStatic: true,
-        friction: 0.8,
-      },
     ),
   ];
-
-  Composite.add(engine.world, walls);
 }
 
-export function setupDebugRender(container: HTMLElement) {
-  render = Render.create({
-    element: container,
-    engine: engine,
-    options: {
-      width: window.innerWidth,
-      height: window.innerHeight,
-      wireframes: true,
-      background: "transparent",
-      hasBounds: true,
-    },
+function createWall(x: number, y: number, w: number, h: number) {
+  const body = world.createBody({
+    position: new Vec2(x, y),
+    type: "static",
   });
-}
-
-export function startDebugRender() {
-  Render.run(render);
-}
-
-export function stopDebugRender() {
-  Render.stop(render);
+  body.createFixture({
+    shape: new Box(w / 2, h / 2),
+    friction: 0.25,
+    filterCategoryBits: CATEGORY_WALL,
+  });
+  return body;
 }
