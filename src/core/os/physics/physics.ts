@@ -1,12 +1,14 @@
 import { Bodies, Body, Composite, Engine, Render } from "matter-js";
 import { savePreviousStates, updateVisuals } from "./windows";
 
-export let engine = Engine.create();
+export let engine = Engine.create({
+  enableSleeping: true,
+});
 let render: Render;
 
 let prevTime = performance.now();
 let accumulator = 0;
-const frameRate = 1000 / 60;
+const frameRate = 1000 / 50;
 
 let walls: Body[] = [];
 

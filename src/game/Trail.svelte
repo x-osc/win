@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { sleep } from "@lib/core/utils";
+  import { randint, sleep } from "@lib/core/utils";
   import { wmApi } from "@os/wm/wm.svelte";
   import { drawHTML } from "rasterizehtml";
   import { onMount, tick } from "svelte";
@@ -23,7 +23,7 @@
   let isDoneMountWindows = false;
 
   const captureInterval = 10;
-  const refreshInterval = 3200;
+  const refreshInterval = 3200 + 400 * wmApi.getWindows().size;
 
   onMount(async () => {
     ctx = canvas.getContext("2d")!;
@@ -47,14 +47,14 @@
         element: win.api.getWindowElement(),
         currentCapture: null,
         isCapturing: false,
-        lastRefreshTime: Date.now() + refreshInterval * wmApi.getWindows().size,
+        lastRefreshTime: Date.now() + refreshInterval,
         lastCaptureTime: Date.now(),
       });
     }
 
     for (const data of trails.values()) {
       await screenshot(data);
-      await sleep(5);
+      await sleep(4 + wmApi.getWindows().size);
     }
 
     isDoneMountWindows = true;
@@ -147,7 +147,7 @@
       element: win.api!.getWindowElement(),
       currentCapture: null,
       isCapturing: false,
-      lastRefreshTime: Date.now() + refreshInterval * wmApi.getWindows().size,
+      lastRefreshTime: Date.now() + refreshInterval,
       lastCaptureTime: Date.now(),
     };
 
@@ -170,7 +170,10 @@
       drawImage(data);
     }
 
-    if (now - data.lastRefreshTime > refreshInterval) {
+    if (
+      now - data.lastRefreshTime >
+      refreshInterval + randint(1, refreshInterval)
+    ) {
       data.lastRefreshTime = now;
       screenshot(data);
     }

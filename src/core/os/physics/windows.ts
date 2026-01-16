@@ -9,7 +9,6 @@ import {
 
 let windowBodies: Map<number, Body> = new Map();
 let activeConstraint: Constraint | null = null;
-let isUpdating = false;
 
 export function startWindowPhysics() {
   wmApi.on("anymounted", (id) =>
@@ -29,20 +28,7 @@ export function startWindowPhysics() {
     addWindow(id, win.data);
   }
 
-  Events.on(engine, "afterUpdate", () => {
-    isUpdating = true;
-    for (const [id, body] of windowBodies) {
-      const win = wmApi.getWindows().get(id);
-      if (!win) continue;
-
-      const topLeftX = body.position.x - win.data.width / 2;
-      const topLeftY = body.position.y - win.data.height / 2;
-
-      wmApi.moveWindowForce(id, topLeftX, topLeftY);
-      wmApi.setWindowRotation(id, body.angle);
-    }
-    isUpdating = false;
-  });
+  Events.on(engine, "afterUpdate", () => {});
 }
 
 function addWindow(id: number, data: WinData) {
@@ -81,7 +67,6 @@ function resizeWindow(id: number, newWidth: number, newHeight: number) {
   if (!body || !win) return;
 
   const currentAngle = body.angle;
-  console.log(currentAngle);
 
   const halfW = newWidth / 2;
   const halfH = newHeight / 2;

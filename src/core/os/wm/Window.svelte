@@ -233,15 +233,17 @@
 </script>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
+<!-- using transform translate to prevent reflow -->
+<!-- will-change actually helps alot -->
 <div
   class={["window", { focused }, { minimized: windowData.isMinimized }]}
   style="
-    left: {windowData.x}px;
-    top: {windowData.y}px;
     width: {windowData.width}px; 
     height: {windowData.height}px; 
     z-index: {windowData.z};
-    transform: rotate({windowData.rotation}rad);
+    transform: translate({windowData.x}px, {windowData.y}px)
+     rotate({windowData.rotation}rad);
+    {windowData.physicsEnabled ? 'will-change: transform;' : ''}
   "
   bind:this={windowElement}
   onmousedown={focus}

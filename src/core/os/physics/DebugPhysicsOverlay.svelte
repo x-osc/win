@@ -4,12 +4,28 @@
 
   let container: HTMLDivElement;
   let { show }: { show: boolean } = $props();
+  let fps = $state(0);
+  let prevTime = 0;
 
   onMount(() => {
     setupDebugRender(container);
     startDebugRender();
+    requestAnimationFrame(render);
   });
+
+  function render(time: number) {
+    time *= 0.001;
+    const deltaTime = time - prevTime;
+    prevTime = time;
+    fps = 1 / deltaTime;
+
+    requestAnimationFrame(render);
+  }
 </script>
+
+<div style={show ? "" : "display: none"} class="fps">
+  fps: {fps.toFixed(2)}
+</div>
 
 <div
   style={show ? "" : "display: none"}
@@ -18,6 +34,11 @@
 ></div>
 
 <style>
+  .fps {
+    position: fixed;
+    top: 100px;
+  }
+
   .physics-overlay {
     position: fixed;
     top: 0;
