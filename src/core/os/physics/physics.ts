@@ -1,5 +1,5 @@
 import { thud1Sfx } from "@os/audio/sounds";
-import { Body, Box, Settings, Vec2, World } from "planck";
+import { Body, Box, Settings, Vec2, World, WorldManifold } from "planck";
 import {
   savePreviousStates,
   startWindowPhysics,
@@ -17,6 +17,7 @@ const frameRate = 1000 / 60;
 
 let lastSoundTime = 0;
 const activeImpacts = new Set<string>();
+const tempManifold = new WorldManifold();
 
 let walls: Body[] = [];
 
@@ -46,23 +47,36 @@ export function initPhysics() {
     const id = getContactId(contact);
     if (activeImpacts.has(id)) return;
 
+    const bodyA = contact.getFixtureA().getBody();
+    const bodyB = contact.getFixtureB().getBody();
+
+    const vA = bodyA.getLinearVelocity();
+    const vB = bodyB.getLinearVelocity();
+
+    const relVelX = vA.x - vB.x;
+    const relVelY = vA.y - vB.y;
+
+    // TODO: add slight mass effect
+
+    const worldManifold = contact.getWorldManifold(tempManifold);
+    const normal = worldManifold?.normal!;
+
+    const approachSpeed = relVelX * normal.x + relVelY * normal.y;
+
     const categoryA = contact.getFixtureA().getFilterCategoryBits();
     const categoryB = contact.getFixtureB().getFilterCategoryBits();
-    const totalImpulse = impulse.normalImpulses[0];
 
     const isWindowA = categoryA === CATEGORY_ACTIVE_WINDOW;
     const isWindowB = categoryB === CATEGORY_ACTIVE_WINDOW;
     const isWall = categoryA === CATEGORY_WALL || categoryB === CATEGORY_WALL;
 
-    console.log(totalImpulse);
-
     if ((isWindowA || isWindowB) && isWall) {
-      if (totalImpulse > 900_000_000) {
+      if (approachSpeed > 380) {
         thud1Sfx.play();
         lastSoundTime = now;
       }
     } else if (isWindowA && isWindowB) {
-      if (totalImpulse > 800_000_000) {
+      if (approachSpeed > 350) {
         thud1Sfx.play();
         lastSoundTime = now;
       }
