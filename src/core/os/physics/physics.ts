@@ -1,5 +1,6 @@
 import { thud1Sfx } from "@os/audio/sounds";
 import { Body, Box, Settings, Vec2, World, WorldManifold } from "planck";
+import type { BoxShape } from "planck/with-testbed";
 import {
   savePreviousStates,
   startWindowPhysics,
@@ -38,6 +39,44 @@ export function initPhysics() {
   world.on("end-contact", (contact) => {
     const id = getContactId(contact);
     activeImpacts.delete(id);
+  });
+
+  world.on("pre-solve", (contact) => {
+    const fixtureA = contact.getFixtureA();
+    const fixtureB = contact.getFixtureB();
+
+    const bodyA = fixtureA.getBody();
+    const bodyB = fixtureB.getBody();
+
+    const categoryA = contact.getFixtureA().getFilterCategoryBits();
+    const categoryB = contact.getFixtureB().getFilterCategoryBits();
+
+    const isStaticA = categoryA === CATEGORY_STATIC_WINDOW;
+    const isStaticB = categoryB === CATEGORY_STATIC_WINDOW;
+
+    if (isStaticA) {
+      const platformY =
+        bodyA.getPosition().y -
+        (fixtureA.getShape() as BoxShape).m_vertices[1].y;
+      const objectY = bodyB.getPosition().y;
+      const objectVel = bodyB.getLinearVelocity();
+
+      console.log(platformY);
+
+      if (objectY > platformY) {
+        contact.setEnabled(false);
+      }
+    } else if (isStaticB) {
+      const platformY =
+        bodyB.getPosition().y -
+        (fixtureB.getShape() as BoxShape).m_vertices[1].y;
+      const objectY = bodyA.getPosition().y;
+      const objectVel = bodyA.getLinearVelocity();
+
+      if (objectY > platformY) {
+        contact.setEnabled(false);
+      }
+    }
   });
 
   world.on("post-solve", (contact, impulse) => {
