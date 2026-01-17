@@ -19,7 +19,7 @@ async function launch(api: AppApi, args?: ExplorerArgs) {
 }
 
 export type ExplorerArgs = {
-  dialogType?: "none" | "save" | "fileonly" | "dironly" | "both";
+  dialogType?: "none" | "save" | "fileonly" | "dironly";
   workingDir?: string[];
   saveDefaultName?: string;
 };
