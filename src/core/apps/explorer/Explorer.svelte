@@ -72,16 +72,14 @@
   }
 
   async function handleDoubleClick(entry: FsEntry) {
-    if (dialogMode === "none") {
-      fsc.openDir(entry);
-      return;
-    }
-
     if (dialogType === "fileonly" && entry.type === "file") {
       api.quit({
         selectedEntry: await api.fs.getPath(entry),
       });
+      return;
     }
+
+    fsc.openDir(entry);
   }
 
   async function handleDialogSelect() {
@@ -128,7 +126,16 @@
     <button onclick={() => fsc.deleteSelected()}>Delete</button>
   </div>
 
-  <div class="pathbar">{api.fs.joinPath(fsc.cwd)}</div>
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <div class="pathbar">
+    <span class="breadcrumb" onclick={() => fsc.navigate([])}> /&nbsp;</span>
+    {#each fsc.breadcrumbs as part}
+      <span class="breadcrumb" onclick={() => fsc.navigate(part.path)}>
+        {part.name} /&nbsp;
+      </span>
+    {/each}
+  </div>
 
   {#if fsc.error}
     <div>{fsc.error}</div>
@@ -202,10 +209,19 @@
 
   .toolbar {
     flex: 0 0 auto;
+    margin-bottom: 5px;
   }
 
   .pathbar {
     flex: 0 0 auto;
+  }
+
+  .breadcrumb {
+    cursor: pointer;
+  }
+
+  .breadcrumb:hover {
+    border: 1px solid black;
   }
 
   .list {

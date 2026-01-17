@@ -31,6 +31,17 @@ export class ExplorerState {
     });
   });
 
+  breadcrumbs = $derived.by(() => {
+    const parts = [];
+    for (let i = 0; i < this.cwd.length; i++) {
+      parts.push({
+        name: this.cwd[i],
+        path: this.cwd.slice(0, i + 1),
+      });
+    }
+    return parts;
+  });
+
   mainSelectedEntry = $derived(
     this.entries.find((e) => e.id === this.mainSelectedId) ?? null,
   );
@@ -49,6 +60,12 @@ export class ExplorerState {
     } catch (err) {
       this.error = "Reading directory failed: " + (err as Error).message;
     }
+  }
+
+  async navigate(path: string[]) {
+    this.cwd = path;
+    this.clearSelection();
+    await this.refresh();
   }
 
   async goUp() {
