@@ -1,0 +1,56 @@
+.github (IGNORE)
+.vscode (IGNORE)
+
+generated (IGNORE MAYBE??)
+node_modules (IGNORE)
+
+public (only has favicon / more public assets?)
+src (all the stuff)
+├───assets (fonts / assets ya)
+│
+├───core (ok idk what)
+│   │
+│   ├───apps (wait so all the apps)
+│   │   ├───browser
+│   │   ├───calc
+│   │   ├───code
+│   │   ├───daw
+│   │   ├───dialog
+│   │   ├───explorer
+│   │   ├───minesweeper
+│   │   ├───notepad
+│   │   ├───paint
+│   │   ├───settings
+│   │   └───terminal
+│   │
+│   ├───cmds
+│   │
+│   ├───lang (the language max is making?)
+│   │   └───ml
+│   │
+│   ├───os
+│   │   ├───app
+│   │   ├───audio
+│   │   ├───cmd
+│   │   ├───fs
+│   │   ├───physics
+│   │   ├───settings
+│   │   └───wm
+│   │
+│   └───utils
+│
+├───game (secret stuff ig)
+│   └───apps
+│
+├───initfs (Initial Filesystem)
+│   ├───sys
+│   │   └───trash
+│   └───user
+│
+├───plugins (vite plugins forrrrr sth)
+│
+└───websites
+    ├───balls.net
+    ├───bennet.net
+    ├───fhelixcorp.net
+    └───goggle.net
