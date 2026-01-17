@@ -64,7 +64,7 @@ export interface WindowApi {
 }
 
 export type WindowEvents = {
-  focus(): void;
+  focus(wasWindowContent: boolean): void;
   move(x: number, y: number): void;
   resize(width: number, height: number): void;
   close(): void;
@@ -255,14 +255,14 @@ function setWindowSize(id: number, width: number, height: number) {
   wmglobalCallbacks.emit("anyresized", id, width, height);
 }
 
-function focusWindow(id: number) {
+function focusWindow(id: number, wasWindowContent: boolean = false) {
   const win = windows.get(id)?.data;
   if (!win) {
     console.warn(`Window with id ${id} does not exist.`);
     return;
   }
 
-  windows.get(id)?.callbacks.emit("focus");
+  windows.get(id)?.callbacks.emit("focus", wasWindowContent);
 
   const wasMinimized = win.isMinimized;
 

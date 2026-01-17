@@ -129,18 +129,21 @@
   }
 
   // svelte-ignore state_referenced_locally
-  winApi.on("focus", () => {
+  winApi.on("focus", (wasWindowContent) => {
+    if (wasWindowContent) return;
     textInput.focus({ preventScroll: true });
   });
 
-  function handleBlur(e: FocusEvent) {
-    if ((!isCmdRunning || isInputRunning) && winApi.isFocused()) {
+  function handleMouseUp() {
+    const selection = window.getSelection();
+    if (selection && selection.toString().length === 0) {
       textInput.focus({ preventScroll: true });
     }
   }
 </script>
 
-<div bind:this={terminal} class="terminal">
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div bind:this={terminal} class="terminal" onmouseup={handleMouseUp}>
   {#each lines as line}
     <div class="terminal-line">
       <span class="terminal-segment">
@@ -168,7 +171,6 @@
       type="text"
       style="display: {!isCmdRunning || isInputRunning ? 'inline' : 'none'}"
       onkeydown={handleKeyDown}
-      onblur={handleBlur}
       spellcheck="false"
       class="input"
     />
@@ -208,6 +210,12 @@
   .prompt {
     margin: 0;
     padding: 0;
+  }
+
+  .terminal-line::selection,
+  .prompt::selection {
+    color: black;
+    background-color: white;
   }
 
   input.input {
