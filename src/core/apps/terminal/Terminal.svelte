@@ -14,6 +14,8 @@
   let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 
   let history: string[] = $state([]);
+  // -1 means temp input value
+  // -2 means blank
   let historyIndex: number = $state(-1);
   // saves currently editing command
   // so when you go up and back down its still there
@@ -145,6 +147,16 @@
         e.preventDefault();
         if (history.length === 0) return;
 
+        if (historyIndex === -2) {
+          historyIndex++;
+
+          if (textInput.value === "") {
+            textInput.value = temporaryInput;
+            temporaryInput = "";
+            return;
+          }
+        }
+
         if (historyIndex === -1) {
           temporaryInput = textInput.value;
         }
@@ -155,6 +167,14 @@
         }
       } else if (e.key === "ArrowDown") {
         e.preventDefault();
+
+        if (historyIndex === -1 && textInput.value !== "") {
+          historyIndex--;
+          temporaryInput = textInput.value;
+          textInput.value = "";
+          return;
+        }
+
         if (historyIndex > -1) {
           historyIndex--;
           if (historyIndex === -1) {
