@@ -47,6 +47,14 @@
   }
 
   async function openFile(path: string[]) {
+    let alreadyTab = tabs.findIndex((data) => {
+      return data.path?.every((part, i) => part === path[i]);
+    });
+    if (alreadyTab !== -1) {
+      activeTabIndex = alreadyTab;
+      return;
+    }
+
     try {
       const content = await api.fs.readFile(path);
       const text = await content.data.text();
