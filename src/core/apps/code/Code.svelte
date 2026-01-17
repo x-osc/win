@@ -147,8 +147,9 @@
         class:active={i === activeTabIndex}
         onclick={() => (activeTabIndex = i)}
       >
-        {tab.path ? tab.path.at(-1) : "Untitled"}
-        {tab.isSaved ? "" : "*"}
+        <span class="tablabel">
+          {tab.path ? tab.path.at(-1) : "Untitled"}{tab.isSaved ? "" : "*"}
+        </span>
 
         <button
           class="closebutton"
@@ -184,9 +185,5 @@
   .toolbar {
     flex: 0 0 auto;
     margin-bottom: 10px;
-  }
-
-  .closebutton {
-    min-width: unset;
   }
 </style>
