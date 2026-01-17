@@ -12,10 +12,6 @@ async function launch(api: AppApi) {
       .withComponent(Code, api)
       .build(),
   );
-
-  winApi.on("close", () => {
-    api.quit();
-  });
 }
 
 export let codeManifest: AppManifest = {

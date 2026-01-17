@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { AppApi } from "@os/app/api";
-  import { FsError } from "@os/fs/filesystem";
+  import { FsError, joinPath } from "@os/fs/filesystem";
   import type { WindowApi } from "@os/wm/wm.svelte";
   import CodeTab from "./CodeTab.svelte";
 
@@ -20,6 +20,24 @@
   let activeTabIndex = $state(0);
   let activeTab: TabData | undefined = $derived(tabs[activeTabIndex]);
 
+  // svelte-ignore state_referenced_locally
+  winApi.on("close", async () => {
+    console.log("a");
+
+    let unsaved = tabs.filter((tab) => !tab.isSaved).length;
+    if (unsaved > 0) {
+      let code = await api.showDialog({
+        message: `are you sure you want to quit? you have ${unsaved} unsaved files.`,
+      });
+
+      if (code !== 1) {
+        return;
+      }
+    }
+
+    api.quit();
+  });
+
   function addTab(data?: Partial<TabData>) {
     tabs.push({
       id: crypto.randomUUID(),
@@ -33,7 +51,23 @@
     activeTabIndex = tabs.length - 1;
   }
 
-  function closeTab(index: number) {
+  async function closeTab(index: number) {
+    const tab = tabs[index];
+    if (!tab.isSaved) {
+      let code = await api.showDialog({
+        message: `would you like to close ${joinPath(tab.path ?? [])} without saving?`,
+        buttons: ["save", "dont save", "cancel"],
+      });
+
+      if (code === 2) {
+        return;
+      }
+
+      if (code === 0) {
+        handleSave();
+      }
+    }
+
     const closingActive = index === activeTabIndex;
     tabs = tabs.filter((_, i) => i !== index);
 
