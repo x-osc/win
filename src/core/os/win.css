@@ -97,6 +97,7 @@ body {
   display: block;
   text-decoration: none;
   min-width: unset;
+  cursor: pointer;
 
   background: linear-gradient(180deg, #fff, #fafaf9 26%, #f0f0ea 95%, #ecebe5);
 

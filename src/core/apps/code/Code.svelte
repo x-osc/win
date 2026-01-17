@@ -15,19 +15,10 @@
     editorRef: CodeTab | null;
   }
 
-  let tabs: TabData[] = $state([
-    {
-      id: crypto.randomUUID(),
-      path: null,
-      content: "",
-      initialContent: "",
-      isSaved: true,
-      editorRef: null,
-    },
-  ]);
+  let tabs: TabData[] = $state([]);
 
   let activeTabIndex = $state(0);
-  let activeTab = $derived(tabs[activeTabIndex]);
+  let activeTab: TabData | undefined = $derived(tabs[activeTabIndex]);
 
   function addTab(data?: Partial<TabData>) {
     tabs.push({
@@ -43,9 +34,15 @@
   }
 
   function closeTab(index: number) {
+    const closingActive = index === activeTabIndex;
     tabs = tabs.filter((_, i) => i !== index);
-    if (activeTabIndex >= tabs.length) {
-      activeTabIndex = Math.max(0, tabs.length - 1);
+
+    if (tabs.length === 0) {
+      activeTabIndex = 0;
+    } else if (closingActive) {
+      activeTabIndex = Math.max(0, index - 1);
+    } else if (index < activeTabIndex) {
+      activeTabIndex--;
     }
   }
 
@@ -57,7 +54,10 @@
       addTab({ path: path, content: text, initialContent: text });
     } catch (err) {
       if (err instanceof FsError) {
+        // TODO: replace this
+        console.error(err.message);
       }
+      console.error(err);
       return;
     }
   }
@@ -73,6 +73,8 @@
   }
 
   async function handleSave() {
+    if (!activeTab) return;
+
     if (!activeTab.path) return handleSaveAs();
 
     try {
@@ -81,7 +83,9 @@
       });
     } catch (err) {
       if (err instanceof FsError) {
+        console.error(err.message);
       }
+      console.error(err);
       return;
     }
 
@@ -90,6 +94,8 @@
   }
 
   async function handleSaveAs() {
+    if (!activeTab) return;
+
     let wd = null;
     let name = null;
 
@@ -114,7 +120,9 @@
         });
       } catch (err) {
         if (err instanceof FsError) {
+          console.error(err.message);
         }
+        console.error(err);
         return;
       }
 
@@ -142,7 +150,13 @@
         {tab.path ? tab.path.at(-1) : "Untitled"}
         {tab.isSaved ? "" : "*"}
 
-        <button class="closebutton" onclick={() => closeTab(i)}>x</button>
+        <button
+          class="closebutton"
+          onclick={(e) => {
+            e.stopPropagation();
+            closeTab(i);
+          }}>x</button
+        >
       </div>
     {/each}
   </div>
