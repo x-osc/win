@@ -83,6 +83,44 @@ body {
     inset 2px -2px #89ade4;
 }
 
+.tablist {
+  position: relative;
+  display: flex;
+  margin: 0 0 -2pxc 0;
+  text-indent: 0;
+  list-style-type: none;
+  padding-left: 3px;
+}
+
+.tablist .tab {
+  z-index: 1;
+  display: block;
+  text-decoration: none;
+  min-width: unset;
+
+  background: linear-gradient(180deg, #fff, #fafaf9 26%, #f0f0ea 95%, #ecebe5);
+
+  margin-left: -1px;
+  margin-right: 2px;
+  border-radius: 3px 3px 0 0;
+  border-color: #91a7b4;
+  padding: 0 12px 3px 12px;
+}
+
+.tablist .tab.active {
+  background: #fcfcfe;
+  border-color: #919b9c;
+
+  margin: -2px -1px 2px -3px;
+  padding-bottom: 2px;
+
+  border-bottom: 1px solid transparent;
+  border-top: 1px solid #e68b2c;
+  box-shadow: inset 0 2px #ffc73c;
+
+  z-index: 8;
+}
+
 .field-row {
   display: flex;
   align-items: center;

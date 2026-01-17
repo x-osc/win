@@ -6,20 +6,60 @@
 
   let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 
-  let codeTab: CodeTab;
+  interface TabData {
+    id: string;
+    path: string[] | null;
+    content: string;
+    initialContent: string;
+    isSaved: boolean;
+    editorRef: CodeTab | null;
+  }
+
+  let tabs: TabData[] = $state([
+    {
+      id: crypto.randomUUID(),
+      path: null,
+      content: "",
+      initialContent: "",
+      isSaved: true,
+      editorRef: null,
+    },
+  ]);
+
+  let activeTabIndex = $state(0);
+  let activeTab = $derived(tabs[activeTabIndex]);
+
+  function addTab(data?: Partial<TabData>) {
+    tabs.push({
+      id: crypto.randomUUID(),
+      path: null,
+      content: "",
+      initialContent: "",
+      isSaved: true,
+      editorRef: null,
+      ...data,
+    });
+    activeTabIndex = tabs.length - 1;
+  }
+
+  function closeTab(index: number) {
+    tabs = tabs.filter((_, i) => i !== index);
+    if (activeTabIndex >= tabs.length) {
+      activeTabIndex = Math.max(0, tabs.length - 1);
+    }
+  }
 
   async function openFile(path: string[]) {
-    let content;
     try {
-      content = await api.fs.readFile(path);
+      const content = await api.fs.readFile(path);
+      const text = await content.data.text();
+
+      addTab({ path: path, content: text, initialContent: text });
     } catch (err) {
       if (err instanceof FsError) {
-        codeTab.setEditorText(`an unexpected error occured: ${err.message}`);
       }
       return;
     }
-
-    codeTab.setFile(path, await content.data.text());
   }
 
   async function handleOpen() {
@@ -33,29 +73,27 @@
   }
 
   async function handleSave() {
-    let path = codeTab.getFile();
-
-    if (path === null) return;
+    if (!activeTab.path) return handleSaveAs();
 
     try {
-      await api.fs.overwriteFile(path, {
-        data: new Blob([codeTab.getEditorText()]),
+      await api.fs.overwriteFile(activeTab.path, {
+        data: new Blob([activeTab.content]),
       });
     } catch (err) {
       if (err instanceof FsError) {
-        codeTab.setEditorText(`an unexpected error occured: ${err.message}`);
       }
       return;
     }
 
-    codeTab.setCurrentContent(codeTab.getEditorText());
+    activeTab.initialContent = activeTab.content;
+    activeTab.isSaved = true;
   }
 
   async function handleSaveAs() {
     let wd = null;
     let name = null;
 
-    let path = codeTab.getFile();
+    let path = activeTab.path;
     if (path !== null) {
       wd = [...path];
       name = wd.pop();
@@ -72,40 +110,58 @@
 
       try {
         await api.fs.overwriteFile(result.selectedEntry, {
-          data: new Blob([codeTab.getEditorText()]),
+          data: new Blob([activeTab.content]),
         });
       } catch (err) {
         if (err instanceof FsError) {
-          codeTab.setEditorText(`an unexpected error occured: ${err.message}`);
         }
         return;
       }
 
-      codeTab.setFile(result.selectedEntry, codeTab.getEditorText());
+      activeTab.path = result.selectedEntry;
     });
   }
 </script>
 
-<div class="notepad">
+<div class="code">
   <div class="toolbar">
     <button onclick={handleOpen}>open</button>
-    <button
-      onclick={() => {
-        if (codeTab.getFile() === null) {
-          handleSaveAs();
-        } else {
-          handleSave();
-        }
-      }}>save</button
-    >
+    <button onclick={handleSave}>save</button>
     <button onclick={handleSaveAs}>save as</button>
   </div>
 
-  <CodeTab bind:this={codeTab} />
+  <div class="tablist">
+    {#each tabs as tab, i (tab.id)}
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
+      <div
+        class="tab"
+        class:active={i === activeTabIndex}
+        onclick={() => (activeTabIndex = i)}
+      >
+        {tab.path ? tab.path.at(-1) : "Untitled"}
+        {tab.isSaved ? "" : "*"}
+
+        <button class="closebutton" onclick={() => closeTab(i)}>x</button>
+      </div>
+    {/each}
+  </div>
+
+  {#each tabs as tab, i (tab.id)}
+    <CodeTab
+      bind:this={tab.editorRef}
+      content={tab.content}
+      active={i === activeTabIndex}
+      onDocChange={(text) => {
+        tab.content = text;
+        tab.isSaved = text === tab.initialContent;
+      }}
+    />
+  {/each}
 </div>
 
 <style>
-  .notepad {
+  .code {
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -113,5 +169,10 @@
 
   .toolbar {
     flex: 0 0 auto;
+    margin-bottom: 10px;
+  }
+
+  .closebutton {
+    min-width: unset;
   }
 </style>
