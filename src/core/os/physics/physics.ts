@@ -1,5 +1,5 @@
 import { thud1Sfx } from "@os/audio/sounds";
-import { Body, Box, Settings, Vec2, World, WorldManifold } from "planck";
+import { Body, Box, Settings, Vec2, World } from "planck";
 import type { BoxShape } from "planck/with-testbed";
 import {
   savePreviousStates,
@@ -16,10 +16,6 @@ let prevTime = performance.now();
 let accumulator = 0;
 const frameRate = 1000 / 60;
 
-let lastSoundTime = 0;
-const activeImpacts = new Set<string>();
-const tempManifold = new WorldManifold();
-
 let walls: Body[] = [];
 
 export const CATEGORY_WALL = 0x0008;
@@ -35,11 +31,6 @@ export function initPhysics() {
   startWindowPhysics();
 
   window.addEventListener("resize", createWalls);
-
-  world.on("end-contact", (contact) => {
-    const id = getContactId(contact);
-    activeImpacts.delete(id);
-  });
 
   world.on("pre-solve", (contact) => {
     const fixtureA = contact.getFixtureA();
@@ -79,15 +70,11 @@ export function initPhysics() {
     }
   });
 
-  world.on("post-solve", (contact, impulse) => {
-    const now = performance.now();
-    if (now - lastSoundTime < 200) return;
-
-    const id = getContactId(contact);
-    if (activeImpacts.has(id)) return;
-
-    const bodyA = contact.getFixtureA().getBody();
-    const bodyB = contact.getFixtureB().getBody();
+  world.on("begin-contact", (contact) => {
+    const fixtureA = contact.getFixtureA();
+    const fixtureB = contact.getFixtureB();
+    const bodyA = fixtureA.getBody();
+    const bodyB = fixtureB.getBody();
 
     const vA = bodyA.getLinearVelocity();
     const vB = bodyB.getLinearVelocity();
@@ -97,10 +84,17 @@ export function initPhysics() {
 
     // TODO: add slight mass effect
 
-    const worldManifold = contact.getWorldManifold(tempManifold);
-    const normal = worldManifold?.normal!;
+    const posA = bodyA.getPosition();
+    const posB = bodyB.getPosition();
 
-    const approachSpeed = relVelX * normal.x + relVelY * normal.y;
+    const nx = posB.x - posA.x;
+    const ny = posB.y - posA.y;
+    const dist = Math.sqrt(nx * nx + ny * ny);
+
+    const normalX = nx / dist;
+    const normalY = ny / dist;
+
+    const approachSpeed = relVelX * normalX + relVelY * normalY;
 
     const categoryA = contact.getFixtureA().getFilterCategoryBits();
     const categoryB = contact.getFixtureB().getFilterCategoryBits();
@@ -112,12 +106,10 @@ export function initPhysics() {
     if ((isWindowA || isWindowB) && isWall) {
       if (approachSpeed > 380) {
         thud1Sfx.play();
-        lastSoundTime = now;
       }
     } else if (isWindowA && isWindowB) {
       if (approachSpeed > 350) {
         thud1Sfx.play();
-        lastSoundTime = now;
       }
     }
   });
@@ -203,10 +195,4 @@ function createWall(x: number, y: number, w: number, h: number) {
     filterCategoryBits: CATEGORY_WALL,
   });
   return body;
-}
-
-function getContactId(contact: any): string {
-  const idA = contact.getFixtureA().getBody().getUserData() || "wall";
-  const idB = contact.getFixtureB().getBody().getUserData() || "wall";
-  return [idA, idB].sort().join("-");
 }
