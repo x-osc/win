@@ -33,11 +33,18 @@
     lineNumbers,
     rectangularSelection,
   } from "@codemirror/view";
-  import { joinPath } from "@os/fs/filesystem";
   import { EditorView } from "codemirror";
-  import { onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
 
-  let {}: {} = $props();
+  let {
+    content,
+    active,
+    onDocChange,
+  }: {
+    content: string;
+    active: boolean;
+    onDocChange: (content: string) => void;
+  } = $props();
 
   let currentFile: string[] | null = $state(null);
   let currentFileContent = "";
@@ -52,7 +59,7 @@
 
   onMount(() => {
     view = new EditorView({
-      doc: "",
+      doc: content,
       extensions: [
         lineNumbers(),
         foldGutter(),
@@ -75,7 +82,7 @@
         fullHeight,
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
-            updateSaved();
+            onDocChange(update.state.doc.toString());
           }
         }),
         keymap.of([
@@ -91,65 +98,22 @@
       ],
       parent: container,
     });
-
-    return () => {
-      view.destroy();
-    };
   });
 
-  export function getEditorText() {
-    return view?.state.doc.toString() ?? "";
-  }
-
-  export function setEditorText(text: string) {
-    view.dispatch({
-      changes: {
-        from: 0,
-        to: view.state.doc.length,
-        insert: text,
-      },
-    });
-  }
-
-  export function setFile(path: string[], content: string) {
-    currentFile = path;
-    currentFileContent = content;
-    setEditorText(content);
-    updateSaved();
-  }
-
-  export function getFile(): string[] | null {
-    return currentFile;
-  }
-
-  export function setCurrentContent(content: string) {
-    currentFileContent = content;
-    updateSaved();
-  }
-
-  function updateSaved() {
-    isSaved = getEditorText() === currentFileContent;
-  }
+  onDestroy(() => {
+    view.destroy();
+  });
 </script>
 
-<div class="codetab">
-  <div class="pathbar">
-    {currentFile ? joinPath(currentFile, false) : "untitled-1 (new file)"}
-    {isSaved ? "" : "*"}
-  </div>
-
+<div class="codeview" style={active ? "" : "display: none;"}>
   <div class="editor-wrapper" bind:this={container}></div>
 </div>
 
 <style>
-  .codetab {
+  .codeview {
     flex: 1;
     display: flex;
     flex-direction: column;
-  }
-
-  .pathbar {
-    flex: 0 0 auto;
   }
 
   .editor-wrapper {
