@@ -13,6 +13,12 @@
 
   let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 
+  let history: string[] = $state([]);
+  let historyIndex: number = $state(-1);
+  // saves currently editing command
+  // so when you go up and back down its still there
+  let temporaryInput: string = "";
+
   let lines: [string, TextOptions][][] = $state([]);
   let workingDir: string[] = $state([]);
   let isCmdRunning: boolean = $state(false);
@@ -32,6 +38,13 @@
   });
 
   function processCommand(input: string) {
+    input = input.trim();
+
+    if (history[history.length - 1] !== input) {
+      history.push(input);
+    }
+    historyIndex = -1;
+
     const [cmd, ...rest] = input.split(" ");
     const args = rest.join(" ");
 
@@ -124,6 +137,32 @@
         resolveInput(input);
         resolveInput = null;
         return;
+      }
+    }
+
+    if (!isCmdRunning && !isInputRunning) {
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (history.length === 0) return;
+
+        if (historyIndex === -1) {
+          temporaryInput = textInput.value;
+        }
+
+        if (historyIndex < history.length - 1) {
+          historyIndex++;
+          textInput.value = history[history.length - 1 - historyIndex];
+        }
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        if (historyIndex > -1) {
+          historyIndex--;
+          if (historyIndex === -1) {
+            textInput.value = temporaryInput;
+          } else {
+            textInput.value = history[history.length - 1 - historyIndex];
+          }
+        }
       }
     }
   }
