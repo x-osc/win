@@ -6,6 +6,7 @@ export let defaultApps: Record<string, string> = {
   txt: "notepad",
   ml: "code",
   sto: "code",
+  jpg: "viewer",
 };
 
 export async function openFileWithDefault(entry: FsEntry) {
