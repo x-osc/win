@@ -15,18 +15,8 @@
   import { onMount } from "svelte";
 
   // app manifests
-  import { browserManifest } from "./core/apps/browser/browser";
-  import { calcManifest } from "./core/apps/calc/calc";
-  import { codeManifest } from "./core/apps/code/code";
-  import { dawManifest } from "./core/apps/daw/daw";
-  import { explorerManifest } from "./core/apps/explorer/explorer";
-  import { minesweeperManifest } from "./core/apps/minesweeper/minesweeper";
-  import { notepadManifest } from "./core/apps/notepad/notepad";
-  import { paintManifest } from "./core/apps/paint/paint";
-  import { settingsManifest } from "./core/apps/settings/settings";
-  import { terminalManifest } from "./core/apps/terminal/terminal";
-  import { testAppManifest } from "./core/apps/testApp";
-  import { viewerManifest } from "./core/apps/viewer/veiwer";
+  const AppModules = import.meta.glob<Record<string, any>>('./core/apps/**/*.manifest.ts', { eager: true });
+  import { testAppManifest } from "./core/apps/testApp.manifest";
 
   // terminal command manifests
   import { asdfManifest } from "./core/cmds/asdf";
@@ -55,18 +45,13 @@
   import Trail from "./game/Trail.svelte";
 
   // adding apps to app registry
-  registerApp(testAppManifest);
-  registerApp(notepadManifest);
-  registerApp(terminalManifest);
-  registerApp(paintManifest);
-  registerApp(explorerManifest);
-  registerApp(calcManifest);
-  registerApp(browserManifest);
-  registerApp(minesweeperManifest);
-  registerApp(settingsManifest);
-  registerApp(dawManifest);
-  registerApp(codeManifest);
-  registerApp(viewerManifest);
+  Object.values(AppModules).forEach((module) => {
+    Object.entries(module).forEach(([exportName, exportValue]) => {
+      if (exportName.endsWith('Manifest')) {
+        registerApp(exportValue);
+      }
+    });
+  });
 
   // adding cmds to cmd registry
   registerCmd(helpManifest);

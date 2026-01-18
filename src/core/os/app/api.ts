@@ -8,7 +8,7 @@ import { launchCmd } from "@os/cmd/cmdregistry";
 import type { CmdApi } from "@os/cmd/command";
 import { fsApi } from "@os/fs/filesystem";
 import { wmApi, type WinData, type WindowApi } from "@os/wm/wm.svelte";
-import { showDialog, type DialogArgs } from "../../apps/dialog/dialog";
+import { showDialog, type DialogArgs } from "../../apps/dialog/dialog.manifest";
 import type { AppArgs, AppResult } from "./app";
 import { launchApp } from "./appregistry";
 import { closeApp, sendIpc, type IpcData, type ProcessApi } from "./processes";

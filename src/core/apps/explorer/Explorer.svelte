@@ -3,7 +3,7 @@
   import { joinPath, type FsEntry } from "@os/fs/filesystem";
   import type { WindowApi } from "@os/wm/wm.svelte";
   import { onMount } from "svelte";
-  import type { ExplorerArgs } from "./explorer";
+  import type { ExplorerArgs } from "./explorer.manifest";
   import { ExplorerState } from "./explorerState.svelte";
 
   let {
