@@ -1,6 +1,7 @@
 <script lang="ts">
   import { launchApp, registerApp } from "@os/app/appregistry"; 
   import { launchAppFromManifest } from "@os/app/processes";
+  import { mousePos } from "./core/os/state.svelte";
   import { playClickDown, playClickUp } from "@os/audio/click";
   import { initAudio } from "@os/audio/sounds";
   import { registerCmd } from "@os/cmd/cmdregistry";
@@ -18,25 +19,7 @@
   const AppModules = import.meta.glob<Record<string, any>>('./core/apps/**/*.manifest.ts', { eager: true });
   import { testAppManifest } from "./core/apps/testApp.manifest";
 
-  // terminal command manifests
-  import { asdfManifest } from "./core/cmds/asdf";
-  import { cdManifest } from "./core/cmds/cd";
-  import { deleteManifest } from "./core/cmds/delete";
-  import { dialogCmdManifest } from "./core/cmds/dialog";
-  import { echoManifest } from "./core/cmds/echo";
-  import { explorerCmdManifest } from "./core/cmds/explorer";
-  import { helpManifest } from "./core/cmds/help";
-  import { launchManifest } from "./core/cmds/launch";
-  import { listManifest } from "./core/cmds/list";
-  import { listAppsManifest } from "./core/cmds/list_apps";
-  import { mkdirManifest } from "./core/cmds/mkdir";
-  import { mkfileManifest } from "./core/cmds/mkfile";
-  import { mkwindowManifest } from "./core/cmds/mkwindow";
-  import { psManifest } from "./core/cmds/ps";
-  import { pwdManifest } from "./core/cmds/pwd";
-  import { readManifest } from "./core/cmds/read";
-  import { sleepManifest } from "./core/cmds/sleep";
-  import { mousePos } from "./core/os/state.svelte";
+  const CmdModules = import.meta.glob<Record<string, any>>('./core/cmds/*.manifest.ts', { eager: true });
 
   // secret import
   import { hydraManifest } from "./game/apps/hydra";
@@ -54,23 +37,15 @@
   });
 
   // adding cmds to cmd registry
-  registerCmd(helpManifest);
-  registerCmd(asdfManifest);
-  registerCmd(echoManifest);
-  registerCmd(pwdManifest);
-  registerCmd(mkdirManifest);
-  registerCmd(mkfileManifest);
-  registerCmd(cdManifest);
-  registerCmd(listManifest);
-  registerCmd(readManifest);
-  registerCmd(deleteManifest);
-  registerCmd(listAppsManifest);
-  registerCmd(launchManifest);
-  registerCmd(psManifest);
-  registerCmd(sleepManifest);
-  registerCmd(mkwindowManifest);
-  registerCmd(explorerCmdManifest);
-  registerCmd(dialogCmdManifest);
+  Object.values(CmdModules).forEach((module) => {
+    Object.entries(module).forEach(([exportName, exportValue]) => {
+      if (exportName.endsWith('Manifest')) {
+        registerCmd(exportValue);
+      }
+    });
+  });
+
+  console.log(CmdModules);
 
   let debugPhysicsOverlay = $state(false);
 
