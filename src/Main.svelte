@@ -10,6 +10,7 @@
   import { initPhysics } from "@os/physics/physics";
   import { enablePhysics } from "@os/physics/windows";
   import { enablePhysicsForAll } from "@os/physics/windows";
+  import { disablePhysicsForAll } from "@os/physics/windows";
   import Taskbar from "@os/wm/Taskbar.svelte";
   import Window from "@os/wm/Window.svelte";
   import { wmApi } from "@os/wm/wm.svelte";
@@ -44,8 +45,6 @@
       }
     });
   });
-
-  console.log(CmdModules);
 
   let debugPhysicsOverlay = $state(false);
 
@@ -88,6 +87,7 @@
       <button onclick={(_) => launchAppFromManifest(hydraManifest)}>hydra.exe</button>
       <button onclick={(_) => launchApp("settings")}>settings</button>
       <button onclick={(_) => enablePhysicsForAll()}>fysiks</button>
+      <button onclick={(_) => disablePhysicsForAll()}> auf fysiks</button>
       <button onclick={(_) => {
           wmApi.on("anymounted", (id) => enablePhysics(id));
         }}>fysiks 2</button
