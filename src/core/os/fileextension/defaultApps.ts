@@ -4,6 +4,8 @@ import { getFileExtension } from "./extensionRegistry";
 
 export let defaultApps: Record<string, string> = {
   txt: "notepad",
+  ml: "code",
+  sto: "code",
 };
 
 export async function openFileWithDefault(entry: FsEntry) {

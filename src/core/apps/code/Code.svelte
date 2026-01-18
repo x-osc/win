@@ -1,10 +1,17 @@
 <script lang="ts">
   import type { AppApi } from "@os/app/api";
+  import type { AppArgs } from "@os/app/app";
   import { FsError, joinPath } from "@os/fs/filesystem";
   import type { WindowApi } from "@os/wm/wm.svelte";
+  import { onDestroy, onMount } from "svelte";
   import CodeTab from "./CodeTab.svelte";
+  import { removeCodeInstance, setMainCodeInstance } from "./code";
 
-  let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
+  let {
+    api,
+    winApi,
+    args,
+  }: { api: AppApi; winApi: WindowApi; args?: AppArgs } = $props();
 
   interface TabData {
     id: string;
@@ -22,8 +29,6 @@
 
   // svelte-ignore state_referenced_locally
   winApi.on("close", async () => {
-    console.log("a");
-
     let unsaved = tabs.filter((tab) => !tab.isSaved).length;
     if (unsaved > 0) {
       let code = await api.showDialog({
@@ -36,6 +41,28 @@
     }
 
     api.quit();
+  });
+
+  // svelte-ignore state_referenced_locally
+  winApi.on("focus", () => setMainCodeInstance(api.getId()));
+
+  // svelte-ignore state_referenced_locally
+  api.on("ipc", (data) => {
+    if (data.openPath) {
+      openFile(data.openPath);
+    }
+  });
+
+  onMount(() => {
+    console.log(args);
+    if (args?.path) {
+      console.log(args.path);
+      openFile(args.path);
+    }
+  });
+
+  onDestroy(() => {
+    removeCodeInstance(api.getId());
   });
 
   function addTab(data?: Partial<TabData>) {
