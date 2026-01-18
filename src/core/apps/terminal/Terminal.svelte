@@ -13,6 +13,14 @@
 
   let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 
+  let history: string[] = $state([]);
+  // -1 means temp input value
+  // -2 means blank
+  let historyIndex: number = $state(-1);
+  // saves currently editing command
+  // so when you go up and back down its still there
+  let temporaryInput: string = "";
+
   let lines: [string, TextOptions][][] = $state([]);
   let workingDir: string[] = $state([]);
   let isCmdRunning: boolean = $state(false);
@@ -32,6 +40,13 @@
   });
 
   function processCommand(input: string) {
+    input = input.trim();
+
+    if (history[history.length - 1] !== input) {
+      history.push(input);
+    }
+    historyIndex = -1;
+
     const [cmd, ...rest] = input.split(" ");
     const args = rest.join(" ");
 
@@ -126,21 +141,68 @@
         return;
       }
     }
+
+    if (!isCmdRunning && !isInputRunning) {
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        if (history.length === 0) return;
+
+        if (historyIndex === -2) {
+          historyIndex++;
+
+          if (textInput.value === "") {
+            textInput.value = temporaryInput;
+            temporaryInput = "";
+            return;
+          }
+        }
+
+        if (historyIndex === -1) {
+          temporaryInput = textInput.value;
+        }
+
+        if (historyIndex < history.length - 1) {
+          historyIndex++;
+          textInput.value = history[history.length - 1 - historyIndex];
+        }
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+
+        if (historyIndex === -1 && textInput.value !== "") {
+          historyIndex--;
+          temporaryInput = textInput.value;
+          textInput.value = "";
+          return;
+        }
+
+        if (historyIndex > -1) {
+          historyIndex--;
+          if (historyIndex === -1) {
+            textInput.value = temporaryInput;
+          } else {
+            textInput.value = history[history.length - 1 - historyIndex];
+          }
+        }
+      }
+    }
   }
 
   // svelte-ignore state_referenced_locally
-  winApi.on("focus", () => {
+  winApi.on("focus", (wasWindowContent) => {
+    if (wasWindowContent) return;
     textInput.focus({ preventScroll: true });
   });
 
-  function handleBlur(e: FocusEvent) {
-    if ((!isCmdRunning || isInputRunning) && winApi.isFocused()) {
+  function handleMouseUp() {
+    const selection = window.getSelection();
+    if (selection && selection.toString().length === 0) {
       textInput.focus({ preventScroll: true });
     }
   }
 </script>
 
-<div bind:this={terminal} class="terminal">
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div bind:this={terminal} class="terminal" onmouseup={handleMouseUp}>
   {#each lines as line}
     <div class="terminal-line">
       <span class="terminal-segment">
@@ -168,7 +230,6 @@
       type="text"
       style="display: {!isCmdRunning || isInputRunning ? 'inline' : 'none'}"
       onkeydown={handleKeyDown}
-      onblur={handleBlur}
       spellcheck="false"
       class="input"
     />
@@ -208,6 +269,12 @@
   .prompt {
     margin: 0;
     padding: 0;
+  }
+
+  .terminal-line::selection,
+  .prompt::selection {
+    color: black;
+    background-color: white;
   }
 
   input.input {

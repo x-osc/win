@@ -50,6 +50,12 @@ export function enablePhysics(id: number) {
   data.body.setType("dynamic");
 }
 
+export function enablePhysicsForAll() {
+  wmApi.getWindows().forEach((_, id) => {
+    enablePhysics(id);
+  });
+}
+
 export function disablePhysics(id: number) {
   const data = windowBodies.get(id);
   const win = wmApi.getWindows().get(id);
@@ -60,6 +66,13 @@ export function disablePhysics(id: number) {
   data.body.getFixtureList()?.setFilterCategoryBits(CATEGORY_STATIC_WINDOW);
   data.body.setType("kinematic");
 }
+
+export function disablePhysicsForAll() {
+  wmApi.getWindows().forEach((_, id) => {
+    disablePhysics(id);
+  });
+}
+
 
 function addWindow(id: number) {
   const data = wmApi.getWindows().get(id)?.data;

@@ -1,14 +1,26 @@
 <script lang="ts">
   import type { AppApi } from "@os/app/api";
+  import type { AppArgs } from "@os/app/app";
   import { FsError, joinPath } from "@os/fs/filesystem";
   import type { WindowApi } from "@os/wm/wm.svelte";
+  import { onMount } from "svelte";
 
-  let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
+  let {
+    api,
+    winApi,
+    args,
+  }: { api: AppApi; winApi: WindowApi; args?: AppArgs } = $props();
 
   let currentFile: string[] | null = $state(null);
   let textarea: HTMLTextAreaElement;
   let currentFileContent = "";
   let isSaved = $state(true);
+
+  onMount(() => {
+    if (args?.path) {
+      openFile(args.path);
+    }
+  });
 
   async function openFile(path: string[]) {
     let content;

@@ -17,7 +17,7 @@
   let pageSDom: ShadowRoot;
   let pageSDomDiv: HTMLElement;
 
-  let url = $state("");
+  let url = $state("goggle.net");
   // TODO: jank
   let publicUrl: string | null = "";
 
@@ -37,9 +37,10 @@
     pageSDomDiv = document.createElement("div");
     pageSDomDiv.style = "width: 100%; height: 100%";
     pageSDom.appendChild(pageSDomDiv);
-
     pageSDomDiv.addEventListener("keydown", handleSDomKeyDown);
     pageSDomDiv.addEventListener("click", handleSDomClick);
+    
+    reload()
   });
 
   async function reload(humanTriggered = false) {
@@ -208,6 +209,7 @@
       bind:value={url}
       onkeydown={handleInputKeyDown}
       onfocus={() => urlInput.select()}
+      placeholder="Search"
     />
     <button class="togglebtn" onclick={() => (showConsole = !showConsole)}>
       {showConsole ? "hide" : "show"} ({errors.length})

@@ -246,7 +246,7 @@
     {windowData.physicsEnabled ? 'will-change: transform;' : ''}
   "
   bind:this={windowElement}
-  onmousedown={focus}
+  onmousedown={() => wmApi.focusWindow(id, true)}
 >
   <div
     class="titlebar"

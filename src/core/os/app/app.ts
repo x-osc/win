@@ -4,6 +4,8 @@ export interface AppManifest {
   appId: string;
 
   launch(api: AppApi, args?: AppArgs): Promise<void>;
+
+  openPath?(path: string[]): Promise<boolean>;
 }
 
 export type AppArgs = Record<string, any>;

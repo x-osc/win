@@ -27,6 +27,7 @@ export function launchCmd(
   return launchCmdFromManifest(command, cmdApi, extraOptions);
 }
 
+/** Adds command to Command Registry */
 export function registerCmd(cmd: CmdManifest) {
   let name = cmd.command;
   cmdRegistry.set(name, cmd);
@@ -42,6 +43,7 @@ export function registerCmd(cmd: CmdManifest) {
   }
 }
 
+/** Returns Command Registry */
 export function getCmds(): Map<string, CmdManifest> {
   return cmdRegistry;
 }
