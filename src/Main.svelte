@@ -1,27 +1,40 @@
 <script lang="ts">
-  import { launchApp, registerApp } from "@os/app/appregistry"; 
+  import { launchApp, registerApp } from "@os/app/appregistry";
   import { launchAppFromManifest } from "@os/app/processes";
-  import { mousePos } from "./core/os/state.svelte";
   import { playClickDown, playClickUp } from "@os/audio/click";
   import { initAudio } from "@os/audio/sounds";
   import { registerCmd } from "@os/cmd/cmdregistry";
   import { writeInitialFiles } from "@os/fs/filesystem";
   import DebugPhysicsOverlay from "@os/physics/DebugPhysicsOverlay.svelte";
   import { initPhysics } from "@os/physics/physics";
-  import { enablePhysics } from "@os/physics/windows";
-  import { enablePhysicsForAll } from "@os/physics/windows";
-  import { disablePhysicsForAll } from "@os/physics/windows";
+  import {
+    disablePhysicsForAll,
+    enablePhysics,
+    enablePhysicsForAll,
+  } from "@os/physics/windows";
   import Taskbar from "@os/wm/Taskbar.svelte";
   import Window from "@os/wm/Window.svelte";
   import { wmApi } from "@os/wm/wm.svelte";
   import { onMount } from "svelte";
-
-  // app manifests
-  const AppModules = import.meta.glob<Record<string, any>>('./core/apps/**/*.manifest.ts', { eager: true });
-  import { testAppManifest } from "./core/apps/testApp.manifest";
-
-  const CmdModules = import.meta.glob<Record<string, any>>('./core/cmds/*.manifest.ts', { eager: true });
-
+  // terminal command manifests
+  import { asdfManifest } from "./core/cmds/asdf";
+  import { cdManifest } from "./core/cmds/cd";
+  import { deleteManifest } from "./core/cmds/delete";
+  import { dialogCmdManifest } from "./core/cmds/dialog";
+  import { echoManifest } from "./core/cmds/echo";
+  import { explorerCmdManifest } from "./core/cmds/explorer";
+  import { helpManifest } from "./core/cmds/help";
+  import { launchManifest } from "./core/cmds/launch";
+  import { listManifest } from "./core/cmds/list";
+  import { listAppsManifest } from "./core/cmds/list_apps";
+  import { mkdirManifest } from "./core/cmds/mkdir";
+  import { mkfileManifest } from "./core/cmds/mkfile";
+  import { mkwindowManifest } from "./core/cmds/mkwindow";
+  import { psManifest } from "./core/cmds/ps";
+  import { pwdManifest } from "./core/cmds/pwd";
+  import { readManifest } from "./core/cmds/read";
+  import { sleepManifest } from "./core/cmds/sleep";
+  import { mousePos } from "./core/os/state.svelte";
   // secret import
   import { hydraManifest } from "./game/apps/hydra";
   import Bsod from "./game/Bsod.svelte";
@@ -31,20 +44,30 @@
   // adding apps to app registry
   Object.values(AppModules).forEach((module) => {
     Object.entries(module).forEach(([exportName, exportValue]) => {
-      if (exportName.endsWith('Manifest')) {
+      if (exportName.endsWith("Manifest")) {
         registerApp(exportValue);
       }
     });
   });
 
   // adding cmds to cmd registry
-  Object.values(CmdModules).forEach((module) => {
-    Object.entries(module).forEach(([exportName, exportValue]) => {
-      if (exportName.endsWith('Manifest')) {
-        registerCmd(exportValue);
-      }
-    });
-  });
+  registerCmd(helpManifest);
+  registerCmd(asdfManifest);
+  registerCmd(echoManifest);
+  registerCmd(pwdManifest);
+  registerCmd(mkdirManifest);
+  registerCmd(mkfileManifest);
+  registerCmd(cdManifest);
+  registerCmd(listManifest);
+  registerCmd(readManifest);
+  registerCmd(deleteManifest);
+  registerCmd(listAppsManifest);
+  registerCmd(launchManifest);
+  registerCmd(psManifest);
+  registerCmd(sleepManifest);
+  registerCmd(mkwindowManifest);
+  registerCmd(explorerCmdManifest);
+  registerCmd(dialogCmdManifest);
 
   let debugPhysicsOverlay = $state(false);
 
@@ -67,9 +90,10 @@
       {#each wmApi.getWindows().entries() as [id, win] (id)}
         <Window
           {id}
-          windowData = {win.data}
-          focused = {id === wmApi.getFocusHistory()[wmApi.getFocusHistory().length - 1]}
-          callbacks = {win.callbacks}
+          windowData={win.data}
+          focused={id ===
+            wmApi.getFocusHistory()[wmApi.getFocusHistory().length - 1]}
+          callbacks={win.callbacks}
           {wmApi}
         />
       {/each}
@@ -83,16 +107,25 @@
       <button onclick={(_) => launchApp("browser")}>internet exploder</button>
       <button onclick={(_) => launchApp("minesweeper")}>mine craft</button>
       <button onclick={(_) => launchApp("code")}>code</button>
-      <button onclick={(_) => launchApp("firebeats")}>make sum fire beats</button>
-      <button onclick={(_) => launchAppFromManifest(hydraManifest)}>hydra.exe</button>
+      <button onclick={(_) => launchApp("firebeats")}
+        >make sum fire beats</button
+      >
+      <button onclick={(_) => launchAppFromManifest(hydraManifest)}
+        >hydra.exe</button
+      >
       <button onclick={(_) => launchApp("settings")}>settings</button>
       <button onclick={(_) => enablePhysicsForAll()}>fysiks</button>
       <button onclick={(_) => disablePhysicsForAll()}> auf fysiks</button>
-      <button onclick={(_) => {
+      <button
+        onclick={(_) => {
           wmApi.on("anymounted", (id) => enablePhysics(id));
         }}>fysiks 2</button
       >
-      <button onclick={(_) => {debugPhysicsOverlay = !debugPhysicsOverlay;}}>toggle hitboxes</button>
+      <button
+        onclick={(_) => {
+          debugPhysicsOverlay = !debugPhysicsOverlay;
+        }}>toggle hitboxes</button
+      >
 
       {#if gameState.isTrail}
         <Trail />
