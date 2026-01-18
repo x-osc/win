@@ -50,13 +50,14 @@
   api.on("ipc", (data) => {
     if (data.openPath) {
       openFile(data.openPath);
+      winApi.focus();
     }
   });
 
   onMount(() => {
-    console.log(args);
+    setMainCodeInstance(api.getId());
+
     if (args?.path) {
-      console.log(args.path);
       openFile(args.path);
     }
   });
