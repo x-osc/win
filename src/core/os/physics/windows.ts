@@ -50,6 +50,12 @@ export function enablePhysics(id: number) {
   data.body.setType("dynamic");
 }
 
+export function enablePhysicsForAll() {
+  wmApi.getWindows().forEach((_, id) => {
+    enablePhysics(id);
+  });
+}
+
 export function disablePhysics(id: number) {
   const data = windowBodies.get(id);
   const win = wmApi.getWindows().get(id);
