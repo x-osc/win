@@ -67,6 +67,13 @@ export function disablePhysics(id: number) {
   data.body.setType("kinematic");
 }
 
+export function disablePhysicsForAll() {
+  wmApi.getWindows().forEach((_, id) => {
+    disablePhysics(id);
+  });
+}
+
+
 function addWindow(id: number) {
   const data = wmApi.getWindows().get(id)?.data;
   if (!data) return;
