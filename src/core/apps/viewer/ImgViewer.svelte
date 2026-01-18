@@ -75,20 +75,24 @@
     panY = my - (my - panY) * (zoom / oldZoom);
   }
 
-  function handleMouseDown(e: MouseEvent) {
+  function handleMouseDown(e: PointerEvent) {
+    viewerElement.setPointerCapture(e.pointerId);
+
     isDragging = true;
     startPanX = e.clientX - panX;
     startPanY = e.clientY - panY;
   }
 
-  function handleMouseMove(e: MouseEvent) {
+  function handleMouseMove(e: PointerEvent) {
     if (!isDragging) return;
     panX = e.clientX - startPanX;
     panY = e.clientY - startPanY;
   }
 
-  function handleMouseUp() {
+  function handleMouseUp(e: PointerEvent) {
     isDragging = false;
+
+    viewerElement.releasePointerCapture(e.pointerId);
   }
 </script>
 
@@ -97,10 +101,11 @@
   class="viewer"
   bind:this={viewerElement}
   onwheel={handleWheel}
-  onmousedown={handleMouseDown}
-  onmousemove={handleMouseMove}
-  onmouseup={handleMouseUp}
-  onmouseleave={handleMouseUp}
+  onpointerdown={handleMouseDown}
+  onpointermove={handleMouseMove}
+  onpointerup={handleMouseUp}
+  onpointercancel={handleMouseUp}
+  ondragstartcapture={(e) => e.preventDefault()}
 >
   <div
     class="container"
