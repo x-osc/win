@@ -1,5 +1,6 @@
 import { randint, sleep } from "@lib/core/utils/utils";
 import type { AppApi } from "@os/app/api";
+import { openFileWithDefault } from "@os/fileextension/defaultApps";
 import { joinPath, type EntryType, type FsEntry } from "@os/fs/filesystem";
 import { SvelteSet } from "svelte/reactivity";
 
@@ -76,20 +77,21 @@ export class ExplorerState {
     }
   }
 
-  async openDir(entry: FsEntry) {
-    // TODO: file open
-    if (entry.type !== "dir") return;
-
-    // TODO: error here
-    this.cwd = (await this.api.fs.getPath(entry)) ?? this.cwd;
-    this.clearSelection();
-    await this.refresh();
+  async openEntry(entry: FsEntry) {
+    if (entry.type === "file") {
+      openFileWithDefault(entry);
+    } else {
+      // TODO: error here
+      this.cwd = (await this.api.fs.getPath(entry)) ?? this.cwd;
+      this.clearSelection();
+      await this.refresh();
+    }
   }
 
   async openSelected() {
     if (!this.mainSelectedEntry) return;
 
-    this.openDir(this.mainSelectedEntry);
+    this.openEntry(this.mainSelectedEntry);
   }
 
   handleSelect(id: string, ctrl: boolean, shift: boolean) {

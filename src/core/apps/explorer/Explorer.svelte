@@ -79,7 +79,11 @@
       return;
     }
 
-    fsc.openDir(entry);
+    if (dialogType !== "none" && entry.type === "file") {
+      return;
+    }
+
+    fsc.openEntry(entry);
   }
 
   async function handleDialogSelect() {
@@ -91,7 +95,7 @@
     const isDir = entry.type === "dir";
 
     if (isDir && (dialogType === "fileonly" || dialogType === "save")) {
-      fsc.openDir(entry);
+      fsc.openEntry(entry);
       return;
     }
 
