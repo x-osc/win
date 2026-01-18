@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { launchApp, registerApp } from "@os/app/appregistry";
+  import { launchApp, registerApp } from "@os/app/appregistry"; 
   import { launchAppFromManifest } from "@os/app/processes";
   import { playClickDown, playClickUp } from "@os/audio/click";
   import { initAudio } from "@os/audio/sounds";
@@ -8,10 +8,13 @@
   import DebugPhysicsOverlay from "@os/physics/DebugPhysicsOverlay.svelte";
   import { initPhysics } from "@os/physics/physics";
   import { enablePhysics } from "@os/physics/windows";
+  import { enablePhysicsForAll } from "@os/physics/windows";
   import Taskbar from "@os/wm/Taskbar.svelte";
   import Window from "@os/wm/Window.svelte";
   import { wmApi } from "@os/wm/wm.svelte";
   import { onMount } from "svelte";
+
+  // app manifests
   import { browserManifest } from "./core/apps/browser/browser";
   import { calcManifest } from "./core/apps/calc/calc";
   import { codeManifest } from "./core/apps/code/code";
@@ -24,6 +27,8 @@
   import { terminalManifest } from "./core/apps/terminal/terminal";
   import { testAppManifest } from "./core/apps/testApp";
   import { viewerManifest } from "./core/apps/viewer/veiwer";
+
+  // terminal command manifests
   import { asdfManifest } from "./core/cmds/asdf";
   import { cdManifest } from "./core/cmds/cd";
   import { deleteManifest } from "./core/cmds/delete";
@@ -42,11 +47,14 @@
   import { readManifest } from "./core/cmds/read";
   import { sleepManifest } from "./core/cmds/sleep";
   import { mousePos } from "./core/os/state.svelte";
+
+  // secret import
   import { hydraManifest } from "./game/apps/hydra";
   import Bsod from "./game/Bsod.svelte";
   import { gameState } from "./game/gameState.svelte";
   import Trail from "./game/Trail.svelte";
 
+  // adding apps to app registry
   registerApp(testAppManifest);
   registerApp(notepadManifest);
   registerApp(terminalManifest);
@@ -60,6 +68,7 @@
   registerApp(codeManifest);
   registerApp(viewerManifest);
 
+  // adding cmds to cmd registry
   registerCmd(helpManifest);
   registerCmd(asdfManifest);
   registerCmd(echoManifest);
@@ -80,6 +89,7 @@
 
   let debugPhysicsOverlay = $state(false);
 
+  /** Passes mouse movements from App to Browser */
   function handleMouseMove(e: MouseEvent) {
     mousePos.x = e.clientX;
     mousePos.y = e.clientY;
@@ -98,10 +108,9 @@
       {#each wmApi.getWindows().entries() as [id, win] (id)}
         <Window
           {id}
-          windowData={win.data}
-          focused={id ===
-            wmApi.getFocusHistory()[wmApi.getFocusHistory().length - 1]}
-          callbacks={win.callbacks}
+          windowData = {win.data}
+          focused = {id === wmApi.getFocusHistory()[wmApi.getFocusHistory().length - 1]}
+          callbacks = {win.callbacks}
           {wmApi}
         />
       {/each}
@@ -115,34 +124,15 @@
       <button onclick={(_) => launchApp("browser")}>internet exploder</button>
       <button onclick={(_) => launchApp("minesweeper")}>mine craft</button>
       <button onclick={(_) => launchApp("code")}>code</button>
-      <button onclick={(_) => launchApp("firebeats")}>
-        make sum fire beats
-      </button>
-      <button onclick={(_) => launchAppFromManifest(hydraManifest)}>
-        hydra.exe
-      </button>
+      <button onclick={(_) => launchApp("firebeats")}>make sum fire beats</button>
+      <button onclick={(_) => launchAppFromManifest(hydraManifest)}>hydra.exe</button>
       <button onclick={(_) => launchApp("settings")}>settings</button>
-      <button
-        onclick={(_) => {
-          wmApi.getWindows().forEach((win, id) => {
-            enablePhysics(id);
-          });
-        }}
-      >
-        fysiks
-      </button>
-      <button
-        onclick={(_) => {
+      <button onclick={(_) => enablePhysicsForAll()}>fysiks</button>
+      <button onclick={(_) => {
           wmApi.on("anymounted", (id) => enablePhysics(id));
         }}>fysiks 2</button
       >
-      <button
-        onclick={(_) => {
-          debugPhysicsOverlay = !debugPhysicsOverlay;
-        }}
-      >
-        toggle hitboxes
-      </button>
+      <button onclick={(_) => {debugPhysicsOverlay = !debugPhysicsOverlay;}}>toggle hitboxes</button>
 
       {#if gameState.isTrail}
         <Trail />

@@ -7,6 +7,7 @@ import {
 
 let appRegistry: Map<string, AppManifest> = new Map();
 
+/** Launches app from it's manifest if it does not point to a null value */
 export function launchApp(
   id: string,
   args?: AppArgs,
@@ -21,11 +22,13 @@ export function launchApp(
   return launchAppFromManifest(app, args, extraOptions);
 }
 
+/** Adds app to App Registry */
 export function registerApp(app: AppManifest) {
   let id = app.appId;
   appRegistry.set(id, app);
 }
 
+/** Returns App Registry */
 export function getApps(): Map<string, AppManifest> {
   return appRegistry;
 }
