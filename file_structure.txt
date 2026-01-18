@@ -1,16 +1,16 @@
 .github (IGNORE)
 .vscode (IGNORE)
 
-generated (IGNORE MAYBE??)
+generated (generated json files from websites/ and initfs/)
 node_modules (IGNORE)
 
 public (only has favicon / more public assets?)
 src (all the stuff)
 ├───assets (fonts / assets ya)
 │
-├───core (ok idk what)
+├───core (core os features)
 │   │
-│   ├───apps (wait so all the apps)
+│   ├───apps (core os apps)
 │   │   ├───browser
 │   │   ├───calc
 │   │   ├───code
@@ -23,12 +23,12 @@ src (all the stuff)
 │   │   ├───settings
 │   │   └───terminal
 │   │
-│   ├───cmds
+│   ├───cmds (core os commands)
 │   │
-│   ├───lang (the language max is making?)
-│   │   └───ml
+│   ├───lang (parsers)
+│   │   └───ml (markup language parser)
 │   │
-│   ├───os
+│   ├───os (core os stuff)
 │   │   ├───app
 │   │   ├───audio
 │   │   ├───cmd
@@ -37,19 +37,19 @@ src (all the stuff)
 │   │   ├───settings
 │   │   └───wm
 │   │
-│   └───utils
+│   └───utils (utils)
 │
-├───game (secret stuff ig)
-│   └───apps
+├───game (game features)
+│   └───apps (game apps)
 │
-├───initfs (Initial Filesystem)
+├───initfs (initial filesystem)
 │   ├───sys
 │   │   └───trash
 │   └───user
 │
-├───plugins (vite plugins forrrrr sth)
+├───plugins (vite plugins)
 │
-└───websites
+└───websites (websites)
     ├───balls.net
     ├───bennet.net
     ├───fhelixcorp.net
