@@ -5,6 +5,7 @@ import {
   type OnFunction,
 } from "@lib/core/utils/callbacks";
 import type { AppApi } from "@os/app/api";
+import type { AppArgs } from "@os/app/app";
 import { windowId, zIndex } from "@os/state.svelte";
 import type { Component } from "svelte";
 import { SvelteMap } from "svelte/reactivity";
@@ -18,13 +19,13 @@ export type Win = {
 type ChildComponent = Component<{
   api: AppApi;
   winApi: WindowApi;
-  args?: Record<string, any>;
+  args?: AppArgs;
 }>;
 
 type ChildComponentData = {
   component: ChildComponent;
   api: AppApi;
-  args?: Record<string, any>;
+  args?: AppArgs;
 };
 
 export type WinData = {
@@ -64,7 +65,7 @@ export interface WindowApi {
 }
 
 export type WindowEvents = {
-  focus(): void;
+  focus(wasWindowContent: boolean): void;
   move(x: number, y: number): void;
   resize(width: number, height: number): void;
   close(): void;
@@ -118,11 +119,7 @@ export function winDataBuilder() {
       data.minHeight = height;
       return this;
     },
-    withComponent(
-      component: ChildComponent,
-      api: AppApi,
-      args?: Record<string, any>,
-    ) {
+    withComponent(component: ChildComponent, api: AppApi, args?: AppArgs) {
       data.componentData = { component, api, args };
       return this;
     },
@@ -255,14 +252,14 @@ function setWindowSize(id: number, width: number, height: number) {
   wmglobalCallbacks.emit("anyresized", id, width, height);
 }
 
-function focusWindow(id: number) {
+function focusWindow(id: number, wasWindowContent: boolean = false) {
   const win = windows.get(id)?.data;
   if (!win) {
     console.warn(`Window with id ${id} does not exist.`);
     return;
   }
 
-  windows.get(id)?.callbacks.emit("focus");
+  windows.get(id)?.callbacks.emit("focus", wasWindowContent);
 
   const wasMinimized = win.isMinimized;
 

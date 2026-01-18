@@ -23,6 +23,7 @@
   import { settingsManifest } from "./core/apps/settings/settings";
   import { terminalManifest } from "./core/apps/terminal/terminal";
   import { testAppManifest } from "./core/apps/testApp";
+  import { viewerManifest } from "./core/apps/viewer/veiwer";
   import { asdfManifest } from "./core/cmds/asdf";
   import { cdManifest } from "./core/cmds/cd";
   import { deleteManifest } from "./core/cmds/delete";
@@ -57,6 +58,7 @@
   registerApp(settingsManifest);
   registerApp(dawManifest);
   registerApp(codeManifest);
+  registerApp(viewerManifest);
 
   registerCmd(helpManifest);
   registerCmd(asdfManifest);

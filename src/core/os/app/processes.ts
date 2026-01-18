@@ -7,7 +7,7 @@ import { CallbackManager } from "@lib/core/utils/callbacks";
 import type { CmdApi, CmdManifest } from "@os/cmd/command";
 import { instanceId } from "@os/state.svelte";
 import { wmApi } from "@os/wm/wm.svelte";
-import { getAppApi } from "./api";
+import { getAppApi, type AppEvents } from "./api";
 import type { AppArgs, AppManifest, AppResult } from "./app";
 
 let processes: Map<number, [Process, ProcessApi]> = new Map();
@@ -17,8 +17,11 @@ export interface Process {
   owner: number | null;
   appId: string;
 
-  callbacks: CallbackManager<ProcessEvents>;
+  processCallbacks: CallbackManager<ProcessEvents>;
+  appCallbacks: CallbackManager<AppEvents>;
 }
+
+export type IpcData = Record<string, any>;
 
 type ProcessEvents = {
   setupFinished(): void;
@@ -54,10 +57,18 @@ export function launchAppFromManifest(
 ): ProcessApi {
   const instId = instanceId.value++;
 
-  let appApi = getAppApi(instId);
+  let appCallbacks = new CallbackManager<AppEvents>();
+
+  let appApi = getAppApi(instId, appCallbacks);
   let promise = manifest.launch(appApi, args).catch(console.error);
 
-  let api = makeProcess(promise, instId, manifest.appId, extraOptions);
+  let api = makeProcess(
+    promise,
+    instId,
+    manifest.appId,
+    appCallbacks,
+    extraOptions,
+  );
 
   return api;
 }
@@ -69,10 +80,18 @@ export function launchCmdFromManifest(
 ): ProcessApi {
   const instId = instanceId.value++;
 
-  let appApi = getAppApi(instId);
+  let appCallbacks = new CallbackManager<AppEvents>();
+
+  let appApi = getAppApi(instId, appCallbacks);
   let promise = manifest.launch(appApi, cmdApi).catch(console.error);
 
-  let api = makeProcess(promise, instId, manifest.appId, extraOptions);
+  let api = makeProcess(
+    promise,
+    instId,
+    manifest.appId,
+    appCallbacks,
+    extraOptions,
+  );
 
   return api;
 }
@@ -81,18 +100,20 @@ function makeProcess(
   promise: Promise<void>,
   instId: number,
   appId: string,
+  appCallbacks: CallbackManager<AppEvents>,
   extraOptions: ExtraProcessOptions = {},
 ): ProcessApi {
-  let callbacks = new CallbackManager<ProcessEvents>();
+  let processCallbacks = new CallbackManager<ProcessEvents>();
   promise.then(() => {
-    callbacks.emit("setupFinished");
+    processCallbacks.emit("setupFinished");
   });
 
   let process = {
     instId,
     appId,
     owner: extraOptions.owner ?? null,
-    callbacks,
+    processCallbacks,
+    appCallbacks,
   };
 
   let processApi: ProcessApi = {
@@ -101,9 +122,9 @@ function makeProcess(
     getOwner: () => process.owner,
     quit: () => closeApp(instId),
 
-    on: callbacks.on.bind(callbacks),
-    once: callbacks.once.bind(callbacks),
-    off: callbacks.off.bind(callbacks),
+    on: processCallbacks.on.bind(processCallbacks),
+    once: processCallbacks.once.bind(processCallbacks),
+    off: processCallbacks.off.bind(processCallbacks),
   };
 
   processes.set(instId, [process, processApi]);
@@ -129,7 +150,20 @@ export function closeApp(instId: number, result?: AppResult) {
   }
 
   let [process, processApi] = processes.get(instId)!;
-  process.callbacks.emit("exit", result);
+  process.processCallbacks.emit("exit", result);
 
   processes.delete(instId);
+}
+
+export function sendIpc(
+  targetId: number,
+  data: IpcData,
+  from: number | null = null,
+) {
+  const target = processes.get(targetId);
+  if (!target) return false;
+
+  const [targetProcess, _] = target;
+  targetProcess.appCallbacks.emit("ipc", data, from);
+  return true;
 }
