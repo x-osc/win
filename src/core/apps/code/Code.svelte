@@ -5,7 +5,7 @@
   import type { WindowApi } from "@os/wm/wm.svelte";
   import { onDestroy, onMount } from "svelte";
   import CodeTab from "./CodeTab.svelte";
-  import { removeCodeInstance, setMainCodeInstance } from "./code.manifest";
+  import { removeCodeInstance, setMainCodeInstance } from "./code";
 
   let {
     api,

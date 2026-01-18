@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { DialogArgs } from "./dialog.manifest";
+  import type { DialogArgs } from "./dialog";
 
   let { args, quit }: { args: DialogArgs; quit: (code: number) => void } =
     $props();
