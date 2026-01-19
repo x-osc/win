@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Snippet } from "svelte";
+  import { tick, type Snippet } from "svelte";
 
   let { children }: { children: Snippet } = $props();
 
@@ -8,12 +8,33 @@
   let posX = $state(0);
   let posY = $state(0);
 
-  export function show(e: MouseEvent) {
+  export async function show(e: MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
+
     visible = true;
-    posX = e.clientX;
-    posY = e.clientY;
+    await tick();
+
+    if (!menuElement) return;
+
+    const menuWidth = menuElement.offsetWidth;
+    const menuHeight = menuElement.offsetHeight;
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+
+    if (e.clientX + menuWidth > windowWidth) {
+      posX = e.clientX - menuWidth;
+    } else {
+      posX = e.clientX;
+    }
+
+    if (e.clientY + menuHeight > windowHeight) {
+      posY = e.clientY - menuHeight;
+    } else {
+      posY = e.clientY;
+    }
+
+    visible = true;
   }
 
   export function hide() {
@@ -34,8 +55,8 @@
 </script>
 
 <svelte:window
-  onclick={handleOutsideClick}
-  oncontextmenu={handleOutsideClick}
+  onmousedowncapture={handleOutsideClick}
+  oncontextmenucapture={handleOutsideClick}
 />
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -53,3 +74,12 @@
     </div>
   </div>
 {/if}
+
+<style>
+  .context-menu {
+    position: fixed;
+    display: block;
+    top: 0;
+    left: 0;
+  }
+</style>

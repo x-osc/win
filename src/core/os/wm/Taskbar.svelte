@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ContextMenu from "./ContextMenu.svelte";
   import StartMenu from "./StartMenu.svelte";
   import type { WmApi } from "./wm.svelte";
 
@@ -6,14 +7,16 @@
 
   let isStartOpen = $state(false);
 
-  let startButton: HTMLButtonElement | null = $state(null);
+  let startButton: HTMLButtonElement;
   let startMenu: HTMLElement | null = $state(null);
+  let contextMenu: ContextMenu;
+  let menuTarget: number = $state(-1);
 
   function handleGlobalClick(e: MouseEvent) {
     if (!isStartOpen) return;
 
     const target = e.target as Node;
-    if (startButton?.contains(target)) return;
+    if (startButton.contains(target)) return;
     if (startMenu?.contains(target)) return;
 
     isStartOpen = false;
@@ -50,11 +53,25 @@
         ? 'active'
         : ''}"
       onclick={() => wmApi.focusWindow(Number(id))}
+      oncontextmenu={(e) => {
+        menuTarget = id;
+        contextMenu.show(e);
+      }}
     >
       {w.title}
     </button>
   {/each}
 </div>
+
+<ContextMenu bind:this={contextMenu}>
+  {#if wmApi.getWindows().get(menuTarget)?.data.isMinimized}
+    <button onclick={() => wmApi.focusWindow(menuTarget)}>restore</button>
+  {:else}
+    <button onclick={() => wmApi.minimizeWindow(menuTarget)}>minimize</button>
+  {/if}
+
+  <button onclick={() => wmApi.closeWindow(menuTarget)}>close</button>
+</ContextMenu>
 
 <style>
   .taskbar {
