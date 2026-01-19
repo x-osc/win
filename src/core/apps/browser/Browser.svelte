@@ -43,10 +43,10 @@
     errors = errors.concat(errs.map((err) => formatError(result.content, err)));
 
     if (addToHistory) {
-      history.push(targetUrl);
+      history.push(result.url);
     }
 
-    url = targetUrl;
+    url = result.url;
   }
 
   function handleInputKeyDown(e: KeyboardEvent) {
@@ -134,6 +134,7 @@
     display: flex;
     gap: 8px;
     overflow: auto;
+    margin-bottom: 6px;
   }
 
   .urlbar {
