@@ -1,223 +1,85 @@
 <script lang="ts">
-  import siteindex from "@generated/siteindex.json";
-  import { isLikelyUrl, parseUrl, resolveURLPath } from "@lib/core/utils/url";
+  import { formatError } from "@lib/core/lang/ml/mlparser";
   import type { AppApi } from "@os/app/api";
-  import { FsError, joinPath } from "@os/fs/filesystem";
   import type { WindowApi } from "@os/wm/wm.svelte";
   import { onMount } from "svelte";
   import { slide } from "svelte/transition";
-  import mlStyles from "../../lang/ml/ml.css?inline";
-  import { formatError, processDocument } from "../../lang/ml/mlparser";
-  import { generateGoggleNet } from "./search";
+  import { HistoryManager } from "./history.svelte";
+  import MlRenderer from "./MlRenderer.svelte";
+  import { resolveContent } from "./resolver";
 
   let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 
+  const history = new HistoryManager();
+  let renderer: MlRenderer;
+
   let urlInput: HTMLInputElement;
-  let pageContainer: HTMLElement;
-  let pageSDom: ShadowRoot;
-  let pageSDomDiv: HTMLElement;
 
-  let url = $state("goggle.net");
-  // TODO: jank
-  let publicUrl: string | null = "";
-
-  let urlList: string[] = ["goggle.net"];
-  let urlIndex: number = 0;
-
-  let input: string | null = null;
-  let html: string | null = null;
-  let errors: string[] = $state([]);
-
+  let url = $state("");
+  let publicUrl = $state("web/");
+  let errors = $state<string[]>([]);
   let showConsole = $state(false);
+  let isLoading = $state(false);
 
   onMount(() => {
-    pageSDom = pageContainer.attachShadow({ mode: "open" });
-
-    const sheet = new CSSStyleSheet();
-    sheet.replaceSync(mlStyles);
-    pageSDom.adoptedStyleSheets = [sheet];
-
-    pageSDomDiv = document.createElement("div");
-    pageSDomDiv.style = "width: 100%; height: 100%";
-    pageSDom.appendChild(pageSDomDiv);
-    pageSDomDiv.addEventListener("keydown", handleSDomKeyDown);
-    pageSDomDiv.addEventListener("click", handleSDomClick);
-    
-    reload()
+    navigate("goggle.net");
   });
 
-  async function reload(humanTriggered = false, movedWithButtons = false) {
-    input = null;
-    html = null;
-    publicUrl = null;
-    errors.length = 0;
+  async function navigate(targetUrl: string, addToHistory = true) {
+    errors = [];
 
-    pageSDomDiv.innerHTML = "";
+    isLoading = true;
+    const result = await resolveContent(targetUrl, api);
+    isLoading = false;
 
-    if (url.startsWith("/")) {
-      // its a path
-
-      let path = api.fs.resolvePath(["/"], url);
-      if (path === null) return;
-      url = joinPath(path, false);
-
-      let content;
-      try {
-        content = await api.fs.readFile(path);
-      } catch (err) {
-        if (err instanceof FsError) {
-          errors.push(err.message);
-          return;
-        }
-        console.error(err);
-        return;
-      }
-
-      input = await content.data.text();
-    } else {
-      // its either a url or a search
-
-      if (!isLikelyUrl(url)) {
-        // its a search
-
-        // only search if human triggered
-        if (!humanTriggered) return;
-
-        // search with goggle (they have a monopoly)
-        url = `goggle.net/search?q=${url}`;
-        reload();
-        return;
-      }
-
-      // otherwise its probably a url
-
-      if (url !== urlList.at(-1) && !movedWithButtons) {
-        urlList.push(url);
-        urlIndex++; 
-      }
-
-      const { url: newUrl, urlfull, host, path, params } = parseUrl(url);
-      url = urlfull;
-      publicUrl = "web/" + newUrl;
-
-      // TODO: registry for js websites?
-      if (newUrl === "goggle.net/search") {
-        // its a js website
-
-        if (!params.q) return;
-        input = generateGoggleNet(params.q);
-      } else {
-        // its a normal website
-
-        const site = siteindex.sites[newUrl as keyof typeof siteindex.sites];
-
-        if (!site) return;
-
-        publicUrl = site.publicurl;
-        const resp = await fetch(publicUrl);
-        if (resp.ok) {
-          input = await resp.text();
-
-        } else {
-          console.error(`uhuhuhoh tried to request : ${publicUrl} and failed :((`,);
-          return;
-        }
-      }
+    if (result.type === "error") {
+      errors = [result.error];
+      return;
     }
 
-    let [resHtml, resErrors] = processDocument(input);
-    html = resHtml;
+    publicUrl = result.type === "site" ? result.publicUrl : "web/";
 
-    for (const error of resErrors) {
-      errors.push(formatError(input, error));
+    let errs = renderer.setContent(result.content);
+    errors = errors.concat(errs.map((err) => formatError(result.content, err)));
+
+    if (addToHistory) {
+      history.push(targetUrl);
     }
 
-    if (html) {
-      pageSDomDiv.innerHTML = html;
-      postProcessPageSDom();
-    }
-  }
-
-  function postProcessPageSDom() {
-    let images = pageSDom.querySelectorAll("img[data-ml-img]");
-    for (const img of images) {
-      let imgel = img as HTMLImageElement;
-      let relpath = img.getAttribute("data-ml-img-url");
-      if (!relpath) return;
-      // TODO: buildtime const for web
-      let webPath = resolveURLPath(publicUrl ?? "web/", relpath);
-      imgel.src = webPath;
-    }
-  }
-
-  function handleSDomKeyDown(e: KeyboardEvent) {
-    const target = e.target as HTMLElement;
-
-    if (
-      e.key === "Enter" &&
-      target instanceof HTMLInputElement &&
-      target.hasAttribute("data-ml-output-url")
-    ) {
-      target.blur();
-
-      const domain = parseUrl(url).host;
-      const outputUrl = target.getAttribute("data-ml-output-url");
-      const id = target.name;
-      if (!outputUrl) return;
-      if (!id) return;
-
-      let queryString = `?${id}=${target.value}`;
-      url = domain + outputUrl + queryString;
-      reload();
-    }
-  }
-
-  function handleSDomClick(e: MouseEvent) {
-    const target = e.composedPath()[0] as HTMLElement;
-
-    if (target.hasAttribute("data-ml-link")) {
-      let linkUrl = target.getAttribute("data-ml-link-to")?.trim();
-      if (!linkUrl) return;
-
-      if (linkUrl.startsWith(".")) {
-        // TODO: temp fix, need to figure out alternative for protocol in links
-        // and images
-        linkUrl = resolveURLPath(url, linkUrl);
-      }
-
-      url = linkUrl;
-      reload();
-    }
+    url = targetUrl;
   }
 
   function handleInputKeyDown(e: KeyboardEvent) {
     if (e.key === "Enter") {
       urlInput.blur();
-      reload(true);
+      navigate(url);
     }
   }
 </script>
 
 <div class="browser">
   <div class="toolbar">
-    <button onclick={() => reload(true)}>reload</button>
+    <button onclick={() => navigate(url)}>reload</button>
 
-    <button class="action-button" onclick={() => {
-      url="goggle.net";
-      reload();
-    }}>home</button> 
+    <button class="action-button" onclick={() => navigate("goggle.net")}>
+      home
+    </button>
 
-    <button class="action-button" onclick={() => {
-      urlIndex = urlIndex > 0 ? urlIndex - 1 : urlIndex;
-      url=urlList[urlIndex];
-      reload(false, true);
-    }}>&lt</button> 
+    <button
+      class="action-button"
+      onclick={() => {
+        history.back();
+        navigate(history.current, false);
+      }}>&lt</button
+    >
 
-    <button class="action-button" onclick={() => {
-      urlIndex = urlIndex < urlList.length - 1 ? urlIndex + 1 : urlIndex;
-      url=urlList[urlIndex];
-      reload(false, true);
-    }}>&gt</button>
+    <button
+      class="action-button"
+      onclick={() => {
+        history.forward();
+        navigate(history.current, false);
+      }}>&gt</button
+    >
 
     <input
       class="urlbar"
@@ -228,13 +90,21 @@
       onfocus={() => urlInput.select()}
       placeholder="Search"
     />
+
     <button class="togglebtn" onclick={() => (showConsole = !showConsole)}>
       {showConsole ? "hide" : "show"} ({errors.length})
     </button>
   </div>
 
   <div class="maincontent">
-    <div class="page" bind:this={pageContainer}></div>
+    <div class="page-container">
+      <MlRenderer
+        bind:this={renderer}
+        {url}
+        {publicUrl}
+        onNavigate={(url) => navigate(url)}
+      />
+    </div>
 
     {#if showConsole}
       <div class="console-sidebar" transition:slide={{ axis: "x" }}>
@@ -276,7 +146,7 @@
     min-height: 0;
   }
 
-  .page {
+  .page-container {
     display: flex;
     flex: 1;
     overflow: auto;
