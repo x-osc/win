@@ -411,7 +411,7 @@ input[type="range"].has-box-indicator::-moz-range-thumb {
   box-shadow: inset 1px 1px 1px rgba(255, 255, 255, 0.3);
 }
 
-.taskbar .wintab:hover {
+.taskbar:not(.is-dragging) .wintab:hover {
   background: #5397ff;
 }
 
@@ -421,9 +421,14 @@ input[type="range"].has-box-indicator::-moz-range-thumb {
 }
 
 /* specificity */
-.taskbar .wintab.wintab:active {
+.taskbar:not(.is-dragging) .wintab.wintab:active {
   background: #1e52b7;
   box-shadow: inset 2px 2px 3px rgba(0, 0, 0, 0.4);
+}
+
+.taskbar .wintab-wrapper.dragging {
+  transform: scale(1.05);
+  box-shadow: 4px 2px 3px rgba(0, 0, 0, 0.2);
 }
 
 .divider {

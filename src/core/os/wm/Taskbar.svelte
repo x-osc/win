@@ -1,9 +1,14 @@
 <script lang="ts">
+  import { flip } from "svelte/animate";
   import ContextMenu from "./ContextMenu.svelte";
   import StartMenu from "./StartMenu.svelte";
   import type { WmApi } from "./wm.svelte";
 
-  let { taskbar, wmApi }: { taskbar: number[]; wmApi: WmApi } = $props();
+  let { taskbar = $bindable(), wmApi }: { taskbar: number[]; wmApi: WmApi } =
+    $props();
+
+  let draggingIdx: number | null = $state(null);
+  let hoveredIdx: number | null = $state(null);
 
   let isStartOpen = $state(false);
 
@@ -21,9 +26,29 @@
 
     isStartOpen = false;
   }
+
+  function handlePointerDown(e: PointerEvent, index: number) {
+    draggingIdx = index;
+  }
+
+  function handlePointerEnter(index: number) {
+    if (draggingIdx !== null && draggingIdx !== index) {
+      const draggedItem = taskbar.splice(draggingIdx, 1)[0];
+      taskbar.splice(index, 0, draggedItem);
+
+      draggingIdx = index;
+    }
+  }
+
+  function handlePointerUp() {
+    draggingIdx = null;
+  }
 </script>
 
-<svelte:window onmousedowncapture={handleGlobalClick} />
+<svelte:window
+  onmousedowncapture={handleGlobalClick}
+  onpointerup={handlePointerUp}
+/>
 
 {#if isStartOpen}
   <div bind:this={startMenu}>
@@ -35,7 +60,7 @@
   </div>
 {/if}
 
-<div class="taskbar">
+<div class="taskbar" class:is-dragging={draggingIdx !== null}>
   <button
     class="startbutton {isStartOpen ? 'active' : ''}"
     bind:this={startButton}
@@ -46,20 +71,28 @@
 
   <div class="divider"></div>
 
-  {#each taskbar as id (id)}
+  {#each taskbar as id, i (id)}
     {@const w = wmApi.getWindows().get(id)!.data}
-    <button
-      class="wintab {wmApi.isWindowFocused(id) && !w.isMinimized
-        ? 'active'
-        : ''}"
-      onclick={() => wmApi.focusWindow(Number(id))}
-      oncontextmenu={(e) => {
-        menuTarget = id;
-        contextMenu.show(e);
-      }}
+    <div
+      animate:flip={{ duration: 300 }}
+      class="wintab-wrapper"
+      class:dragging={draggingIdx === i}
+      onpointerenter={() => handlePointerEnter(i)}
     >
-      {w.title}
-    </button>
+      <button
+        class="wintab {wmApi.isWindowFocused(id) && !w.isMinimized
+          ? 'active'
+          : ''}"
+        onclick={() => wmApi.focusWindow(Number(id))}
+        onpointerdown={(e) => handlePointerDown(e, i)}
+        oncontextmenu={(e) => {
+          menuTarget = id;
+          contextMenu.show(e);
+        }}
+      >
+        {w.title}
+      </button>
+    </div>
   {/each}
 </div>
 
@@ -83,5 +116,17 @@
     align-items: center;
     overflow-x: auto;
     overflow-y: hidden;
+  }
+
+  .wintab-wrapper {
+    display: flex;
+  }
+
+  .wintab-wrapper.dragging {
+    z-index: 10;
+  }
+
+  .wintab {
+    width: 100%;
   }
 </style>
