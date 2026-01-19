@@ -21,6 +21,9 @@
   // TODO: jank
   let publicUrl: string | null = "";
 
+  let urlList: string[] = ["goggle.net"];
+  let urlIndex: number = 0;
+
   let input: string | null = null;
   let html: string | null = null;
   let errors: string[] = $state([]);
@@ -43,7 +46,7 @@
     reload()
   });
 
-  async function reload(humanTriggered = false) {
+  async function reload(humanTriggered = false, movedWithButtons = false) {
     input = null;
     html = null;
     publicUrl = null;
@@ -74,55 +77,51 @@
     } else {
       // its either a url or a search
 
-      if (isLikelyUrl(url)) {
-        // its probably a url
-
-        const { url: newUrl, urlfull, host, path, params } = parseUrl(url);
-        url = urlfull;
-        publicUrl = "web/" + newUrl;
-
-        // TODO: registry for js websites?
-        if (newUrl === "goggle.net/search") {
-          // its a js website
-
-          if (!params.q) {
-            return;
-          }
-          input = generateGoggleNet(params.q);
-        } else {
-          // its a normal website
-
-          const site = siteindex.sites[newUrl as keyof typeof siteindex.sites];
-
-          if (!site) {
-            return;
-          }
-
-          publicUrl = site.publicurl;
-          const resp = await fetch(site.publicurl);
-          if (resp.ok) {
-            input = await resp.text();
-          } else {
-            console.error(
-              "uhuhuhoh tried to request : " +
-                site.publicurl +
-                " and failed :((",
-            );
-            return;
-          }
-        }
-      } else {
+      if (!isLikelyUrl(url)) {
         // its a search
 
         // only search if human triggered
-        if (!humanTriggered) {
-          return;
-        }
+        if (!humanTriggered) return;
 
         // search with goggle (they have a monopoly)
         url = `goggle.net/search?q=${url}`;
         reload();
         return;
+      }
+
+      // otherwise its probably a url
+
+      if (url !== urlList.at(-1) && !movedWithButtons) {
+        urlList.push(url);
+        urlIndex++; 
+      }
+
+      const { url: newUrl, urlfull, host, path, params } = parseUrl(url);
+      url = urlfull;
+      publicUrl = "web/" + newUrl;
+
+      // TODO: registry for js websites?
+      if (newUrl === "goggle.net/search") {
+        // its a js website
+
+        if (!params.q) return;
+        input = generateGoggleNet(params.q);
+      } else {
+        // its a normal website
+
+        const site = siteindex.sites[newUrl as keyof typeof siteindex.sites];
+
+        if (!site) return;
+
+        publicUrl = site.publicurl;
+        const resp = await fetch(publicUrl);
+        if (resp.ok) {
+          input = await resp.text();
+
+        } else {
+          console.error(`uhuhuhoh tried to request : ${publicUrl} and failed :((`,);
+          return;
+        }
       }
     }
 
@@ -202,6 +201,24 @@
 <div class="browser">
   <div class="toolbar">
     <button onclick={() => reload(true)}>reload</button>
+
+    <button class="action-button" onclick={() => {
+      url="goggle.net";
+      reload();
+    }}>home</button> 
+
+    <button class="action-button" onclick={() => {
+      urlIndex = urlIndex > 0 ? urlIndex - 1 : urlIndex;
+      url=urlList[urlIndex];
+      reload(false, true);
+    }}>&lt</button> 
+
+    <button class="action-button" onclick={() => {
+      urlIndex = urlIndex < urlList.length - 1 ? urlIndex + 1 : urlIndex;
+      url=urlList[urlIndex];
+      reload(false, true);
+    }}>&gt</button>
+
     <input
       class="urlbar"
       type="text"
@@ -277,5 +294,9 @@
     flex: 1;
     font-size: 14px;
     font-family: monospace;
+  }
+
+  .action-button {
+    min-width: 0;
   }
 </style>
