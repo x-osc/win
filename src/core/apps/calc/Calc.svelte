@@ -4,9 +4,14 @@
   import type { WindowApi } from "@os/wm/wm.svelte";
 
   let display: string = $state("0");
-  let previous: number | null = null;
-  let operator: string | null = null;
-  let resetNext: boolean = false;
+  let previous: number | null = $state(null);
+  let operator: string | null = $state(null);
+  let resetNext: boolean = $state(false);
+
+  let preview = $derived.by(() => {
+    if (previous === null || operator === null) return "";
+    return `${previous} ${operator} ${resetNext ? "" : display}`;
+  });
 
   let { api, winApi }: { api: AppApi; winApi: WindowApi } = $props();
 
@@ -78,7 +83,10 @@
 </script>
 
 <div class="calculator">
-  <div class="display">{display}</div>
+  <div class="display-container">
+    <div class="preview">{preview}</div>
+    <div class="display">{display}</div>
+  </div>
 
   <button class="clear" onclick={clear}>C</button>
   <button class="operator" onclick={() => applyOperator("/")}>÷</button>
@@ -112,12 +120,24 @@
     gap: 8px;
   }
 
-  .display {
-    border: #555 solid 2px;
+  .display-container {
+    border: #555555 solid 2px;
     grid-column: 1 / -1;
-    padding: 10px;
+    padding: 5px 10px 3px 10px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .preview {
+    font-size: 0.8rem;
+    color: #888888;
+    min-height: 1.2rem;
     text-align: right;
+  }
+
+  .display {
     font-size: 1.5rem;
+    text-align: right;
   }
 
   button {
