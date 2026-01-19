@@ -9,11 +9,11 @@
 
   let itemRefs = new Map<number, HTMLElement>();
   let draggingIdx: number | null = $state(null);
-  let hoveredIdx: number | null = $state(null);
+
+  let justDragged = false;
 
   let mouseX = $state(0);
   let startX = $state(0);
-  let scrollOffset = 0;
 
   let isStartOpen = $state(false);
 
@@ -33,6 +33,8 @@
   }
 
   function handlePointerDown(e: PointerEvent, index: number) {
+    justDragged = false;
+
     if (e.button !== 0) return;
 
     draggingIdx = index;
@@ -44,23 +46,37 @@
     if (draggingIdx === null) return;
 
     mouseX = e.clientX;
+    if (Math.abs(mouseX - startX) > 5) {
+      justDragged = true;
+    }
+
+    const draggingEl = itemRefs.get(taskbar[draggingIdx]);
+    if (!draggingEl) return;
+
+    const draggingRect = draggingEl.getBoundingClientRect();
+    const currentCenter = draggingRect.left + draggingRect.width / 2;
 
     for (let i = 0; i < taskbar.length; i++) {
       if (i === draggingIdx) continue;
 
       const id = taskbar[i];
-      const el = itemRefs.get(id);
-      if (!el) continue;
+      const targetEl = itemRefs.get(id);
+      if (!targetEl) continue;
 
-      const rect = el.getBoundingClientRect();
-      const midpoint = rect.left + rect.width / 2;
+      const targetRect = targetEl.getBoundingClientRect();
 
-      if (i > draggingIdx && mouseX > midpoint) {
+      if (
+        i > draggingIdx &&
+        currentCenter > targetRect.left + targetRect.width * 0.55
+      ) {
         reorder(draggingIdx, i);
-        startX += rect.width * 1;
-      } else if (i < draggingIdx && mouseX < midpoint) {
+        startX += targetRect.width * 1;
+      } else if (
+        i < draggingIdx &&
+        currentCenter < targetRect.right - targetRect.width * 0.55
+      ) {
         reorder(draggingIdx, i);
-        startX += rect.width * -1;
+        startX += targetRect.width * -1;
       }
     }
   }
@@ -113,32 +129,36 @@
 
   <div class="divider"></div>
 
-  {#each taskbar as id, i (id)}
-    {@const w = wmApi.getWindows().get(id)!.data}
-    <div
-      animate:flip={draggingIdx === i ? { duration: 0 } : { duration: 200 }}
-      class="wintab-wrapper"
-      class:dragging={draggingIdx === i}
-      style:translate={draggingIdx === i
-        ? `${mouseX - startX}px 0px`
-        : undefined}
-      {@attach registerRef(id)}
-    >
-      <button
-        class="wintab {wmApi.isWindowFocused(id) && !w.isMinimized
-          ? 'active'
-          : ''}"
-        onclick={() => wmApi.focusWindow(Number(id))}
-        onpointerdown={(e) => handlePointerDown(e, i)}
-        oncontextmenu={(e) => {
-          menuTarget = id;
-          contextMenu.show(e);
-        }}
+  <div class="wintabs-container">
+    {#each taskbar as id, i (id)}
+      {@const w = wmApi.getWindows().get(id)!.data}
+      <div
+        animate:flip={draggingIdx === i ? { duration: 0 } : { duration: 200 }}
+        class="wintab-wrapper"
+        class:dragging={draggingIdx === i}
+        style:translate={draggingIdx === i
+          ? `${mouseX - startX}px 0px`
+          : undefined}
+        {@attach registerRef(id)}
       >
-        {w.title}
-      </button>
-    </div>
-  {/each}
+        <button
+          class="wintab {wmApi.isWindowFocused(id) && !w.isMinimized
+            ? 'active'
+            : ''}"
+          onclick={() => {
+            if (!justDragged) wmApi.focusWindow(Number(id));
+          }}
+          onpointerdown={(e) => handlePointerDown(e, i)}
+          oncontextmenu={(e) => {
+            menuTarget = id;
+            contextMenu.show(e);
+          }}
+        >
+          {w.title}
+        </button>
+      </div>
+    {/each}
+  </div>
 </div>
 
 <ContextMenu bind:this={contextMenu}>
@@ -159,8 +179,25 @@
     width: 100%;
     display: flex;
     align-items: center;
+  }
+
+  .wintabs-container {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
     overflow-x: auto;
-    overflow-y: hidden;
+    scrollbar-width: none;
+    padding-left: 6px;
+
+    /* extend clipping box */
+    padding-top: 10px;
+    margin-top: -10px;
+  }
+
+  .startbutton {
+    z-index: 20;
+    margin-right: 8px;
   }
 
   .wintab-wrapper {
