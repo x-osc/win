@@ -4,6 +4,7 @@
   import "@os/win.css";
   import { onMount } from "svelte";
   import { on } from "svelte/events";
+  import ContextMenu from "./ContextMenu.svelte";
   import { ResizeDirection } from "./types";
   import type { WinData, WindowApi, WindowEvents, WmApi } from "./wm.svelte";
 
@@ -23,6 +24,7 @@
 
   let bodyElement: HTMLElement;
   let windowElement: HTMLElement;
+  let contextMenu: ContextMenu;
 
   // TODO: callbacks in svelte class feels bad is there a way
   // to make it managed in wm?
@@ -144,13 +146,15 @@
     let removeTouchEnd = on(window, "touchend", onMouseUp);
   }
 
-  function handleResize(event: MouseEvent, direction: ResizeDirection) {
-    event.stopPropagation();
-    event.preventDefault();
+  function handleResize(e: MouseEvent, direction: ResizeDirection) {
+    if (e.button !== 0) return;
+
+    e.stopPropagation();
+    e.preventDefault();
     focus();
 
-    const startMouseX = event.clientX;
-    const startMouseY = event.clientY;
+    const startMouseX = e.clientX;
+    const startMouseY = e.clientY;
     const startX = windowData.x;
     const startY = windowData.y;
     const startWidth = windowData.width;
@@ -250,14 +254,20 @@
 >
   <div
     class="titlebar"
-    onmousedown={(e) =>
+    onmousedown={(e) => {
+      if (e.button !== 0) return;
       windowData.physicsEnabled
         ? handlePhysicsTitlebarDrag(e)
-        : handleTitlebarDrag(e)}
+        : handleTitlebarDrag(e);
+    }}
     ontouchstart={(e) =>
       windowData.physicsEnabled
         ? handlePhysicsTitlebarDrag(e)
         : handleTitlebarDrag(e)}
+    oncontextmenu={(e) => {
+      e.preventDefault();
+      contextMenu.show(e);
+    }}
   >
     <span class="title">{windowData.title}</span>
     <div class="controls">
@@ -312,6 +322,11 @@
     onmousedown={(e) => handleResize(e, ResizeDirection.SW)}
   ></div>
 </div>
+
+<ContextMenu bind:this={contextMenu}>
+  <button onclick={() => wmApi.closeWindow(id)}>close</button>
+  <button onclick={() => wmApi.minimizeWindow(id)}>minimize</button>
+</ContextMenu>
 
 <style>
   .window {

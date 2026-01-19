@@ -163,6 +163,7 @@
   onmousemove={handleMouseMove}
   onmousedowncapture={playClickDown}
   onmouseupcapture={playClickUp}
+  oncontextmenucapture={(e) => e.preventDefault()}
 />
 
 <style>

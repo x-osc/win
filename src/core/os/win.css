@@ -431,3 +431,46 @@ input[type="range"].has-box-indicator::-moz-range-thumb {
   background: linear-gradient(to bottom, transparent, #10338a);
   margin: 0 6px;
 }
+
+.context-menu {
+  position: fixed;
+  z-index: 10000;
+  min-width: 150px;
+  background: var(--surface);
+  padding: 2px;
+  box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.4);
+  border: 1px solid #716f64;
+}
+
+.context-menu .menu-items {
+  display: flex;
+  flex-direction: column;
+}
+
+.context-menu button {
+  all: unset;
+  display: block;
+  font-family: var(--sans-serif);
+  font-size: 11px;
+  padding: 4px 24px 4px 18px;
+  color: black;
+  cursor: default;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  text-align: left;
+  min-width: 0;
+  min-height: 0;
+}
+
+.context-menu button:hover {
+  background-color: #316ac5;
+  color: white;
+  box-shadow: none;
+}
+
+.context-menu hr {
+  border: 0;
+  border-top: 1px solid #a0a0a0;
+  margin: 2px 1px;
+}
