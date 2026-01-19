@@ -1,6 +1,9 @@
 .rootdiv {
   /* white-space: pre-wrap; */
   overflow-wrap: break-word;
+
+  font-family: system-ui;
+  font-size: initial;
 }
 
 h1,

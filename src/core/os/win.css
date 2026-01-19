@@ -1,6 +1,6 @@
 :root {
   --sans-serif: "Pixelated MS Sans Serif", Arial;
-  /* Color */
+
   --surface: #ece9d8;
   --button-highlight: #ffffff;
   --button-face: #dfdfdf;
@@ -10,19 +10,6 @@
   --dialog-blue-light: #1084d0;
   --link-blue: #0000ff;
   --input-border-color: #789dbc;
-
-  /* Scrollbar */
-  --border-status-bar-field:
-    inset -1px -1px var(--button-face), inset 1px 1px var(--button-shadow);
-  --scrollbar-bg: linear-gradient(
-    90deg,
-    rgba(197, 213, 255, 1) 0%,
-    rgba(181, 211, 255, 1) 86%,
-    rgba(182, 202, 247, 1) 100%
-  );
-  --scrollbar-shadow:
-    inset 1px 1px white, inset -1px -1px white, inset 2px 2px #b9cdfa,
-    inset -2px -2px #b6c9f7;
 
   --taskbar-height: 35px;
 }
@@ -37,6 +24,7 @@ body {
 
 .window button {
   font-family: var(--sans-serif);
+  font-size: 11px;
   border: 1px solid #003c74;
   background: linear-gradient(
     180deg,
@@ -45,8 +33,8 @@ body {
     rgba(216, 208, 196, 1) 100%
   );
   border-radius: 3px;
-  min-width: 75px;
-  min-height: 23px;
+  min-width: 74px;
+  min-height: 22px;
   padding: 0 12px;
 }
 
@@ -99,6 +87,9 @@ body {
 }
 
 .tablist .tab {
+  font-family: var(--sans-serif);
+  font-size: 11px;
+
   z-index: 1;
   flex: 0 0 auto;
   max-width: 200px;
@@ -136,6 +127,9 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
+  display: flex;
+  align-items: center;
 }
 
 .tablist .tab .closebutton {
@@ -159,6 +153,9 @@ body {
 }
 
 label {
+  font-family: var(--sans-serif);
+  font-size: 11px;
+
   display: inline-flex;
   align-items: center;
   margin: 5px;
@@ -276,6 +273,9 @@ input[type="range"].has-box-indicator::-moz-range-thumb {
 }
 
 .window .titlebar {
+  font-family: Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 13px;
+
   background: linear-gradient(
     180deg,
     #7697e7 0%,
@@ -394,6 +394,8 @@ input[type="range"].has-box-indicator::-moz-range-thumb {
 }
 
 .taskbar .wintab {
+  font-family: var(--sans-serif);
+  font-size: 11px;
   background: #3c81f3;
   border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 2px;
@@ -404,7 +406,6 @@ input[type="range"].has-box-indicator::-moz-range-thumb {
   margin: 0 2px;
   text-align: left;
   padding: 0 8px;
-  font-size: 11px;
   display: flex;
   align-items: center;
   box-shadow: inset 1px 1px 1px rgba(255, 255, 255, 0.3);
