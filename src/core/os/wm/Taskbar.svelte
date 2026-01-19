@@ -7,6 +7,7 @@
   let { taskbar = $bindable(), wmApi }: { taskbar: number[]; wmApi: WmApi } =
     $props();
 
+  let itemRefs = new Map<number, HTMLElement>();
   let draggingIdx: number | null = $state(null);
   let hoveredIdx: number | null = $state(null);
 
@@ -28,25 +29,59 @@
   }
 
   function handlePointerDown(e: PointerEvent, index: number) {
+    if (e.button !== 0) return;
+
     draggingIdx = index;
   }
 
-  function handlePointerEnter(index: number) {
-    if (draggingIdx !== null && draggingIdx !== index) {
-      const draggedItem = taskbar.splice(draggingIdx, 1)[0];
-      taskbar.splice(index, 0, draggedItem);
+  function handlePointerMove(e: PointerEvent) {
+    if (draggingIdx === null) return;
 
-      draggingIdx = index;
+    const mouseX = e.clientX;
+
+    for (let i = 0; i < taskbar.length; i++) {
+      if (i === draggingIdx) continue;
+
+      const id = taskbar[i];
+      const el = itemRefs.get(id);
+      if (!el) continue;
+
+      const rect = el.getBoundingClientRect();
+      const midpoint = rect.left + rect.width / 2;
+
+      if (
+        (i > draggingIdx && mouseX > midpoint) ||
+        (i < draggingIdx && mouseX < midpoint)
+      ) {
+        reorder(draggingIdx, i);
+      }
     }
+  }
+
+  function reorder(from: number, to: number) {
+    const [movedItem] = taskbar.splice(from, 1);
+    taskbar.splice(to, 0, movedItem);
+    draggingIdx = to;
   }
 
   function handlePointerUp() {
     draggingIdx = null;
   }
+
+  function registerRef(id: number) {
+    return (node: HTMLElement) => {
+      itemRefs.set(id, node);
+
+      return () => {
+        itemRefs.delete(id);
+      };
+    };
+  }
 </script>
 
 <svelte:window
   onmousedowncapture={handleGlobalClick}
+  onpointermove={handlePointerMove}
   onpointerup={handlePointerUp}
 />
 
@@ -77,7 +112,7 @@
       animate:flip={{ duration: 300 }}
       class="wintab-wrapper"
       class:dragging={draggingIdx === i}
-      onpointerenter={() => handlePointerEnter(i)}
+      {@attach registerRef(id)}
     >
       <button
         class="wintab {wmApi.isWindowFocused(id) && !w.isMinimized
