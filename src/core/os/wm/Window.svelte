@@ -324,8 +324,8 @@
 </div>
 
 <ContextMenu bind:this={contextMenu}>
-  <button onclick={() => wmApi.closeWindow(id)}>close</button>
   <button onclick={() => wmApi.minimizeWindow(id)}>minimize</button>
+  <button onclick={() => wmApi.closeWindow(id)}>close</button>
 </ContextMenu>
 
 <style>
