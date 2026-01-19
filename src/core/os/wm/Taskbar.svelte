@@ -11,6 +11,10 @@
   let draggingIdx: number | null = $state(null);
   let hoveredIdx: number | null = $state(null);
 
+  let mouseX = $state(0);
+  let startX = $state(0);
+  let scrollOffset = 0;
+
   let isStartOpen = $state(false);
 
   let startButton: HTMLButtonElement;
@@ -32,12 +36,14 @@
     if (e.button !== 0) return;
 
     draggingIdx = index;
+    startX = e.clientX;
+    mouseX = e.clientX;
   }
 
   function handlePointerMove(e: PointerEvent) {
     if (draggingIdx === null) return;
 
-    const mouseX = e.clientX;
+    mouseX = e.clientX;
 
     for (let i = 0; i < taskbar.length; i++) {
       if (i === draggingIdx) continue;
@@ -49,11 +55,12 @@
       const rect = el.getBoundingClientRect();
       const midpoint = rect.left + rect.width / 2;
 
-      if (
-        (i > draggingIdx && mouseX > midpoint) ||
-        (i < draggingIdx && mouseX < midpoint)
-      ) {
+      if (i > draggingIdx && mouseX > midpoint) {
         reorder(draggingIdx, i);
+        startX += rect.width * 1;
+      } else if (i < draggingIdx && mouseX < midpoint) {
+        reorder(draggingIdx, i);
+        startX += rect.width * -1;
       }
     }
   }
@@ -109,9 +116,12 @@
   {#each taskbar as id, i (id)}
     {@const w = wmApi.getWindows().get(id)!.data}
     <div
-      animate:flip={{ duration: 300 }}
+      animate:flip={draggingIdx === i ? { duration: 0 } : { duration: 200 }}
       class="wintab-wrapper"
       class:dragging={draggingIdx === i}
+      style:translate={draggingIdx === i
+        ? `${mouseX - startX}px 0px`
+        : undefined}
       {@attach registerRef(id)}
     >
       <button

@@ -427,10 +427,14 @@ input[type="range"].has-box-indicator::-moz-range-thumb {
 }
 
 .taskbar .wintab-wrapper {
-  transition: transform 0.1s cubic-bezier(0.2, 0, 0, 1);
+  transition:
+    transform 0.1s cubic-bezier(0.2, 0, 0, 1),
+    translate 0.15s cubic-bezier(0.2, 0, 0, 1);
 }
 
 .taskbar .wintab-wrapper.dragging {
+  /* no translate so follows mouse instantly */
+  transition: transform 0.1s cubic-bezier(0.2, 0, 0, 1);
   transform: scale(1.05) translateY(-2px);
   filter: brightness(1.1);
   box-shadow: 4px 2px 3px rgba(0, 0, 0, 0.2);
