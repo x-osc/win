@@ -30,9 +30,21 @@
   const MAX_ZOOM = 100;
 
   onMount(async () => {
-    if (args?.path) {
-      await openFile(args.path);
+    if (!args?.path) {
+      let procApi = api.launchApp("explorer", { dialogType: "fileonly" });
+      procApi?.on("exit", (result) => {
+        if (!result?.selectedEntry) {
+          api.quit();
+          return;
+        }
+
+        openFile(result.selectedEntry);
+      });
+
+      return;
     }
+
+    await openFile(args?.path);
   });
 
   function updateDims() {

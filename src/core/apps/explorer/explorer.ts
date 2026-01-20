@@ -4,11 +4,18 @@ import { winDataBuilder } from "@os/wm/wm.svelte";
 import Explorer from "./Explorer.svelte";
 
 async function launch(api: AppApi, args?: ExplorerArgs) {
+  let title = "file explorerer";
+  if (args?.dialogType === "save") {
+    title = "save";
+  } else if (args?.dialogType === "fileonly") {
+    title = "open";
+  }
+
   let winApi = await api.window.createWindow(
     winDataBuilder()
       .withMinSize(290, 161)
       .withSize(410, 237)
-      .withTitle("file explorerer")
+      .withTitle(title)
       .withComponent(Explorer, api, args)
       .build(),
   );
