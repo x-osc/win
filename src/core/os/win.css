@@ -426,16 +426,8 @@ input[type="range"].has-box-indicator::-moz-range-thumb {
   box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.32);
 }
 
-.taskbar .wintab-wrapper {
-  transition:
-    transform 0.1s cubic-bezier(0.2, 0, 0, 1),
-    translate 0.15s cubic-bezier(0.2, 0, 0, 1);
-}
-
 .taskbar .wintab-wrapper.dragging {
-  /* no translate so follows mouse instantly */
-  transition: transform 0.1s cubic-bezier(0.2, 0, 0, 1);
-  transform: scale(1.05) translateY(-6px);
+  transform: scale(1.05) translateY(-2px);
   filter: brightness(1.1);
 }
 

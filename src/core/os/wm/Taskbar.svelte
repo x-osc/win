@@ -1,5 +1,8 @@
 <script lang="ts">
   import { flip } from "svelte/animate";
+  import { cubicInOut } from "svelte/easing";
+  import { SvelteSet } from "svelte/reactivity";
+  import type { TransitionConfig } from "svelte/transition";
   import ContextMenu from "./ContextMenu.svelte";
   import StartMenu from "./StartMenu.svelte";
   import type { WmApi } from "./wm.svelte";
@@ -8,12 +11,17 @@
     $props();
 
   let itemRefs = new Map<number, HTMLElement>();
-  let draggingIdx: number | null = $state(null);
+  let animatingIds: Set<number> = new SvelteSet();
+  let draggingId: number | null = $state(null);
+  let lastDragged: number = -1;
 
   let justDragged = false;
 
   let mouseX = $state(0);
   let startX = $state(0);
+  let grabOffset = $state(0);
+  let wasDragActive = $state(false);
+  let dragRect = $state({ width: 0, height: 0, top: 0 });
 
   let isStartOpen = $state(false);
 
@@ -32,29 +40,39 @@
     isStartOpen = false;
   }
 
-  function handlePointerDown(e: PointerEvent, index: number) {
+  function handlePointerDown(
+    e: PointerEvent,
+    id: number,
+    index: number,
+    active: boolean,
+  ) {
     justDragged = false;
 
     if (e.button !== 0) return;
 
-    draggingIdx = index;
+    const target = itemRefs.get(id)!;
+    const rect = target.getBoundingClientRect();
+
+    draggingId = id;
+    grabOffset = e.clientX - rect.left;
+    dragRect = { width: rect.width, height: rect.height, top: rect.top };
+    wasDragActive = active;
+
     startX = e.clientX;
     mouseX = e.clientX;
   }
 
   function handlePointerMove(e: PointerEvent) {
-    if (draggingIdx === null) return;
+    if (draggingId === null) return;
 
     mouseX = e.clientX;
     if (Math.abs(mouseX - startX) > 5) {
       justDragged = true;
     }
 
-    const draggingEl = itemRefs.get(taskbar[draggingIdx]);
-    if (!draggingEl) return;
-
-    const draggingRect = draggingEl.getBoundingClientRect();
-    const currentCenter = draggingRect.left + draggingRect.width / 2;
+    const draggingIdx = taskbar.indexOf(draggingId);
+    const floatingLeft = mouseX - grabOffset;
+    const floatingCenter = floatingLeft + dragRect.width / 2;
 
     for (let i = 0; i < taskbar.length; i++) {
       if (i === draggingIdx) continue;
@@ -67,13 +85,13 @@
 
       if (
         i > draggingIdx &&
-        currentCenter > targetRect.left + targetRect.width * 0.55
+        floatingCenter > targetRect.left + targetRect.width * 0.55
       ) {
         reorder(draggingIdx, i);
         startX += targetRect.width * 1;
       } else if (
         i < draggingIdx &&
-        currentCenter < targetRect.right - targetRect.width * 0.55
+        floatingCenter < targetRect.right - targetRect.width * 0.55
       ) {
         reorder(draggingIdx, i);
         startX += targetRect.width * -1;
@@ -84,11 +102,14 @@
   function reorder(from: number, to: number) {
     const [movedItem] = taskbar.splice(from, 1);
     taskbar.splice(to, 0, movedItem);
-    draggingIdx = to;
   }
 
   function handlePointerUp() {
-    draggingIdx = null;
+    if (draggingId !== null) {
+      lastDragged = draggingId;
+      animatingIds.add(draggingId);
+    }
+    draggingId = null;
   }
 
   function registerRef(id: number) {
@@ -98,6 +119,26 @@
       return () => {
         itemRefs.delete(id);
       };
+    };
+  }
+
+  function grab(
+    node: HTMLElement,
+    params: {
+      delay?: number;
+      duration?: number;
+      easing?: (t: number) => number;
+    } = {},
+  ): TransitionConfig {
+    return {
+      delay: params.delay || 0,
+      duration: params.duration || 100,
+      easing: params.easing || cubicInOut,
+      css: (t, u) => {
+        return `
+          transform: scale(${1 + 0.05 * t}) translateY(${-2 * t}px);
+        `;
+      },
     };
   }
 </script>
@@ -118,7 +159,7 @@
   </div>
 {/if}
 
-<div class="taskbar" class:is-dragging={draggingIdx !== null}>
+<div class="taskbar" class:is-dragging={draggingId !== null}>
   <button
     class="startbutton {isStartOpen ? 'active' : ''}"
     bind:this={startButton}
@@ -133,22 +174,25 @@
     {#each taskbar as id, i (id)}
       {@const w = wmApi.getWindows().get(id)!.data}
       <div
-        animate:flip={draggingIdx === i ? { duration: 0 } : { duration: 200 }}
+        animate:flip={draggingId === id ? { duration: 0 } : { duration: 200 }}
         class="wintab-wrapper"
-        class:dragging={draggingIdx === i}
-        style:translate={draggingIdx === i
-          ? `${mouseX - startX}px 0px`
-          : undefined}
+        class:is-placeholder={draggingId === id || animatingIds.has(id)}
         {@attach registerRef(id)}
       >
         <button
           class="wintab {wmApi.isWindowFocused(id) && !w.isMinimized
             ? 'active'
             : ''}"
-          onclick={() => {
+          onpointerup={() => {
             if (!justDragged) wmApi.focusWindow(Number(id));
           }}
-          onpointerdown={(e) => handlePointerDown(e, i)}
+          onpointerdown={(e) =>
+            handlePointerDown(
+              e,
+              id,
+              i,
+              wmApi.isWindowFocused(id) && !w.isMinimized,
+            )}
           oncontextmenu={(e) => {
             menuTarget = id;
             contextMenu.show(e);
@@ -159,6 +203,23 @@
       </div>
     {/each}
   </div>
+
+  {#if draggingId !== null}
+    {@const w = wmApi.getWindows().get(draggingId)!.data}
+    <div
+      class="wintab-wrapper dragging"
+      style:width="{dragRect.width}px"
+      style:height="{dragRect.height}px"
+      style:left="{mouseX - grabOffset}px"
+      style:top="{dragRect.top}px"
+      transition:grab
+      onoutroend={() => {
+        animatingIds.delete(lastDragged);
+      }}
+    >
+      <button class="wintab" class:active={wasDragActive}>{w.title}</button>
+    </div>
+  {/if}
 </div>
 
 <ContextMenu bind:this={contextMenu}>
@@ -204,8 +265,14 @@
     display: flex;
   }
 
+  .wintab-wrapper.is-placeholder {
+    opacity: 0;
+  }
+
   .wintab-wrapper.dragging {
-    z-index: 10;
+    position: fixed;
+    z-index: 15;
+    pointer-events: none;
   }
 
   .wintab {
