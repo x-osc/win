@@ -133,10 +133,20 @@
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <div class="pathbar">
-    <span class="breadcrumb" onclick={() => fsc.navigate([])}> /&nbsp;</span>
-    {#each fsc.breadcrumbs as part}
-      <span class="breadcrumb" onclick={() => fsc.navigate(part.path)}>
-        {part.name} /&nbsp;
+    <span
+      class="breadcrumb"
+      style="padding-right: 2px;"
+      onclick={() => fsc.navigate([])}
+    >
+      /
+    </span>
+    {#each fsc.breadcrumbs as part, i}
+      <span
+        class="breadcrumb"
+        style={i === 0 ? "padding-left: 1px" : ""}
+        onclick={() => fsc.navigate(part.path)}
+      >
+        {part.name} /
       </span>
     {/each}
   </div>
@@ -217,15 +227,19 @@
   }
 
   .pathbar {
+    margin-left: 3px;
     flex: 0 0 auto;
   }
 
   .breadcrumb {
     cursor: pointer;
+    margin: 0;
+    padding-left: 2px;
+    padding-right: 5px;
   }
 
   .breadcrumb:hover {
-    border: 1px solid black;
+    outline: 1px solid black;
   }
 
   .list {

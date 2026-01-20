@@ -20,7 +20,7 @@
     syntaxHighlighting,
   } from "@codemirror/language";
   import { lintKeymap } from "@codemirror/lint";
-  import { highlightSelectionMatches, searchKeymap } from "@codemirror/search";
+  import { searchKeymap } from "@codemirror/search";
   import { EditorState } from "@codemirror/state";
   import {
     crosshairCursor,
@@ -55,6 +55,17 @@
 
   const fullHeight = EditorView.theme({
     "&": { height: "100%", "background-color": "#F0EFEB" },
+    ".cm-scroller": { overflow: "auto" },
+    ".cm-selectionMatch": {
+      outline: "1px solid #c8d6c3",
+      // "background-color": "transparent",
+      "background-color": "#99ff7710",
+    },
+    ".cm-selectionMatch-main": {
+      // outline: "1px solid #c8d6c3",
+      // "background-color": "transparent",
+      // "background-color": "#99ff7710",
+    },
   });
 
   onMount(() => {
@@ -78,7 +89,9 @@
         crosshairCursor(),
         highlightActiveLine(),
         highlightActiveLineGutter(),
-        highlightSelectionMatches(),
+        // highlightSelectionMatches({
+        //   highlightWordAroundCursor: true,
+        // }),
         fullHeight,
         EditorView.updateListener.of((update) => {
           if (update.docChanged) {
@@ -114,6 +127,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
+    min-height: 0;
   }
 
   .editor-wrapper {
