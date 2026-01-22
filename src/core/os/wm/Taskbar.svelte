@@ -222,7 +222,8 @@
           class="wintab {wmApi.isWindowFocused(id) && !w.isMinimized
             ? 'focused'
             : ''}"
-          onpointerup={() => {
+          onpointerup={(e) => {
+            if (e.button !== 0) return;
             if (!justDragged) {
               wasDragActive = true;
               wmApi.focusWindow(Number(id));
