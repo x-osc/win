@@ -1,7 +1,8 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { flip } from "svelte/animate";
   import { cubicInOut } from "svelte/easing";
-  import { SvelteSet } from "svelte/reactivity";
+  import { Spring } from "svelte/motion";
   import type { TransitionConfig } from "svelte/transition";
   import ContextMenu from "./ContextMenu.svelte";
   import StartMenu from "./StartMenu.svelte";
@@ -11,10 +12,7 @@
     $props();
 
   let itemRefs = new Map<number, HTMLElement>();
-  let animatingIds: Set<number> = new SvelteSet();
   let draggingId: number | null = $state(null);
-  let lastDragged: number = -1;
-
   let justDragged = false;
 
   let mouseX = $state(0);
@@ -22,6 +20,19 @@
   let grabOffset = $state(0);
   let wasDragActive = $state(false);
   let dragRect = $state({ width: 0, height: 0, top: 0 });
+  let dragPosition = new Spring(0, {
+    stiffness: 0.15,
+    damping: 0.6,
+  });
+
+  let lastActiveState = $state(false);
+  let animatingBackId: number | null = $state(null);
+  let animBackRect = $state({ width: 0, height: 0, top: 0 });
+  let animBackStartX = $state(0);
+  let animBackEndX = $state(0);
+
+  let wintabsContainer: HTMLElement;
+  let leftEdge: number;
 
   let isStartOpen = $state(false);
 
@@ -29,6 +40,10 @@
   let startMenu: HTMLElement | null = $state(null);
   let contextMenu: ContextMenu;
   let menuTarget: number = $state(-1);
+
+  onMount(() => {
+    leftEdge = wintabsContainer.getBoundingClientRect().left + 6;
+  });
 
   function handleGlobalClick(e: MouseEvent) {
     if (!isStartOpen) return;
@@ -60,6 +75,7 @@
 
     startX = e.clientX;
     mouseX = e.clientX;
+    dragPosition.set(e.clientX - grabOffset, { instant: true });
   }
 
   function handlePointerMove(e: PointerEvent) {
@@ -69,6 +85,8 @@
     if (Math.abs(mouseX - startX) > 5) {
       justDragged = true;
     }
+
+    dragPosition.set(Math.max(e.clientX - grabOffset, leftEdge));
 
     const draggingIdx = taskbar.indexOf(draggingId);
     const floatingLeft = mouseX - grabOffset;
@@ -106,8 +124,19 @@
 
   function handlePointerUp() {
     if (draggingId !== null) {
-      lastDragged = draggingId;
-      animatingIds.add(draggingId);
+      const id = draggingId;
+      const targetEl = itemRefs.get(id);
+
+      if (targetEl) {
+        animatingBackId = id;
+        lastActiveState = wasDragActive;
+        animBackRect = { ...dragRect };
+        animBackStartX = dragPosition.current;
+        animBackEndX = targetEl.getBoundingClientRect().left;
+        setTimeout(() => {
+          animatingBackId = null;
+        }, 150);
+      }
     }
     draggingId = null;
   }
@@ -170,21 +199,24 @@
 
   <div class="divider"></div>
 
-  <div class="wintabs-container">
+  <div class="wintabs-container" bind:this={wintabsContainer}>
     {#each taskbar as id, i (id)}
       {@const w = wmApi.getWindows().get(id)!.data}
       <div
         animate:flip={draggingId === id ? { duration: 0 } : { duration: 200 }}
         class="wintab-wrapper"
-        class:is-placeholder={draggingId === id || animatingIds.has(id)}
+        class:is-placeholder={draggingId === id || animatingBackId === id}
         {@attach registerRef(id)}
       >
         <button
           class="wintab {wmApi.isWindowFocused(id) && !w.isMinimized
-            ? 'active'
+            ? 'focused'
             : ''}"
           onpointerup={() => {
-            if (!justDragged) wmApi.focusWindow(Number(id));
+            if (!justDragged) {
+              wasDragActive = true;
+              wmApi.focusWindow(Number(id));
+            }
           }}
           onpointerdown={(e) =>
             handlePointerDown(
@@ -210,14 +242,29 @@
       class="wintab-wrapper dragging"
       style:width="{dragRect.width}px"
       style:height="{dragRect.height}px"
-      style:left="{mouseX - grabOffset}px"
+      style:left="{dragPosition.current}px"
       style:top="{dragRect.top}px"
-      transition:grab
-      onoutroend={() => {
-        animatingIds.delete(lastDragged);
-      }}
+      in:grab
     >
-      <button class="wintab" class:active={wasDragActive}>{w.title}</button>
+      <button class="wintab active" class:focused={wasDragActive}
+        >{w.title}</button
+      >
+    </div>
+  {/if}
+
+  {#if animatingBackId !== null}
+    {@const w = wmApi.getWindows().get(animatingBackId)!.data}
+    {@const wasActive = lastActiveState}
+    <div
+      class="wintab-wrapper dragging animating-back"
+      style:width="{animBackRect.width}px"
+      style:height="{animBackRect.height}px"
+      style:top="{animBackRect.top}px"
+      style:left="{animBackEndX}px"
+      style:--start-x="{animBackStartX}px"
+      style:--end-x="{animBackEndX}px"
+    >
+      <button class="wintab active" class:focused={wasActive}>{w.title}</button>
     </div>
   {/if}
 </div>
@@ -268,11 +315,29 @@
   .wintab-wrapper.is-placeholder {
     opacity: 0;
   }
-
   .wintab-wrapper.dragging {
     position: fixed;
     z-index: 15;
     pointer-events: none;
+    transform: scale(1.05) translateY(-2px);
+  }
+
+  .wintab-wrapper.animating-back {
+    animation: slide-back 0.16s cubic-bezier(0.2, 0, 0, 1);
+    animation-iteration-count: 1;
+  }
+
+  @keyframes slide-back {
+    from {
+      left: var(--start-x);
+      transform: scale(1.05) translateY(-2px);
+      filter: brightness(1.1);
+    }
+    to {
+      left: var(--end-x);
+      transform: none;
+      filter: none;
+    }
   }
 
   .wintab {

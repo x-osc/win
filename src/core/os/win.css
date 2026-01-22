@@ -411,8 +411,14 @@ input[type="range"].has-box-indicator::-moz-range-thumb {
   box-shadow: inset 1px 1px 1px rgba(255, 255, 255, 0.3);
 }
 
-.taskbar:not(.is-dragging) .wintab:hover {
+.taskbar:not(.is-dragging) .wintab:not(.focused):hover,
+.taskbar .wintab:not(.focused).active {
   background: #5397ff;
+}
+
+.taskbar:not(.is-dragging) .wintab.focused:hover,
+.taskbar .wintab.focused.active {
+  background: #1e52b7;
 }
 
 /* specificity */
@@ -421,14 +427,9 @@ input[type="range"].has-box-indicator::-moz-range-thumb {
   box-shadow: inset 2px 2px 3px rgba(0, 0, 0, 0.4);
 }
 
-.taskbar .wintab.active {
+.taskbar .wintab.focused {
   background: #1e52b7;
   box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.32);
-}
-
-.taskbar .wintab-wrapper.dragging {
-  transform: scale(1.05) translateY(-2px);
-  filter: brightness(1.1);
 }
 
 .taskbar .wintab-wrapper.dragging .wintab {
