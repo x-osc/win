@@ -78,6 +78,8 @@
     dragPosition.set(e.clientX - grabOffset, { instant: true });
   }
 
+  let lastMouseX = 0;
+
   function handlePointerMove(e: PointerEvent) {
     if (draggingId === null) return;
 
@@ -85,6 +87,10 @@
     if (Math.abs(mouseX - startX) > 5) {
       justDragged = true;
     }
+
+    const movingRight = mouseX > lastMouseX;
+    const movingLeft = mouseX < lastMouseX;
+    lastMouseX = mouseX;
 
     dragPosition.set(Math.max(e.clientX - grabOffset, leftEdge));
 
@@ -102,17 +108,21 @@
       const targetRect = targetEl.getBoundingClientRect();
 
       if (
+        movingRight &&
         i > draggingIdx &&
-        floatingCenter > targetRect.left + targetRect.width * 0.55
+        floatingCenter > targetRect.left + 5
       ) {
         reorder(draggingIdx, i);
         startX += targetRect.width * 1;
+        break;
       } else if (
+        movingLeft &&
         i < draggingIdx &&
-        floatingCenter < targetRect.right - targetRect.width * 0.55
+        floatingCenter < targetRect.right - 5
       ) {
         reorder(draggingIdx, i);
         startX += targetRect.width * -1;
+        break;
       }
     }
   }
