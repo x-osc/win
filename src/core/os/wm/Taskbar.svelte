@@ -25,7 +25,6 @@
     damping: 0.6,
   });
 
-  let lastActiveState = $state(false);
   let animatingBackId: number | null = $state(null);
   let animBackRect = $state({ width: 0, height: 0, top: 0 });
   let animBackStartX = $state(0);
@@ -139,7 +138,6 @@
 
       if (targetEl) {
         animatingBackId = id;
-        lastActiveState = wasDragActive;
         animBackRect = { ...dragRect };
         animBackStartX = dragPosition.current;
         animBackEndX = targetEl.getBoundingClientRect().left;
@@ -265,7 +263,6 @@
 
   {#if animatingBackId !== null}
     {@const w = wmApi.getWindows().get(animatingBackId)!.data}
-    {@const wasActive = lastActiveState}
     <div
       class="wintab-wrapper dragging animating-back"
       style:width="{animBackRect.width}px"
@@ -275,7 +272,9 @@
       style:--start-x="{animBackStartX}px"
       style:--end-x="{animBackEndX}px"
     >
-      <button class="wintab active" class:focused={wasActive}>{w.title}</button>
+      <button class="wintab active" class:focused={wasDragActive}>
+        {w.title}
+      </button>
     </div>
   {/if}
 </div>
