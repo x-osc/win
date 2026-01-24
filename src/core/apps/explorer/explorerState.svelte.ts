@@ -1,4 +1,4 @@
-import { randint, sleep } from "@lib/core/utils/utils";
+import { randint, usleep } from "@lib/core/utils/utils";
 import type { AppApi } from "@os/app/api";
 import { openFileWithDefault } from "@os/fileextension/defaultApps";
 import { joinPath, type EntryType, type FsEntry } from "@os/fs/filesystem";
@@ -56,7 +56,7 @@ export class ExplorerState {
 
       for (const entry of raw) {
         this.entries.push(entry);
-        await sleep(randint(2, 3));
+        await usleep(randint(2, 3));
       }
     } catch (err) {
       this.error = "Reading directory failed: " + (err as Error).message;

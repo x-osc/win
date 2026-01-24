@@ -1,7 +1,7 @@
 import type { AppApi } from "@os/app/api";
 import { COLORS } from "@os/cmd/colorcodes";
 import type { CmdApi, CmdManifest } from "@os/cmd/command";
-import { randint, sleep } from "../utils/utils";
+import { randint, usleep } from "../utils/utils";
 
 async function launch(api: AppApi, cmdApi: CmdApi) {
   const args = cmdApi.getArgs();
@@ -44,11 +44,11 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
   const files = entries.filter((entry) => entry.type === "file");
   const dirs = entries.filter((entry) => entry.type === "dir");
   for (let dir of dirs) {
-    await sleep(randint(0, 1));
+    await usleep(randint(0, 1));
     cmdApi.writeLine(dir.name + "/", { color: COLORS.brightCyan, bold: true });
   }
   for (let file of files) {
-    await sleep(randint(0, 1));
+    await usleep(randint(0, 1));
     cmdApi.writeLine(file.name);
   }
 }

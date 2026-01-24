@@ -2,11 +2,11 @@ import type { AppApi } from "@os/app/api";
 import { getApps } from "@os/app/appregistry";
 import { COLORS } from "@os/cmd/colorcodes";
 import type { CmdApi, CmdManifest } from "@os/cmd/command";
-import { randint, sleep } from "../utils/utils";
+import { randint, usleep } from "../utils/utils";
 
 async function launch(api: AppApi, cmdApi: CmdApi) {
   for (let [appName, appManifest] of getApps()) {
-    await sleep(randint(0, 1));
+    await usleep(randint(0, 1));
     cmdApi.writeLine(`${appName}`, { color: COLORS.brightCyan, bold: true });
   }
 }

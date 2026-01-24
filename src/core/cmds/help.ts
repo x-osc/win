@@ -2,13 +2,13 @@ import type { AppApi } from "@os/app/api";
 import { getAliasesFromCmd, getCmds } from "@os/cmd/cmdregistry";
 import { COLORS } from "@os/cmd/colorcodes";
 import type { CmdApi, CmdManifest } from "@os/cmd/command";
-import { randint, sleep } from "../utils/utils";
+import { randint, usleep } from "../utils/utils";
 
 async function launch(api: AppApi, cmdApi: CmdApi) {
   cmdApi.writeLine("currently installed commands:");
 
   for (let [cmdName, cmdManifest] of getCmds()) {
-    await sleep(randint(0, 1));
+    await usleep(randint(0, 1));
 
     cmdApi.writeLine(`${cmdName}`, { color: COLORS.brightCyan, bold: true });
 

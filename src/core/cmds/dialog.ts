@@ -1,6 +1,6 @@
 import type { AppApi } from "@os/app/api";
 import type { CmdApi, CmdManifest } from "@os/cmd/command";
-import { randint, sleep } from "../utils/utils";
+import { randint, usleep } from "../utils/utils";
 
 async function launch(api: AppApi, cmdApi: CmdApi) {
   const args = cmdApi.getArgs();
@@ -13,7 +13,7 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
 
   cmdApi.writeLine(`launching dialog`);
 
-  await sleep(randint(125, 250));
+  await usleep(randint(125, 250));
 
   let code = await api.showDialog({ message: message ?? "" });
   if (code) {

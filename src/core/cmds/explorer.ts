@@ -1,7 +1,7 @@
 import type { AppApi } from "@os/app/api";
 import type { CmdApi, CmdManifest } from "@os/cmd/command";
 import { joinPath, resolvePath } from "@os/fs/filesystem";
-import { randint, sleep } from "../utils/utils";
+import { randint, usleep } from "../utils/utils";
 
 async function launch(api: AppApi, cmdApi: CmdApi) {
   const args = cmdApi.getArgs();
@@ -24,7 +24,7 @@ async function launch(api: AppApi, cmdApi: CmdApi) {
 
   cmdApi.writeLine(`launching explorer`);
 
-  await sleep(randint(125, 250));
+  await usleep(randint(125, 250));
 
   let processApi = api.launchApp("explorer", { workingDir });
 
