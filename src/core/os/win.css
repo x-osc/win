@@ -473,6 +473,12 @@ input[type="range"].has-box-indicator::-moz-range-thumb {
   min-height: 0;
 }
 
+.context-menu button:disabled {
+  color: #7a7a7a;
+  text-shadow: 1px 1px 0 #fff;
+  pointer-events: none;
+}
+
 .context-menu button:hover {
   background-color: #316ac5;
   color: white;

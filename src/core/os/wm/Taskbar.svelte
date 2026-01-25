@@ -4,7 +4,7 @@
   import { cubicInOut } from "svelte/easing";
   import { Spring } from "svelte/motion";
   import type { TransitionConfig } from "svelte/transition";
-  import ContextMenu from "./ContextMenu.svelte";
+  import { contextMenuApi } from "./contextMenu";
   import StartMenu from "./StartMenu.svelte";
   import type { WmApi } from "./wm.svelte";
 
@@ -37,7 +37,6 @@
 
   let startButton: HTMLButtonElement;
   let startMenu: HTMLElement | null = $state(null);
-  let contextMenu: ContextMenu;
   let menuTarget: number = $state(-1);
 
   onMount(() => {
@@ -236,7 +235,7 @@
             )}
           oncontextmenu={(e) => {
             menuTarget = id;
-            contextMenu.show(e);
+            contextMenuApi.show(e, tbarWinMenu);
           }}
         >
           {w.title}
@@ -279,7 +278,7 @@
   {/if}
 </div>
 
-<ContextMenu bind:this={contextMenu}>
+{#snippet tbarWinMenu()}
   {#if wmApi.getWindows().get(menuTarget)?.data.isMinimized}
     <button onclick={() => wmApi.focusWindow(menuTarget)}>restore</button>
   {:else}
@@ -287,7 +286,7 @@
   {/if}
 
   <button onclick={() => wmApi.closeWindow(menuTarget)}>close</button>
-</ContextMenu>
+{/snippet}
 
 <style>
   .taskbar {

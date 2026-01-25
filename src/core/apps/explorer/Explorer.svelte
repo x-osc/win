@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { AppApi } from "@os/app/api";
   import { joinPath, type FsEntry } from "@os/fs/filesystem";
+  import { contextMenuApi } from "@os/wm/contextMenu";
   import type { WindowApi } from "@os/wm/wm.svelte";
   import { onMount } from "svelte";
   import type { ExplorerArgs } from "./explorer";
@@ -154,7 +155,14 @@
   {#if fsc.error}
     <div>{fsc.error}</div>
   {:else}
-    <div class="list">
+    <!-- svelte-ignore a11y_no_static_element_interactions -->
+    <div
+      class="list"
+      oncontextmenu={(e: MouseEvent) => {
+        e.preventDefault();
+        contextMenuApi.show(e, bgCtxMenu);
+      }}
+    >
       {#each fsc.sortedEntries as entry (entry.id)}
         <!-- svelte-ignore a11y_no_static_element_interactions -->
         <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -169,6 +177,12 @@
           ondblclick={(e: MouseEvent) => {
             if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return;
             handleDoubleClick(entry);
+          }}
+          oncontextmenu={(e: MouseEvent) => {
+            e.preventDefault();
+            e.stopPropagation();
+            fsc.handleSelect(entry.id, false, false);
+            contextMenuApi.show(e, entryCtxMenu);
           }}
         >
           <span class="icon">{entry.type === "dir" ? "(dir)" : "(file)"} </span>
@@ -212,6 +226,26 @@
       </div>
     </div>
   {/if}
+
+  {#snippet entryCtxMenu()}
+    <button onclick={() => fsc.openEntry(fsc.mainSelectedEntry!)}>open</button>
+    <hr />
+    <button disabled>cut</button>
+    <button disabled>copy</button>
+    <button disabled>paste</button>
+    <button onclick={() => fsc.deleteSelected()}>delete</button>
+    <hr />
+    <button>properties</button>
+  {/snippet}
+
+  {#snippet bgCtxMenu()}
+    <button disabled>back</button>
+    <button disabled>forward</button>
+    <button onclick={() => fsc.refresh()}>refresh</button>
+    <hr />
+    <button onclick={() => fsc.startCreating("file")}>new file</button>
+    <button onclick={() => fsc.startCreating("dir")}>new folder</button>
+  {/snippet}
 </div>
 
 <style>

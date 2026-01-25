@@ -4,6 +4,7 @@
   import "@os/win.css";
   import { onMount } from "svelte";
   import { on } from "svelte/events";
+  import { contextMenuApi } from "./contextMenu";
   import ContextMenu from "./ContextMenu.svelte";
   import { ResizeDirection } from "./types";
   import type { WinData, WindowApi, WindowEvents, WmApi } from "./wm.svelte";
@@ -266,7 +267,7 @@
         : handleTitlebarDrag(e)}
     oncontextmenu={(e) => {
       e.preventDefault();
-      contextMenu.show(e);
+      contextMenuApi.show(e, titlebarCtxMenu);
     }}
   >
     <span class="title">{windowData.title}</span>
@@ -323,10 +324,10 @@
   ></div>
 </div>
 
-<ContextMenu bind:this={contextMenu}>
+{#snippet titlebarCtxMenu()}
   <button onclick={() => wmApi.minimizeWindow(id)}>minimize</button>
   <button onclick={() => wmApi.closeWindow(id)}>close</button>
-</ContextMenu>
+{/snippet}
 
 <style>
   .window {

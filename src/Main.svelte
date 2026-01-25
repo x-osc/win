@@ -49,6 +49,7 @@
   import { sleepManifest } from "./core/cmds/sleep";
   import { mousePos } from "./core/os/state.svelte";
   // secret import
+  import ContextMenu from "@os/wm/ContextMenu.svelte";
   import { hydraManifest } from "./game/apps/hydra";
   import Bsod from "./game/Bsod.svelte";
   import { gameState } from "./game/gameState.svelte";
@@ -89,7 +90,7 @@
 
   let debugPhysicsOverlay = $state(false);
 
-  /** Passes mouse movements from App to Browser */
+  /** sets global mousepos */
   function handleMouseMove(e: MouseEvent) {
     mousePos.x = e.clientX;
     mousePos.y = e.clientY;
@@ -151,6 +152,8 @@
     </div>
     <Taskbar taskbar={wmApi.getTaskbar()} {wmApi} />
   </div>
+
+  <ContextMenu />
 
   <DebugPhysicsOverlay show={debugPhysicsOverlay} />
 

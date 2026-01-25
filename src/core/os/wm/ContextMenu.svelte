@@ -1,20 +1,25 @@
 <script lang="ts">
-  import { tick, type Snippet } from "svelte";
-
-  let { children }: { children: Snippet } = $props();
+  import { onMount, tick, type Snippet } from "svelte";
+  import { contextMenuApi } from "./contextMenu";
 
   let menuElement: HTMLElement | null = $state(null);
   let visible = $state(false);
   let posX = $state(0);
   let posY = $state(0);
+  let content: Snippet | null = $state(null);
 
-  export async function show(e: MouseEvent) {
+  onMount(() => {
+    contextMenuApi.show = show;
+  });
+
+  export async function show(e: MouseEvent, menuContent: Snippet) {
     e.preventDefault();
     e.stopPropagation();
 
+    content = menuContent;
     visible = true;
-    await tick();
 
+    await tick();
     if (!menuElement) return;
 
     const menuWidth = menuElement.offsetWidth;
@@ -33,12 +38,11 @@
     } else {
       posY = e.clientY;
     }
-
-    visible = true;
   }
 
   export function hide() {
     visible = false;
+    content = null;
   }
 
   function handleOutsideClick(e: MouseEvent) {
@@ -59,9 +63,9 @@
   oncontextmenucapture={handleOutsideClick}
 />
 
-<!-- svelte-ignore a11y_click_events_have_key_events -->
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-{#if visible}
+{#if visible && content}
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     bind:this={menuElement}
     class="context-menu"
@@ -70,7 +74,7 @@
     oncontextmenu={handleInsideClick}
   >
     <div class="menu-items">
-      {@render children()}
+      {@render content()}
     </div>
   </div>
 {/if}
