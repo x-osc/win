@@ -55,12 +55,11 @@
     viewCtx.setTransform(1, 0, 0, 1, 0, 0);
     viewCtx.clearRect(0, 0, viewCanvas.width, viewCanvas.height);
 
-    // dont smooth if zoomed in
-    if (zoom > 12) {
-      viewCtx.imageSmoothingEnabled = false;
-    } else {
-      viewCtx.imageSmoothingEnabled = true;
-    }
+    // if (zoom > 12) {
+    viewCtx.imageSmoothingEnabled = false;
+    // } else {
+    //   viewCtx.imageSmoothingEnabled = true;
+    // }
 
     viewCtx.setTransform(zoom, 0, 0, zoom, panX, panY);
 
