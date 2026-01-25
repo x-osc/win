@@ -26,8 +26,18 @@
   let startPanY = $state(0);
   let isDragging = $state(false);
 
-  const MIN_ZOOM = 0.15;
+  let minZoom = $state(1);
   const MAX_ZOOM = 100;
+
+  // svelte-ignore state_referenced_locally
+  winApi.on("resize", () => {
+    let fullyZoomedOut = zoom === minZoom;
+    updateDims();
+    clampPan();
+    if (zoom < minZoom || fullyZoomedOut) {
+      fitImage();
+    }
+  });
 
   onMount(async () => {
     if (!args?.path) {
@@ -53,15 +63,12 @@
     imgHeight = imgElement.naturalHeight;
     containerWidth = viewerElement.clientWidth;
     containerHeight = viewerElement.clientHeight;
+
+    minZoom = Math.min(containerWidth / imgWidth, containerHeight / imgHeight);
   }
 
   function fitImage() {
-    const ratio = Math.min(
-      containerWidth / imgWidth,
-      containerHeight / imgHeight,
-    );
-
-    zoom = ratio;
+    zoom = minZoom;
     panX = 0;
     panY = 0;
   }
@@ -81,10 +88,23 @@
 
     const oldZoom = zoom;
     const factor = e.deltaY < 0 ? 1.1 : 0.9;
-    zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom * factor));
+    zoom = Math.min(MAX_ZOOM, Math.max(minZoom, zoom * factor));
 
     panX = mx - (mx - panX) * (zoom / oldZoom);
     panY = my - (my - panY) * (zoom / oldZoom);
+
+    clampPan();
+  }
+
+  function clampPan() {
+    const scaledWidth = imgWidth * zoom;
+    const scaledHeight = imgHeight * zoom;
+
+    const maxX = Math.max(0, (scaledWidth - containerWidth) / 2);
+    const maxY = Math.max(0, (scaledHeight - containerHeight) / 2);
+
+    panX = Math.min(maxX, Math.max(-maxX, panX));
+    panY = Math.min(maxY, Math.max(-maxY, panY));
   }
 
   function handleMouseDown(e: PointerEvent) {
@@ -99,6 +119,8 @@
     if (!isDragging) return;
     panX = e.clientX - startPanX;
     panY = e.clientY - startPanY;
+
+    clampPan();
   }
 
   function handleMouseUp(e: PointerEvent) {
