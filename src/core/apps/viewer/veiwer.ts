@@ -1,11 +1,11 @@
 import type { AppApi } from "@os/app/api";
-import type { AppArgs, AppManifest } from "@os/app/app";
-import { launchAppFromManifest } from "@os/app/processes";
+import type { ProcArgs, ProcessManifest } from "@os/app/app";
+import { launchProcess } from "@os/app/processes";
 import { fsApi } from "@os/fs/filesystem";
 import { winDataBuilder } from "@os/wm/wm.svelte";
 import ImgViewer from "./ImgViewer.svelte";
 
-async function launch(api: AppApi, args?: AppArgs) {
+async function launch(api: AppApi, args?: ProcArgs) {
   let winApi = await api.window.createWindow(
     winDataBuilder()
       .withTitle("image viewer")
@@ -25,7 +25,7 @@ async function launch(api: AppApi, args?: AppArgs) {
   });
 }
 
-export let viewerManifest: AppManifest = {
+export let viewerManifest: ProcessManifest = {
   appId: "viewer",
   launch,
 
@@ -34,7 +34,7 @@ export let viewerManifest: AppManifest = {
     if (!entry) return false;
     if (entry.type !== "file") return false;
 
-    launchAppFromManifest(viewerManifest, { path });
+    launchProcess(viewerManifest, { path });
     return true;
   },
 };

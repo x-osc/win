@@ -1,6 +1,6 @@
 import type { AppApi } from "@os/app/api";
-import type { AppManifest } from "@os/app/app";
-import { launchAppFromManifest } from "@os/app/processes";
+import type { ProcessManifest } from "@os/app/app";
+import { launchProcess } from "@os/app/processes";
 import { randFromArray, randint } from "../../core/utils/utils";
 import { hydraError } from "../error";
 
@@ -35,8 +35,8 @@ function spawnHydras(api: AppApi) {
     hydraError();
   }
 
-  launchAppFromManifest(hydraManifest, { nottheoriginalstarwalker: true });
-  launchAppFromManifest(hydraManifest, { nottheoriginalstarwalker: true });
+  launchProcess(hydraManifest, { nottheoriginalstarwalker: true });
+  launchProcess(hydraManifest, { nottheoriginalstarwalker: true });
 }
 
 const hydraDialogs = [
@@ -58,7 +58,7 @@ const hydraDialogs = [
   "monkey see monkey do",
 ];
 
-export let hydraManifest: AppManifest = {
+export let hydraManifest: ProcessManifest = {
   appId: "hydra",
 
   launch,

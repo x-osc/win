@@ -1,12 +1,12 @@
 import type { AppApi } from "./api";
 
-export interface AppManifest {
+export interface ProcessManifest {
   appId: string;
 
-  launch(api: AppApi, args?: AppArgs): Promise<void>;
+  launch(api: AppApi, args?: ProcArgs): Promise<void>;
 
   openPath?(path: string[]): Promise<boolean>;
 }
 
-export type AppArgs = Record<string, any>;
-export type AppResult = Record<string, any>;
+export type ProcArgs = Record<string, any>;
+export type ProcResult = Record<string, any>;

@@ -1,6 +1,6 @@
 import type { AppApi } from "@os/app/api";
-import type { AppArgs, AppManifest } from "@os/app/app";
-import { launchAppFromManifest, sendIpc } from "@os/app/processes";
+import type { ProcArgs, ProcessManifest } from "@os/app/app";
+import { launchProcess, sendIpc } from "@os/app/processes";
 import { fsApi } from "@os/fs/filesystem";
 import { winDataBuilder } from "@os/wm/wm.svelte";
 import Code from "./Code.svelte";
@@ -14,7 +14,7 @@ export function removeCodeInstance(inst: number) {
   mainCodeInstance = mainCodeInstance.filter((instId) => instId !== inst);
 }
 
-async function launch(api: AppApi, args?: AppArgs) {
+async function launch(api: AppApi, args?: ProcArgs) {
   let winApi = await api.window.createWindow(
     winDataBuilder()
       .withMinSize(290, 161)
@@ -25,7 +25,7 @@ async function launch(api: AppApi, args?: AppArgs) {
   );
 }
 
-export let codeManifest: AppManifest = {
+export let codeManifest: ProcessManifest = {
   appId: "code",
   launch,
 
@@ -39,7 +39,7 @@ export let codeManifest: AppManifest = {
         openPath: path,
       });
     } else {
-      launchAppFromManifest(codeManifest, { path });
+      launchProcess(codeManifest, { path });
     }
 
     return true;

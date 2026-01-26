@@ -1,6 +1,6 @@
 import type { AppApi } from "@os/app/api";
-import type { AppManifest } from "@os/app/app";
-import { launchAppFromManifest } from "@os/app/processes";
+import type { ProcessManifest } from "@os/app/app";
+import { launchProcess } from "@os/app/processes";
 import { winDataBuilder } from "@os/wm/wm.svelte";
 import Properties from "./Properties.svelte";
 
@@ -23,12 +23,12 @@ export type PropertiesArgs = {
   path?: string[];
 };
 
-export let propertiesManifest: AppManifest = {
+export let propertiesManifest: ProcessManifest = {
   appId: "properties",
 
   launch,
 };
 
 export function showProperties(api: AppApi, path: string[]) {
-  launchAppFromManifest(propertiesManifest, { path }, { owner: api.getId() });
+  launchProcess(propertiesManifest, { path }, { owner: api.getId() });
 }

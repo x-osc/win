@@ -1,6 +1,6 @@
 <script lang="ts">
   import { launchApp, registerApp } from "@os/app/appregistry";
-  import { launchAppFromManifest } from "@os/app/processes";
+  import { launchProcess } from "@os/app/processes";
   import { playClickDown, playClickUp } from "@os/audio/click";
   import { initAudio } from "@os/audio/sounds";
   import { registerCmd } from "@os/cmd/cmdregistry";
@@ -129,9 +129,7 @@
       <button onclick={(_) => launchApp("firebeats")}
         >make sum fire beats</button
       >
-      <button onclick={(_) => launchAppFromManifest(hydraManifest)}
-        >hydra.exe</button
-      >
+      <button onclick={(_) => launchProcess(hydraManifest)}>hydra.exe</button>
       <button onclick={(_) => launchApp("settings")}>settings</button>
       <button onclick={(_) => enablePhysicsForAll()}>fysiks</button>
       <button onclick={(_) => disablePhysicsForAll()}> auf fysiks</button>

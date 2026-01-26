@@ -1,5 +1,5 @@
 import type { AppApi } from "@os/app/api";
-import type { AppManifest } from "@os/app/app";
+import type { ProcessManifest } from "@os/app/app";
 import { winDataBuilder } from "@os/wm/wm.svelte";
 import Explorer from "./Explorer.svelte";
 
@@ -35,7 +35,7 @@ export type ExplorerResult = {
   selectedEntry: string[] | null;
 };
 
-export let explorerManifest: AppManifest = {
+export let explorerManifest: ProcessManifest = {
   appId: "explorer",
 
   launch,

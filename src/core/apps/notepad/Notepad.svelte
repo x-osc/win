@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { AppApi } from "@os/app/api";
-  import type { AppArgs } from "@os/app/app";
+  import type { ProcArgs } from "@os/app/app";
   import { FsError, joinPath } from "@os/fs/filesystem";
   import type { WindowApi } from "@os/wm/wm.svelte";
   import { onMount } from "svelte";
@@ -9,7 +9,7 @@
     api,
     winApi,
     args,
-  }: { api: AppApi; winApi: WindowApi; args?: AppArgs } = $props();
+  }: { api: AppApi; winApi: WindowApi; args?: ProcArgs } = $props();
 
   let currentFile: string[] | null = $state(null);
   let textarea: HTMLTextAreaElement;

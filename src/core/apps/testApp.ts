@@ -1,5 +1,5 @@
 import type { AppApi } from "@os/app/api";
-import type { AppManifest } from "@os/app/app";
+import type { ProcessManifest } from "@os/app/app";
 import { winDataBuilder } from "@os/wm/wm.svelte";
 
 async function launch(api: AppApi) {
@@ -42,7 +42,7 @@ async function launch(api: AppApi) {
   });
 }
 
-export let testAppManifest: AppManifest = {
+export let testAppManifest: ProcessManifest = {
   appId: "test_app",
 
   launch,

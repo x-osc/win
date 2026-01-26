@@ -5,7 +5,7 @@ import {
   type OnFunction,
 } from "@lib/core/utils/callbacks";
 import type { AppApi } from "@os/app/api";
-import type { AppArgs } from "@os/app/app";
+import type { ProcArgs } from "@os/app/app";
 import { windowId, zIndex } from "@os/state.svelte";
 import type { Component } from "svelte";
 import { SvelteMap } from "svelte/reactivity";
@@ -19,13 +19,13 @@ export type Win = {
 type ChildComponent = Component<{
   api: AppApi;
   winApi: WindowApi;
-  args?: AppArgs;
+  args?: ProcArgs;
 }>;
 
 type ChildComponentData = {
   component: ChildComponent;
   api: AppApi;
-  args?: AppArgs;
+  args?: ProcArgs;
 };
 
 export type WinData = {
@@ -119,7 +119,7 @@ export function winDataBuilder() {
       data.minHeight = height;
       return this;
     },
-    withComponent(component: ChildComponent, api: AppApi, args?: AppArgs) {
+    withComponent(component: ChildComponent, api: AppApi, args?: ProcArgs) {
       data.componentData = { component, api, args };
       return this;
     },

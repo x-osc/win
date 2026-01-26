@@ -1,5 +1,5 @@
 import type { AppApi } from "@os/app/api";
-import type { AppManifest } from "@os/app/app";
+import type { ProcessManifest } from "@os/app/app";
 import { winDataBuilder } from "@os/wm/wm.svelte";
 import Daw from "./Daw.svelte";
 
@@ -18,7 +18,7 @@ async function launch(api: AppApi) {
   });
 }
 
-export let dawManifest: AppManifest = {
+export let dawManifest: ProcessManifest = {
   appId: "firebeats",
 
   launch,

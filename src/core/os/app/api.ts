@@ -9,7 +9,7 @@ import type { CmdApi } from "@os/cmd/command";
 import { fsApi } from "@os/fs/filesystem";
 import { wmApi, type WinData, type WindowApi } from "@os/wm/wm.svelte";
 import { showDialog, type DialogArgs } from "../../apps/dialog/dialog";
-import type { AppArgs, AppResult } from "./app";
+import type { ProcArgs, ProcResult } from "./app";
 import { launchApp } from "./appregistry";
 import { closeApp, sendIpc, type IpcData, type ProcessApi } from "./processes";
 
@@ -19,11 +19,11 @@ export type AppEvents = {
 
 export interface AppApi {
   getId(): number;
-  quit(result?: AppResult): void;
+  quit(result?: ProcResult): void;
 
   sendIpc(targetProcess: number, data: IpcData): boolean;
 
-  launchApp(id: string, args?: AppArgs): ProcessApi | null;
+  launchApp(id: string, args?: ProcArgs): ProcessApi | null;
   launchCmd(id: string, cmdApi: CmdApi): ProcessApi | null;
   showDialog(args: DialogArgs): Promise<number>;
 
