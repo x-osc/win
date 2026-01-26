@@ -4,6 +4,7 @@
   import { contextMenuApi } from "@os/wm/contextMenu";
   import type { WindowApi } from "@os/wm/wm.svelte";
   import { onMount } from "svelte";
+  import { showProperties } from "../properties/properties";
   import type { ExplorerArgs } from "./explorer";
   import { ExplorerState } from "./explorerState.svelte";
 
@@ -235,7 +236,12 @@
     <button disabled>paste</button>
     <button onclick={() => fsc.deleteSelected()}>delete</button>
     <hr />
-    <button>properties</button>
+    <button
+      onclick={async () =>
+        showProperties(api, (await api.fs.getPath(fsc.mainSelectedEntry!))!)}
+    >
+      properties
+    </button>
   {/snippet}
 
   {#snippet bgCtxMenu()}
