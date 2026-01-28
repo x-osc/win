@@ -1,5 +1,5 @@
 import type { AppApi } from "@os/app/api";
-import type { ProcessManifest } from "@os/app/app";
+import type { AppManifest, ProcessManifest } from "@os/app/app";
 import { winDataBuilder } from "@os/wm/wm.svelte";
 import Minesweeper from "./Minesweeper.svelte";
 
@@ -18,7 +18,12 @@ async function launch(api: AppApi) {
   });
 }
 
-export let minesweeperManifest: ProcessManifest = {
+export let minesweeperProcess: ProcessManifest = {
   appId: "minesweeper",
   launch,
+};
+
+export let minesweeperApp: AppManifest = {
+  process: minesweeperProcess,
+  name: "Minesweeper",
 };

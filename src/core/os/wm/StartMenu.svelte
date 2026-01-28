@@ -17,7 +17,7 @@
           launchApp(id);
         }}
       >
-        <span class="name">{app.appId}</span>
+        <span class="name">{app.name}</span>
       </button>
     {/each}
   </div>

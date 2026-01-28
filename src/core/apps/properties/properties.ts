@@ -23,12 +23,12 @@ export type PropertiesArgs = {
   path?: string[];
 };
 
-export let propertiesManifest: ProcessManifest = {
+export let propertiesProcess: ProcessManifest = {
   appId: "properties",
 
   launch,
 };
 
 export function showProperties(api: AppApi, path: string[]) {
-  launchProcess(propertiesManifest, { path }, { owner: api.getId() });
+  launchProcess(propertiesProcess, { path }, { owner: api.getId() });
 }

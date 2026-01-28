@@ -1,5 +1,5 @@
 import type { AppApi } from "@os/app/api";
-import type { ProcessManifest } from "@os/app/app";
+import type { AppManifest, ProcessManifest } from "@os/app/app";
 import { winDataBuilder } from "@os/wm/wm.svelte";
 import Terminal from "./Terminal.svelte";
 
@@ -18,7 +18,12 @@ async function launch(api: AppApi) {
   });
 }
 
-export let terminalManifest: ProcessManifest = {
+export let terminalProcess: ProcessManifest = {
   appId: "terminal",
   launch,
+};
+
+export let terminalApp: AppManifest = {
+  process: terminalProcess,
+  name: "Terminal",
 };

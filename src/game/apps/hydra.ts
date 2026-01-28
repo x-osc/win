@@ -35,8 +35,8 @@ function spawnHydras(api: AppApi) {
     hydraError();
   }
 
-  launchProcess(hydraManifest, { nottheoriginalstarwalker: true });
-  launchProcess(hydraManifest, { nottheoriginalstarwalker: true });
+  launchProcess(hydraProcess, { nottheoriginalstarwalker: true });
+  launchProcess(hydraProcess, { nottheoriginalstarwalker: true });
 }
 
 const hydraDialogs = [
@@ -58,7 +58,7 @@ const hydraDialogs = [
   "monkey see monkey do",
 ];
 
-export let hydraManifest: ProcessManifest = {
+export let hydraProcess: ProcessManifest = {
   appId: "hydra",
 
   launch,

@@ -1,5 +1,5 @@
 import type { AppApi } from "@os/app/api";
-import type { ProcArgs, ProcessManifest } from "@os/app/app";
+import type { AppManifest, ProcArgs, ProcessManifest } from "@os/app/app";
 import { launchProcess } from "@os/app/processes";
 import { fsApi } from "@os/fs/filesystem";
 import { winDataBuilder } from "@os/wm/wm.svelte";
@@ -25,16 +25,21 @@ async function launch(api: AppApi, args?: ProcArgs) {
   });
 }
 
-export let viewerManifest: ProcessManifest = {
+export let viewerProcess: ProcessManifest = {
   appId: "viewer",
   launch,
+};
+
+export let viewerApp: AppManifest = {
+  process: viewerProcess,
+  name: "Image Viewer",
 
   openPath: async (path) => {
     let entry = await fsApi.getEntry(path);
     if (!entry) return false;
     if (entry.type !== "file") return false;
 
-    launchProcess(viewerManifest, { path });
+    launchProcess(viewerProcess, { path });
     return true;
   },
 };

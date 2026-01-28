@@ -17,18 +17,17 @@
   import { wmApi } from "@os/wm/wm.svelte";
   import { onMount } from "svelte";
   // app manifests
-  import { browserManifest } from "./core/apps/browser/browser";
-  import { calcManifest } from "./core/apps/calc/calc";
-  import { codeManifest } from "./core/apps/code/code";
-  import { dawManifest } from "./core/apps/daw/daw";
-  import { explorerManifest } from "./core/apps/explorer/explorer";
-  import { minesweeperManifest } from "./core/apps/minesweeper/minesweeper";
-  import { notepadManifest } from "./core/apps/notepad/notepad";
-  import { paintManifest } from "./core/apps/paint/paint";
-  import { settingsManifest } from "./core/apps/settings/settings";
-  import { terminalManifest } from "./core/apps/terminal/terminal";
-  import { testAppManifest } from "./core/apps/testApp";
-  import { viewerManifest } from "./core/apps/viewer/veiwer";
+  import { browserApp } from "./core/apps/browser/browser";
+  import { calcApp } from "./core/apps/calc/calc";
+  import { codeApp } from "./core/apps/code/code";
+  import { dawApp } from "./core/apps/daw/daw";
+  import { exporerApp } from "./core/apps/explorer/explorer";
+  import { minesweeperApp } from "./core/apps/minesweeper/minesweeper";
+  import { notepadApp } from "./core/apps/notepad/notepad";
+  import { paintApp } from "./core/apps/paint/paint";
+  import { settingsApp } from "./core/apps/settings/settings";
+  import { terminalApp } from "./core/apps/terminal/terminal";
+  import { viewerApp } from "./core/apps/viewer/veiwer";
   // terminal command manifests
   import { asdfManifest } from "./core/cmds/asdf";
   import { cdManifest } from "./core/cmds/cd";
@@ -50,24 +49,23 @@
   import { mousePos } from "./core/os/state.svelte";
   // secret import
   import ContextMenu from "@os/wm/ContextMenu.svelte";
-  import { hydraManifest } from "./game/apps/hydra";
+  import { hydraProcess } from "./game/apps/hydra";
   import Bsod from "./game/Bsod.svelte";
   import { gameState } from "./game/gameState.svelte";
   import Trail from "./game/Trail.svelte";
 
   // adding apps to app registry
-  registerApp(testAppManifest);
-  registerApp(notepadManifest);
-  registerApp(terminalManifest);
-  registerApp(paintManifest);
-  registerApp(explorerManifest);
-  registerApp(calcManifest);
-  registerApp(browserManifest);
-  registerApp(minesweeperManifest);
-  registerApp(settingsManifest);
-  registerApp(dawManifest);
-  registerApp(codeManifest);
-  registerApp(viewerManifest);
+  registerApp(notepadApp);
+  registerApp(terminalApp);
+  registerApp(paintApp);
+  registerApp(exporerApp);
+  registerApp(calcApp);
+  registerApp(browserApp);
+  registerApp(minesweeperApp);
+  registerApp(settingsApp);
+  registerApp(dawApp);
+  registerApp(codeApp);
+  registerApp(viewerApp);
 
   // adding cmds to cmd registry
   registerCmd(helpManifest);
@@ -129,7 +127,7 @@
       <button onclick={(_) => launchApp("firebeats")}
         >make sum fire beats</button
       >
-      <button onclick={(_) => launchProcess(hydraManifest)}>hydra.exe</button>
+      <button onclick={(_) => launchProcess(hydraProcess)}>hydra.exe</button>
       <button onclick={(_) => launchApp("settings")}>settings</button>
       <button onclick={(_) => enablePhysicsForAll()}>fysiks</button>
       <button onclick={(_) => disablePhysicsForAll()}> auf fysiks</button>

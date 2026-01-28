@@ -1,5 +1,5 @@
 import type { AppApi } from "@os/app/api";
-import type { ProcessManifest } from "@os/app/app";
+import type { AppManifest, ProcessManifest } from "@os/app/app";
 import { winDataBuilder } from "@os/wm/wm.svelte";
 import Browser from "./Browser.svelte";
 
@@ -18,8 +18,13 @@ async function launch(api: AppApi) {
   });
 }
 
-export let browserManifest: ProcessManifest = {
+export let browserProcess: ProcessManifest = {
   appId: "browser",
 
   launch,
+};
+
+export let browserApp: AppManifest = {
+  process: browserProcess,
+  name: "Web Browser",
 };

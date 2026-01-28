@@ -4,6 +4,13 @@ export interface ProcessManifest {
   appId: string;
 
   launch(api: AppApi, args?: ProcArgs): Promise<void>;
+}
+
+export interface AppManifest {
+  process: ProcessManifest;
+
+  name: string;
+  description?: string;
 
   openPath?(path: string[]): Promise<boolean>;
 }

@@ -1,7 +1,7 @@
 // calc is short for calculator
 
 import type { AppApi } from "@os/app/api";
-import type { ProcessManifest } from "@os/app/app";
+import type { AppManifest, ProcessManifest } from "@os/app/app";
 import { winDataBuilder } from "@os/wm/wm.svelte";
 import Calc from "./Calc.svelte";
 
@@ -20,8 +20,13 @@ async function launch(api: AppApi) {
   });
 }
 
-export let calcManifest: ProcessManifest = {
+export let calcProcess: ProcessManifest = {
   appId: "calc",
 
   launch,
+};
+
+export let calcApp: AppManifest = {
+  process: calcProcess,
+  name: "Calculator",
 };
