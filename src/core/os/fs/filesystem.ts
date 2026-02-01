@@ -1,5 +1,8 @@
 import initialfs from "@generated/initfs.json";
-import { type DBSchema, openDB } from "idb";
+import { type DBSchema, type IDBPObjectStore, openDB } from "idb";
+
+export const PROGRAMS_DIR = ["sys", "programs"];
+export const SETTINGS_DIR = ["sys", "settings"];
 
 export let fsApi = {
   splitPath,
@@ -28,6 +31,10 @@ export let fsApi = {
 
 export type FileContent = {
   data: Blob;
+  // cant store proc manifest directly cos function cloning fails when storing to db
+  // we store an id referencing processRegistry
+  // if its set, file is executable
+  process?: string;
 };
 
 export type EntryType = "file" | "dir";
@@ -83,6 +90,25 @@ export function isFsError(err: unknown): err is FsError {
 }
 
 export const ROOT_ID = "_root_";
+
+type EntriesStore = IDBPObjectStore<
+  FSDB_Schema,
+  ["entries", "contents"],
+  "entries",
+  "readwrite"
+>;
+type ContentsStore = IDBPObjectStore<
+  FSDB_Schema,
+  ["entries", "contents"],
+  "contents",
+  "readwrite"
+>;
+
+export async function getFSDBTransation() {
+  const db = await FSDB;
+  const tx = db.transaction(["entries", "contents"], "readwrite");
+  return tx;
+}
 
 interface FSDB_Schema extends DBSchema {
   entries: {
@@ -162,11 +188,10 @@ export function resolvePath(
   return stack;
 }
 
-export async function getEntry(path: string[]): Promise<FsEntry | null> {
-  const db = await FSDB;
-  const tx = db.transaction("entries", "readonly");
-  const store = tx.objectStore("entries");
-
+async function getEntryTx(
+  path: string[],
+  store: EntriesStore,
+): Promise<FsEntry | null> {
   let currId = ROOT_ID;
   for (const name of path) {
     const entry = await store.index("by-name-parent").get([name, currId]);
@@ -181,6 +206,13 @@ export async function getEntry(path: string[]): Promise<FsEntry | null> {
   }
 
   return (await store.get(currId)) ?? null;
+}
+
+export async function getEntry(path: string[]): Promise<FsEntry | null> {
+  const db = await FSDB;
+  const tx = db.transaction(["entries", "contents"], "readwrite");
+  const store = tx.objectStore("entries");
+  return getEntryTx(path, store);
 }
 
 export async function getEntryFromId(id: string): Promise<FsEntry | null> {
@@ -223,15 +255,17 @@ export async function type(path: string[]): Promise<EntryType | null> {
   return entry ? entry.type : null;
 }
 
-export async function mkdir(path: string[]): Promise<DirEntry> {
-  const db = await FSDB;
+export async function mkdirTx(
+  path: string[],
+  store: EntriesStore,
+): Promise<DirEntry> {
   path = path.slice();
   const name = path.pop();
   if (!name) {
     throw new FsError({ type: "invalidpath", path });
   }
 
-  const parentEntry = await getEntry(path);
+  const parentEntry = await getEntryTx(path, store);
   if (!parentEntry || parentEntry.type !== "dir") {
     throw new FsError({ type: "notfound", path });
   }
@@ -247,12 +281,12 @@ export async function mkdir(path: string[]): Promise<DirEntry> {
     modified: now,
   };
 
-  if (await getEntry([...path, name])) {
+  if (await getEntryTx([...path, name], store)) {
     throw new FsError({ type: "alreadyexists", path: [...path, name] });
   }
 
   try {
-    await db.put("entries", entry);
+    await store.put(entry);
   } catch (e) {
     throw new FsError({
       type: "backendfailure",
@@ -264,15 +298,26 @@ export async function mkdir(path: string[]): Promise<DirEntry> {
   return entry;
 }
 
+export async function mkdir(path: string[]): Promise<DirEntry> {
+  const db = await FSDB;
+  const tx = db.transaction(["entries", "contents"], "readwrite");
+  const store = tx.objectStore("entries");
+  return mkdirTx(path, store);
+}
+
 export async function mkdirp(path: string[]): Promise<void> {
+  const db = await FSDB;
+  const tx = db.transaction(["entries", "contents"], "readwrite");
+  const store = tx.objectStore("entries");
+
   let currentPath: string[] = [];
 
   for (const segment of path) {
     currentPath.push(segment);
-    const entry = await getEntry(currentPath);
+    const entry = await getEntryTx(currentPath, store);
 
     if (!entry) {
-      await mkdir(currentPath);
+      await mkdirTx(currentPath, store);
     } else if (entry.type !== "dir") {
       throw new FsError({
         type: "typemismatch",
@@ -289,13 +334,17 @@ export async function writeFile(
   content: FileContent,
 ): Promise<FileEntry> {
   const db = await FSDB;
+  const tx = db.transaction(["entries", "contents"], "readwrite");
+  const entriesStore = tx.objectStore("entries");
+  const contentsStore = tx.objectStore("contents");
+
   path = path.slice();
   const name = path.pop();
   if (!name) {
     throw new FsError({ type: "invalidpath", path });
   }
 
-  const parentEntry = await getEntry(path);
+  const parentEntry = await getEntryTx(path, entriesStore);
   if (!parentEntry || parentEntry.type !== "dir") {
     throw new FsError({ type: "notfound", path });
   }
@@ -312,13 +361,9 @@ export async function writeFile(
     size: content.data.size,
   };
 
-  if (await getEntry([...path, name])) {
+  if (await getEntryTx([...path, name], entriesStore)) {
     throw new FsError({ type: "alreadyexists", path: [...path, name] });
   }
-
-  const tx = db.transaction(["entries", "contents"], "readwrite");
-  const entriesStore = tx.objectStore("entries");
-  const contentsStore = tx.objectStore("contents");
 
   try {
     await entriesStore.put(entry);

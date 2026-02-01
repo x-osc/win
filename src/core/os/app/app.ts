@@ -11,6 +11,7 @@ export interface AppManifest {
 
   name: string;
   description?: string;
+  exePath?: string[];
 
   openPath?(path: string[]): Promise<boolean>;
 }

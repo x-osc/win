@@ -1,4 +1,5 @@
-import type { AppManifest, ProcArgs } from "./app";
+import { ensureDir, fsApi, FsError, PROGRAMS_DIR } from "@os/fs/filesystem";
+import type { AppManifest, ProcArgs, ProcessManifest } from "./app";
 import {
   launchProcess,
   type ExtraProcessOptions,
@@ -23,12 +24,40 @@ export function launchApp(
 }
 
 /** Adds app to App Registry */
-export function registerApp(app: AppManifest) {
+export async function registerApp(app: AppManifest) {
+  registerProcess(app.process);
+
   let id = app.process.appId;
   appRegistry.set(id, app);
+
+  await ensureDir(PROGRAMS_DIR);
+  let path = app.exePath ?? [...PROGRAMS_DIR, app.process.appId];
+
+  try {
+    await fsApi.writeFile(path, { data: new Blob([]), process: id });
+  } catch (e) {
+    if (e instanceof FsError && e.kind.type === "alreadyexists") {
+      return;
+    } else if (e instanceof FsError && e.kind.type === "backendfailure") {
+      console.log(e.kind.cause);
+      return;
+    }
+    throw e;
+  }
 }
 
 /** Returns App Registry */
-export function getApps(): Map<string, AppManifest> {
+export function getApps() {
   return appRegistry;
+}
+
+let processRegistry: Map<string, ProcessManifest> = new Map();
+
+export function registerProcess(proc: ProcessManifest) {
+  let id = proc.appId;
+  processRegistry.set(id, proc);
+}
+
+export function getProcessRegistry() {
+  return processRegistry;
 }

@@ -1,5 +1,5 @@
 import { CallbackManager } from "@lib/core/utils/callbacks";
-import { fsApi, FsError } from "@os/fs/filesystem";
+import { fsApi, FsError, SETTINGS_DIR } from "@os/fs/filesystem";
 
 export interface MainSettings {
   mainvol: number;
@@ -16,7 +16,7 @@ type SettingsEvents = {
   ) => void;
 };
 
-const SETTINGS_PATH = ["sys", "settings", "settings.sto"];
+const SETTINGS_PATH = [...SETTINGS_DIR, "settings.sto"];
 
 export const DEFAULT_SETTINGS: MainSettings = {
   mainvol: 80,
