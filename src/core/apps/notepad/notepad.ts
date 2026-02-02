@@ -1,5 +1,5 @@
 import type { AppApi } from "@os/app/api";
-import type { AppManifest, ProcArgs, ProcessManifest } from "@os/app/app";
+import type { AppManifest, ProcArgs } from "@os/app/app";
 import { launchProcess } from "@os/app/processes";
 import { fsApi } from "@os/fs/filesystem";
 import { winDataBuilder } from "@os/wm/wm.svelte";
@@ -20,21 +20,18 @@ async function launch(api: AppApi, args?: ProcArgs) {
   });
 }
 
-export let notepadProcess: ProcessManifest = {
+export let notepadManifest: AppManifest = {
   appId: "notepad",
-  launch,
-};
-
-export let notepadApp: AppManifest = {
-  process: notepadProcess,
   name: "Notepad",
+
+  launch,
 
   openPath: async (path) => {
     let entry = await fsApi.getEntry(path);
     if (!entry) return false;
     if (entry.type !== "file") return false;
 
-    launchProcess(notepadProcess, {
+    launchProcess(notepadManifest, {
       path: path,
     });
     return true;

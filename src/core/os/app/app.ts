@@ -7,7 +7,9 @@ export interface ProcessManifest {
 }
 
 export interface AppManifest {
-  process: ProcessManifest;
+  appId: string;
+
+  launch(api: AppApi, args?: ProcArgs): Promise<void>;
 
   name: string;
   description?: string;

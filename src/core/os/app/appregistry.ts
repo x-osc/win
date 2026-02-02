@@ -20,18 +20,18 @@ export function launchApp(
     console.log(appRegistry);
     return null;
   }
-  return launchProcess(app.process, args, extraOptions);
+  return launchProcess(app, args, extraOptions);
 }
 
 /** Adds app to App Registry */
 export async function registerApp(app: AppManifest) {
-  registerProcess(app.process);
+  registerProcess(app);
 
-  let id = app.process.appId;
+  let id = app.appId;
   appRegistry.set(id, app);
 
   await ensureDir(PROGRAMS_DIR);
-  let path = app.exePath ?? [...PROGRAMS_DIR, app.process.appId];
+  let path = app.exePath ?? [...PROGRAMS_DIR, app.appId];
 
   try {
     await fsApi.writeFile(path, { data: new Blob([]), process: id });

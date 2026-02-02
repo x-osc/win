@@ -1,4 +1,5 @@
 import type { AppApi } from "@os/app/api";
+import type { ProcessManifest } from "@os/app/app";
 
 export type TextOptions = {
   color: string;
@@ -27,4 +28,14 @@ export interface CmdApi {
   appendLine(content: string, options?: Partial<TextOptions>): void;
   writeLine(content: string, options?: Partial<TextOptions>): void;
   getInput(): Promise<string>;
+}
+
+export function cmdManifestToProcessManifest(
+  cmdManifest: CmdManifest,
+  cmdApi: CmdApi,
+): ProcessManifest {
+  return {
+    ...cmdManifest,
+    launch: (api, args) => cmdManifest.launch(api, cmdApi),
+  };
 }

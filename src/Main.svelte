@@ -17,17 +17,17 @@
   import { wmApi } from "@os/wm/wm.svelte";
   import { onMount } from "svelte";
   // app manifests
-  import { browserApp } from "./core/apps/browser/browser";
-  import { calcApp } from "./core/apps/calc/calc";
-  import { codeApp } from "./core/apps/code/code";
-  import { dawApp } from "./core/apps/daw/daw";
-  import { exporerApp } from "./core/apps/explorer/explorer";
-  import { minesweeperApp } from "./core/apps/minesweeper/minesweeper";
-  import { notepadApp } from "./core/apps/notepad/notepad";
-  import { paintApp } from "./core/apps/paint/paint";
-  import { settingsApp } from "./core/apps/settings/settings";
-  import { terminalApp } from "./core/apps/terminal/terminal";
-  import { viewerApp } from "./core/apps/viewer/veiwer";
+  import { browserManifest } from "./core/apps/browser/browser";
+  import { calcManifest } from "./core/apps/calc/calc";
+  import { codeManifest } from "./core/apps/code/code";
+  import { dawManifest } from "./core/apps/daw/daw";
+  import { explorerManifest } from "./core/apps/explorer/explorer";
+  import { minesweeperManifest } from "./core/apps/minesweeper/minesweeper";
+  import { notepadManifest } from "./core/apps/notepad/notepad";
+  import { paintManifest } from "./core/apps/paint/paint";
+  import { settingsManifest } from "./core/apps/settings/settings";
+  import { terminalManifest } from "./core/apps/terminal/terminal";
+  import { viewerManifest } from "./core/apps/viewer/veiwer";
   // terminal command manifests
   import { asdfManifest } from "./core/cmds/asdf";
   import { cdManifest } from "./core/cmds/cd";
@@ -55,17 +55,17 @@
   import Trail from "./game/Trail.svelte";
 
   // adding apps to app registry
-  registerApp(notepadApp);
-  registerApp(terminalApp);
-  registerApp(paintApp);
-  registerApp(exporerApp);
-  registerApp(calcApp);
-  registerApp(browserApp);
-  registerApp(minesweeperApp);
-  registerApp(settingsApp);
-  registerApp(dawApp);
-  registerApp(codeApp);
-  registerApp(viewerApp);
+  registerApp(notepadManifest);
+  registerApp(terminalManifest);
+  registerApp(paintManifest);
+  registerApp(explorerManifest);
+  registerApp(calcManifest);
+  registerApp(browserManifest);
+  registerApp(minesweeperManifest);
+  registerApp(settingsManifest);
+  registerApp(dawManifest);
+  registerApp(codeManifest);
+  registerApp(viewerManifest);
 
   // adding cmds to cmd registry
   registerCmd(helpManifest);

@@ -1,5 +1,5 @@
 import type { AppApi } from "@os/app/api";
-import type { AppManifest, ProcArgs, ProcessManifest } from "@os/app/app";
+import type { AppManifest, ProcArgs } from "@os/app/app";
 import { launchProcess, sendIpc } from "@os/app/processes";
 import { fsApi } from "@os/fs/filesystem";
 import { winDataBuilder } from "@os/wm/wm.svelte";
@@ -25,14 +25,11 @@ async function launch(api: AppApi, args?: ProcArgs) {
   );
 }
 
-export let codeProcess: ProcessManifest = {
+export let codeManifest: AppManifest = {
   appId: "code",
-  launch,
-};
-
-export let codeApp: AppManifest = {
-  process: codeProcess,
   name: "Code Editor",
+
+  launch,
 
   openPath: async (path) => {
     let entry = await fsApi.getEntry(path);
@@ -44,7 +41,7 @@ export let codeApp: AppManifest = {
         openPath: path,
       });
     } else {
-      launchProcess(codeProcess, { path });
+      launchProcess(codeManifest, { path });
     }
 
     return true;
