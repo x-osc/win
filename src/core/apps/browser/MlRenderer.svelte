@@ -1,8 +1,5 @@
 <script lang="ts">
-  import mlStyles from "@lib/core/lang/ml/ml.css?inline";
-  import { processDocument, type MlError } from "@lib/core/lang/ml/mlparser";
   import { parseUrl, resolveURLPath } from "@lib/core/utils/url";
-  import { onDestroy, onMount } from "svelte";
 
   let {
     url,
@@ -16,27 +13,32 @@
 
   let shadow: ShadowRoot;
   let pageContainer: HTMLElement;
-  let page: HTMLElement;
+  let frame: HTMLIFrameElement;
 
-  onMount(() => {
-    shadow = page.attachShadow({ mode: "open" });
+  function handleFrameLoad() {
+    const doc = getDoc();
+    if (!doc) return;
 
-    const sheet = new CSSStyleSheet();
-    sheet.replaceSync(mlStyles);
-    shadow.adoptedStyleSheets = [sheet];
+    injectStyles(doc);
+    attachHandlers(doc);
 
-    pageContainer = document.createElement("div");
-    pageContainer.style.cssText = "width: 100%; height: 100%";
-    shadow.appendChild(pageContainer);
+    const loc = frame.contentWindow?.location.href;
+    if (loc) {
+      onNavigate(loc);
+    }
+  }
 
-    pageContainer.addEventListener("click", handleClick);
-    pageContainer.addEventListener("keydown", handleKeyDown);
-  });
+  export function setContent(url: string) {
+    frame.src = url;
 
-  onDestroy(() => {
-    pageContainer.removeEventListener("click", handleClick);
-    pageContainer.removeEventListener("keydown", handleKeyDown);
-  });
+    postProcessImages(doc);
+    injectStyles(doc);
+    attachHandlers(doc);
+  }
+
+  function getDoc() {
+    return frame.contentDocument;
+  }
 
   function handleClick(e: MouseEvent) {
     const target = e.composedPath()[0] as HTMLElement;
@@ -76,33 +78,10 @@
       onNavigate(newUrl);
     }
   }
-
-  export function setContent(newInput: string): MlError[] {
-    let [html, errors] = processDocument(newInput);
-
-    if (html) {
-      pageContainer.innerHTML = html;
-      postProcessPageSDom();
-    }
-
-    return errors;
-  }
-
-  function postProcessPageSDom() {
-    let images = shadow.querySelectorAll("img[data-ml-img]");
-
-    for (const img of images) {
-      let imgel = img as HTMLImageElement;
-      let relpath = img.getAttribute("data-ml-img-url");
-      if (!relpath) return;
-
-      let webPath = resolveURLPath(publicUrl, relpath);
-      imgel.src = webPath;
-    }
-  }
 </script>
 
-<div class="page" bind:this={page}></div>
+<iframe class="page" bind:this={frame} title="page" onload={handleFrameLoad}>
+</iframe>
 
 <style>
   .page {

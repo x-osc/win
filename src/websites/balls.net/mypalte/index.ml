@@ -1,1 +1,0 @@
-<image url="my_palte.jpg"></image>

@@ -1,1 +1,0 @@
-<image url="bayes_rule.jpg"></image>

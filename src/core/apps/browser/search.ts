@@ -20,22 +20,20 @@ export function generateGoggleNet(query: string): string {
   let mlresults = "";
   for (const result of results) {
     mlresults += `
-      <box>
-        <text>
-          <link to="${result.url}">${result.url}</link>
-        </text>
-      </box>
+      <div>
+        <a href="${result.url}">${result.url}</link>
+      </div>
     `;
   }
 
   let resultsString = isResults
     ? mlresults
-    : `<text>THERE ARE NO RESULTS FOR ${query} :(((((</text>`;
+    : `<p>THERE ARE NO RESULTS FOR ${query} :(((((</p>`;
 
   let mlfinal = `
-    <text><link to="goggle.net">BACK TO GOGGLE DOT NET HOMEPAGE</link></text>
-    <heading>goggle dot net results for "${query}"</heading>
-    <box height=20></box>
+    <p><a href="goggle.net">BACK TO GOGGLE DOT NET HOMEPAGE</link></p>
+    <h1>goggle dot net results for "${query}"</h1>
+    <div height=20></div>
     ${resultsString}
   `;
   return mlfinal;

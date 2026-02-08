@@ -43,7 +43,7 @@ export function websiteIndexer(opts: WebsiteIndexerOpts): Plugin {
           const filePath = path.join(sourceDir, relativePath);
 
           if (
-            !filePath.endsWith(".mlmeta") &&
+            !filePath.endsWith(".meta") &&
             (await fs.pathExists(filePath)) &&
             (await fs.stat(filePath)).isFile()
           ) {
@@ -62,7 +62,7 @@ export function websiteIndexer(opts: WebsiteIndexerOpts): Plugin {
 
       const mlFiles = await glob("**/*", {
         cwd: sourceDir,
-        ignore: "**/*.mlmeta",
+        ignore: "**/*.meta",
         nodir: true,
         posix: true,
       });
@@ -96,7 +96,7 @@ async function runIndexer(config: ResolvedConfig, opts: WebsiteIndexerOpts) {
 async function generateIndexData(sourceDir: string) {
   const index: any = { sites: {}, tags: {} };
 
-  const mlFiles = await glob("**/*.mlmeta", { cwd: sourceDir, posix: true });
+  const mlFiles = await glob("**/*.meta", { cwd: sourceDir, posix: true });
 
   for (const relativePath of mlFiles) {
     const dir = path.dirname(relativePath);
@@ -129,8 +129,8 @@ async function generateIndexData(sourceDir: string) {
 
     index.sites[url] = {
       host: dir,
-      actualurl: `${dir}/${filename}.ml`,
-      publicurl: `${PUBLIC_WEB_DIR}${dir}/${filename}.ml`,
+      actualurl: `${dir}/${filename}`,
+      publicurl: `${PUBLIC_WEB_DIR}${dir}/${filename}`,
       tags: tags,
     };
   }
