@@ -1,82 +1,63 @@
 <script lang="ts">
-  import { parseUrl, resolveURLPath } from "@lib/core/utils/url";
+  import { resolveURLPath } from "@lib/core/utils/url";
 
   let {
     url,
     publicUrl,
-    onNavigate,
+    handleNavigate,
   }: {
     url: string;
     publicUrl: string;
-    onNavigate: (url: string) => void;
+    handleNavigate: (url: string) => void;
   } = $props();
 
-  let shadow: ShadowRoot;
-  let pageContainer: HTMLElement;
   let frame: HTMLIFrameElement;
 
   function handleFrameLoad() {
-    const doc = getDoc();
+    const doc = frame.contentDocument;
     if (!doc) return;
 
-    injectStyles(doc);
-    attachHandlers(doc);
-
-    const loc = frame.contentWindow?.location.href;
-    if (loc) {
-      onNavigate(loc);
-    }
-  }
-
-  export function setContent(url: string) {
-    frame.src = url;
-
-    postProcessImages(doc);
-    injectStyles(doc);
     attachHandlers(doc);
   }
 
-  function getDoc() {
-    return frame.contentDocument;
+  export function setContent(content: string) {
+    frame.srcdoc = buildDocument(content);
+  }
+
+  function buildDocument(html: string) {
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+        </head>
+        <body>
+          ${html}
+        </body>
+      </html>
+    `;
+  }
+
+  function attachHandlers(doc: Document) {
+    doc.addEventListener("click", handleClick);
   }
 
   function handleClick(e: MouseEvent) {
-    const target = e.composedPath()[0] as HTMLElement;
-    let link = target.getAttribute("data-ml-link-to");
-    if (link) {
-      if (link.startsWith(".")) {
-        // TODO: temp fix, need to figure out alternative for protocol in links
-        // and images
-        link = resolveURLPath(url, link);
-      }
+    const linkEl = (e.target as HTMLElement).closest(`a`);
+    if (!linkEl) return;
 
-      onNavigate(link);
+    let link = linkEl.getAttribute("href");
+    if (!link) return;
+
+    e.preventDefault;
+
+    if (link.startsWith(".")) {
+      // TODO: temp fix, need to figure out alternative for protocol in links
+      // and images
+      link = resolveURLPath(url, link);
     }
-  }
 
-  function handleKeyDown(e: KeyboardEvent) {
-    const target = e.target as HTMLElement;
-
-    if (
-      e.key === "Enter" &&
-      target instanceof HTMLInputElement &&
-      target.hasAttribute("data-ml-output-url")
-    ) {
-      target.blur();
-
-      const domain = parseUrl(url).host;
-      const outputUrl = target.getAttribute("data-ml-output-url");
-      const id = target.name;
-      if (!outputUrl) return;
-      if (!id) return;
-
-      let queryString = `?${id}=${target.value}`;
-      let newUrl = domain + outputUrl + queryString;
-
-      console.log("navigating to", newUrl);
-
-      onNavigate(newUrl);
-    }
+    handleNavigate(link);
   }
 </script>
 

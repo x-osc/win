@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { formatError } from "@lib/core/lang/ml/mlparser";
   import type { AppApi } from "@os/app/api";
   import type { WindowApi } from "@os/wm/wm.svelte";
   import { onMount } from "svelte";
@@ -17,8 +16,6 @@
 
   let url = $state("");
   let publicUrl = $state("web/");
-  let errors = $state<string[]>([]);
-  let showConsole = $state(false);
   let isLoading = $state(false);
 
   onMount(() => {
@@ -26,21 +23,17 @@
   });
 
   async function navigate(targetUrl: string, addToHistory = true) {
-    errors = [];
-
     isLoading = true;
     const result = await resolveContent(targetUrl, api);
     isLoading = false;
 
     if (result.type === "error") {
-      errors = [result.error];
       return;
     }
 
     publicUrl = result.type === "site" ? result.publicUrl : "web/";
 
-    let errs = renderer.setContent(result.content);
-    errors = errors.concat(errs.map((err) => formatError(result.content, err)));
+    renderer.setContent(result.content);
 
     if (addToHistory) {
       history.push(result.url);
@@ -90,10 +83,6 @@
       onfocus={() => urlInput.select()}
       placeholder="Search"
     />
-
-    <button class="togglebtn" onclick={() => (showConsole = !showConsole)}>
-      {showConsole ? "hide" : "show"} ({errors.length})
-    </button>
   </div>
 
   <div class="maincontent">
@@ -102,23 +91,9 @@
         bind:this={renderer}
         {url}
         {publicUrl}
-        onNavigate={(url) => navigate(url)}
+        handleNavigate={(url) => navigate(url)}
       />
     </div>
-
-    {#if showConsole}
-      <div class="console-sidebar" transition:slide={{ axis: "x" }}>
-        <div class="console-header">
-          <button class="close-btn" onclick={() => (showConsole = false)}
-            >x</button
-          >
-          <span>Console Output</span>
-        </div>
-        <div class="console-body">
-          <pre>{errors.join("\n\n")}</pre>
-        </div>
-      </div>
-    {/if}
   </div>
 </div>
 

@@ -117,7 +117,7 @@ async function generateIndexData(sourceDir: string) {
       }
     }
 
-    const url = filename === "index" ? `${dir}` : `${dir}/${filename}`;
+    const url = filename === "index.html" ? `${dir}` : `${dir}/${filename}`;
 
     for (const tag of tags) {
       if (index.tags[tag] == undefined) {
