@@ -2,7 +2,6 @@
   import type { AppApi } from "@os/app/api";
   import type { WindowApi } from "@os/wm/wm.svelte";
   import { onMount } from "svelte";
-  import { slide } from "svelte/transition";
   import { HistoryManager } from "./history.svelte";
   import MlRenderer from "./MlRenderer.svelte";
   import { resolveContent } from "./resolver";
@@ -126,20 +125,6 @@
     display: flex;
     flex: 1;
     overflow: auto;
-  }
-
-  .console-sidebar {
-    width: 300px;
-    border-left: 1px solid #444;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .console-body {
-    overflow-y: auto;
-    flex: 1;
-    font-size: 14px;
-    font-family: monospace;
   }
 
   .action-button {

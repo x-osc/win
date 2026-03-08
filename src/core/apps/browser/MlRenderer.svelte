@@ -25,17 +25,20 @@
   }
 
   function buildDocument(html: string) {
-    return `
+    let currDoc = `
       <!DOCTYPE html>
       <html>
         <head>
           <meta charset="utf-8">
+          <base href="${publicUrl}">
         </head>
         <body>
           ${html}
         </body>
       </html>
     `;
+
+    return currDoc;
   }
 
   function attachHandlers(doc: Document) {
